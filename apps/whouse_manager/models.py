@@ -11,7 +11,7 @@ class WhouseManager(BaseModel):
     phone_number = models.CharField(max_length=25)
     password = models.CharField(max_length=128)
     
-    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, related_name='whouse_managers')
+    whouses = models.ManyToManyField('factory_whouse.Whouse', related_name='managers')
     
     # Dynamic Permissions
     permissions = GenericRelation(UserPermissions)

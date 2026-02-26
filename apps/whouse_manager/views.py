@@ -1,6 +1,6 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from apps.whouse_manager.models import WhouseManager
-from apps.whouse_manager.serializers import WhouseManagerSerializer
+from apps.whouse_manager.serializers.whouse_manager import WhouseManagerSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 

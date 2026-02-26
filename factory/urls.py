@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from apps.drivers.urls import urlpatterns as driver_urls
-from apps.whouse.urls import urlpatterns as whouse_urls
+from data.whouse.urls import urlpatterns as whouse_urls
 from apps.common.auth.urls import urlpatterns as auth_urls
 from apps.whouse_manager.urls import urlpatterns as whouse_manager_urls
 from apps.factory_operator.urls import urlpatterns as factory_operator_urls
 from apps.guard.urls import urlpatterns as guard_urls
+from data.products.urls import urlpatterns as products_urls
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
@@ -46,6 +47,7 @@ urlpatterns = [
 
     path('drivers/', include(driver_urls)),
     path('guards/', include(guard_urls)),
+    path('products/', include(products_urls)),
 
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]

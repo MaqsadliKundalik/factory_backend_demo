@@ -1,5 +1,5 @@
 from django.urls import path
-from apps.whouse_manager.views import WhouseManagerListCreateAPIView, WhouseManagerRetrieveUpdateDestroyAPIView
+from .views import WhouseManagerListCreateAPIView, WhouseManagerRetrieveUpdateDestroyAPIView
 
 urlpatterns = [
     path("", WhouseManagerListCreateAPIView.as_view()),

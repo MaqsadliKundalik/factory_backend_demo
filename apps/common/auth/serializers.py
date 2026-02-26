@@ -21,7 +21,7 @@ class WhouseManagerProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="manager", read_only=True)
     class Meta:
         model = WhouseManager
-        fields = ["id", "name", "phone_number", "whouse", "role"]
+        fields = ["id", "name", "phone_number", "whouses", "role"]
 
 class FactoryOperatorProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="operator", read_only=True)

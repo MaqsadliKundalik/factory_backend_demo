@@ -18,7 +18,9 @@ def create_manager_permissions(sender, instance, created, **kwargs):
             crud_driver=True,
             read_driver=True,
             crud_guard=True,
-            read_guard=True
+            read_guard=True,
+            crud_product_type=True,
+            read_product_type=True
         )
 
 @receiver(post_save, sender=FactoryOperator)
@@ -28,12 +30,14 @@ def create_operator_permissions(sender, instance, created, **kwargs):
             content_object=instance,
             crud_whouse=True,
             read_whouse=True,
-            crud_whouse_manager=False, # Operators usually don't manage managers
+            crud_whouse_manager=False,
             read_whouse_manager=True,
             crud_factory_operator=False,
             read_factory_operator=True,
             crud_driver=True,
             read_driver=True,
             crud_guard=True,
-            read_guard=True
+            read_guard=True,
+            crud_product_type=True,
+            read_product_type=True
         )

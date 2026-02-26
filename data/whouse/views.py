@@ -1,7 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
-from apps.whouse.models import Whouse
-from apps.whouse.serializers import WhouseGetSerializer, WhouseCreateUpdateSerializer
+from .models import Whouse
+from .serializers import WhouseGetSerializer, WhouseCreateUpdateSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 

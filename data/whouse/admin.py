@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.whouse.models import Whouse
+from data.whouse.models import Whouse
 # Register your models here.
 
 admin.site.register(Whouse)

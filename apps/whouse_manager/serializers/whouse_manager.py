@@ -4,7 +4,7 @@ from apps.whouse_manager.models import WhouseManager
 class WhouseManagerSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhouseManager
-        fields = ["id", "name", "phone_number", "password", "whouse"]
+        fields = ["id", "name", "phone_number", "password", "whouses"]
         extra_kwargs = {
             "password": {"write_only": True}
         }

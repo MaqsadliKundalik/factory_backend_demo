@@ -22,7 +22,7 @@ class LoginSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhouseManager
-        fields = ["id", "name", "phone_number", "whouse"]
+        fields = ["id", "name", "phone_number", "whouses"]
         ref_name = "WhouseManagerProfile"
 
 class LogoutSerializer(serializers.Serializer):
