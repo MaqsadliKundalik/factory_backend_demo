@@ -3,6 +3,8 @@ from django.core.validators import RegexValidator
 from utils.password import password_validator
 from apps.whouse_manager.models import WhouseManager
 from apps.factory_operator.models import FactoryOperator
+from apps.drivers.models import Driver
+from apps.guard.models import Guard
 
 class UnifiedLoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField(
@@ -25,6 +27,18 @@ class FactoryOperatorProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="operator", read_only=True)
     class Meta:
         model = FactoryOperator
+        fields = ["id", "name", "phone_number", "whouse", "role"]
+
+class DriverProfileSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(default="driver", read_only=True)
+    class Meta:
+        model = Driver
+        fields = ["id", "name", "phone_number", "whouse", "role"]
+
+class GuardProfileSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(default="guard", read_only=True)
+    class Meta:
+        model = Guard
         fields = ["id", "name", "phone_number", "whouse", "role"]
 
 class UnifiedLogoutSerializer(serializers.Serializer):

@@ -4,18 +4,11 @@ from django.contrib.auth.hashers import make_password, check_password
 from apps.common.models import BaseModel
 # Create your models here.
 
-class Driver(BaseModel):
-    CAR_TYPES = (
-        ('truck', 'Truck'),
-        ('van', 'Van'),
-        ('car', 'Car'),
-    )
+class Guard(BaseModel):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=25)
     password = models.CharField(max_length=128)
-    car_type = models.CharField(max_length=10, choices=CAR_TYPES)
-    car_number = models.CharField(max_length=15)
-
+    
     whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
 
     @property
@@ -23,9 +16,8 @@ class Driver(BaseModel):
         return True
 
     def new_session(self):
-        from apps.session.models import DriverSession
-        return DriverSession.for_driver(self)
-
+        from apps.session.models import GuardSession
+        return GuardSession.for_guard(self)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

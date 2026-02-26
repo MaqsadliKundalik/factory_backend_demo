@@ -90,3 +90,27 @@ class FactoryOperatorSession(models.Model):
         list_filter = ["operator"]
         search_fields = ["operator__name"]
         date_hierarchy = "created_at"
+
+class GuardSession(models.Model):
+    guard = models.ForeignKey(
+        "guard.Guard", on_delete=models.CASCADE, related_name="sessions"
+    )
+
+    @classmethod
+    def for_guard(cls, guard):
+        new_session = cls.objects.create(guard=guard)
+        return new_session
+
+    @property
+    def token(self):
+        refresh = RefreshToken()
+        refresh.payload["user_id"] = str(self.guard.id)
+        refresh.payload["role"] = "guard"
+        refresh.payload["session"] = str(self.id)
+        return refresh
+
+    class Admin(admin.ModelAdmin):
+        list_display = ["guard"]
+        list_filter = ["guard"]
+        search_fields = ["guard__name"]
+        date_hierarchy = "created_at"

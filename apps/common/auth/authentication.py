@@ -4,7 +4,8 @@ from django.utils.translation import gettext_lazy as _
 from apps.whouse_manager.models import WhouseManager
 from apps.factory_operator.models import FactoryOperator
 from apps.drivers.models import Driver
-from apps.session.models import WhouseManagerSession, FactoryOperatorSession, DriverSession
+from apps.guard.models import Guard
+from apps.session.models import WhouseManagerSession, FactoryOperatorSession, DriverSession, GuardSession
 
 class UnifiedJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
@@ -21,6 +22,8 @@ class UnifiedJWTAuthentication(JWTAuthentication):
             return self._authenticate_operator(user_id, session_id)
         elif role == "driver":
             return self._authenticate_driver(user_id, session_id)
+        elif role == "guard":
+            return self._authenticate_guard(user_id, session_id)
         else:
             raise AuthenticationFailed(_("Invalid user role"), code="role_invalid")
 
@@ -56,3 +59,14 @@ class UnifiedJWTAuthentication(JWTAuthentication):
             raise AuthenticationFailed(_("Session is invalid or expired"), code="session_invalid")
 
         return driver
+
+    def _authenticate_guard(self, user_id, session_id):
+        try:
+            guard = Guard.objects.get(id=user_id)
+        except Guard.DoesNotExist:
+            raise AuthenticationFailed(_("Guard not found"), code="user_not_found")
+            
+        if not GuardSession.objects.filter(id=session_id, guard=guard).exists():
+            raise AuthenticationFailed(_("Session is invalid or expired"), code="session_invalid")
+
+        return guard
