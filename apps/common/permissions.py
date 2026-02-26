@@ -1,35 +1,29 @@
 from rest_framework.permissions import BasePermission
-from apps.whouse_manager.models import WhouseManager
-from apps.factory_operator.models import FactoryOperator
-from apps.drivers.models import Driver
 
-class IsWhouseManager(BasePermission):
+class HasDynamicPermission(BasePermission):
+    def __init__(self, crud_perm=None, read_perm=None):
+        self.crud_perm = crud_perm
+        self.read_perm = read_perm
+
+    def __call__(self):
+        return self
+
     def has_permission(self, request, view):
-        return bool(request.user and isinstance(request.user, WhouseManager))
-
-class IsFactoryOperator(BasePermission):
-
-    def has_permission(self, request, view):
-        return bool(request.user and isinstance(request.user, FactoryOperator))
-
-class IsDriver(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and isinstance(request.user, Driver))
-    
-class IsManagerOrOperator(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and (isinstance(request.user, WhouseManager) or isinstance(request.user, FactoryOperator)))
-
-class IsOwnerManager(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if not bool(request.user and isinstance(request.user, WhouseManager)):
+        if not request.user or not request.user.is_authenticated:
             return False
-            
-        return request.user.whouse == obj.whouse
-
-class IsOwnerManagerOrOperator(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if not bool(request.user and (isinstance(request.user, WhouseManager) or isinstance(request.user, FactoryOperator))):
+        
+        if not hasattr(request.user, "has_perm"):
             return False
-            
-        return request.user.whouse == obj.whouse
+
+        # Determine if this is a read or write operation
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            perm_to_check = self.read_perm or self.crud_perm # Fallback to crud if read not specified
+        else:
+            perm_to_check = self.crud_perm
+
+        if not perm_to_check:
+            return True # If no permission specified, allow
+
+        return request.user.has_perm(perm_to_check)
+
+

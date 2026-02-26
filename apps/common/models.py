@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from uuid import uuid4 as _uuid4
 
 
@@ -29,7 +31,11 @@ class BaseModel(models.Model):
         self.save()
 
 class UserPermissions(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Link to any Actor (Manager, Operator, Driver, Guard)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    # object_id is CharField to support both UUID and Integer IDs from different models
+    object_id = models.CharField(max_length=255)
+    content_object = GenericForeignKey("content_type", "object_id")
     
     crud_whouse = models.BooleanField(default=False)
     crud_whouse_manager = models.BooleanField(default=False)

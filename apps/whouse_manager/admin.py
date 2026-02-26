@@ -1,5 +1,8 @@
+from apps.common.admin import UserPermissionsInline
 from django.contrib import admin
-from apps.whouse_manager.models import WhouseManager
+from .models import WhouseManager
 
-# Register your models here.
-admin.site.register(WhouseManager)
+@admin.register(WhouseManager)
+class WhouseManagerAdmin(admin.ModelAdmin):
+    list_display = ["name", "phone_number", "whouse"]
+    inlines = [UserPermissionsInline]

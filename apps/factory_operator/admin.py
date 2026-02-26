@@ -1,5 +1,8 @@
+from apps.common.admin import UserPermissionsInline
 from django.contrib import admin
-from apps.factory_operator.models import FactoryOperator
+from .models import FactoryOperator
 
-# Register your models here.
-admin.site.register(FactoryOperator)
+@admin.register(FactoryOperator)
+class FactoryOperatorAdmin(admin.ModelAdmin):
+    list_display = ["name", "phone_number", "whouse"]
+    inlines = [UserPermissionsInline]

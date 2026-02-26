@@ -1,5 +1,8 @@
+from apps.common.admin import UserPermissionsInline
 from django.contrib import admin
-from apps.drivers.models import Driver
+from .models import Driver
 
-# Register your models here.
-admin.site.register(Driver)
+@admin.register(Driver)
+class DriverAdmin(admin.ModelAdmin):
+    list_display = ["name", "phone_number", "car_type", "car_number", "whouse"]
+    inlines = [UserPermissionsInline]
