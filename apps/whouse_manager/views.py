@@ -7,11 +7,11 @@ from apps.common.permissions import HasDynamicPermission
 class WhouseManagerListCreateAPIView(ListCreateAPIView):
     queryset = WhouseManager.objects.all()
     serializer_class = WhouseManagerSerializer
-    authentication_classes = [UnifiedJWTAuthentication]
+    # authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_whouse_manager", read_perm="read_whouse_manager")]
 
 class WhouseManagerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = WhouseManager.objects.all()
     serializer_class = WhouseManagerSerializer
-    authentication_classes = [UnifiedJWTAuthentication]
+    # authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_whouse_manager", read_perm="read_whouse_manager")]
