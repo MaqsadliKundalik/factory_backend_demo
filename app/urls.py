@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from apps.drivers.urls import urlpatterns as driver_urls
 from data.whouse.urls import urlpatterns as whouse_urls
+from data.users.urls import urlpatterns as users_urls
 from apps.common.auth.urls import urlpatterns as auth_urls
 from apps.whouse_manager.urls import urlpatterns as whouse_manager_urls
 from apps.factory_operator.urls import urlpatterns as factory_operator_urls
@@ -50,6 +51,7 @@ urlpatterns = [
     path('guards/', include(guard_urls)),
     path('products/', include(products_urls)),
     path('transports/', include(transports_urls)),
+    path('users/', include(users_urls)),
 
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
