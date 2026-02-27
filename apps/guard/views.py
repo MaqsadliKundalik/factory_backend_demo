@@ -12,6 +12,9 @@ class GuardListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return Guard.objects.none()
+
         if hasattr(user, 'whouses'):
             return Guard.objects.filter(whouse__in=user.whouses.all())
         return Guard.objects.filter(whouse=user.whouse)
@@ -33,4 +36,9 @@ class GuardRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return Guard.objects.none()
+
+        if hasattr(user, 'whouses'):
+            return Guard.objects.filter(whouse__in=user.whouses.all())
         return Guard.objects.filter(whouse=user.whouse)

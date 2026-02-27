@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,14 +87,17 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("POSTGRES_DB", default="sender"),
-        "USER": config("POSTGRES_USER", default="postgres"),
-        "PASSWORD": config("POSTGRES_PASSWORD", default="message_sender"),
-        "HOST": config("POSTGRES_HOST", default="factory_db"),
-        "PORT": config("POSTGRES_PORT", default=5432),
-    }
+    "default": config(
+        "DATABASE_URL",
+        default="postgres://{}:{}@{}:{}/{}".format(
+            config("POSTGRES_USER", default="postgres"),
+            config("POSTGRES_PASSWORD", default="message_sender"),
+            config("POSTGRES_HOST", default="factory_db"),
+            config("POSTGRES_PORT", default=5432),
+            config("POSTGRES_DB", default="sender"),
+        ),
+        cast=dj_database_url.parse
+    )
 }
 
 

@@ -12,6 +12,9 @@ class DriverListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return Driver.objects.none()
+
         if hasattr(user, 'whouses'):
             return Driver.objects.filter(whouse__in=user.whouses.all())
         return Driver.objects.filter(whouse=user.whouse)
@@ -32,4 +35,9 @@ class DriverRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return Driver.objects.none()
+
+        if hasattr(user, 'whouses'):
+            return Driver.objects.filter(whouse__in=user.whouses.all())
         return Driver.objects.filter(whouse=user.whouse)

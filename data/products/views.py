@@ -13,6 +13,9 @@ class ProductTypeListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return ProductType.objects.none()
+
         if hasattr(user, 'whouses'):
             return ProductType.objects.filter(whouse__in=user.whouses.all())
         return ProductType.objects.filter(whouse=user.whouse)
@@ -35,5 +38,10 @@ class ProductTypeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return ProductType.objects.none()
+
+        if hasattr(user, 'whouses'):
+            return ProductType.objects.filter(whouse__in=user.whouses.all())
         return ProductType.objects.filter(whouse=user.whouse)
 
