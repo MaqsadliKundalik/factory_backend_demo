@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: factory-backend
+    env: docker
+    plan: free
+    region: frankfurt
+    dockerCommand: gunicorn app.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: PYTHON_VERSION
+        value: "3.13"
+      # Database connection should be added manually in Render dashboard or linked if using Render DB
+      # - key: POSTGRES_DB
+      #   fromDatabase:
+      #     name: factory-db
+      #     property: name

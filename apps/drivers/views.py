@@ -12,10 +12,18 @@ class DriverListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if hasattr(user, 'whouses'):
+            return Driver.objects.filter(whouse__in=user.whouses.all())
         return Driver.objects.filter(whouse=user.whouse)
         
     def perform_create(self, serializer):
-        serializer.save(whouse=self.request.user.whouse)
+        user = self.request.user
+        whouse_id = self.request.data.get('whouse')
+        if whouse_id:
+            serializer.save(whouse_id=whouse_id)
+        else:
+            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+            serializer.save(whouse=whouse)
 
 class DriverRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     authentication_classes = [UnifiedJWTAuthentication]

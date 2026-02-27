@@ -13,10 +13,19 @@ class ProductTypeListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if hasattr(user, 'whouses'):
+            return ProductType.objects.filter(whouse__in=user.whouses.all())
         return ProductType.objects.filter(whouse=user.whouse)
 
     def perform_create(self, serializer):
-        serializer.save(whouse=self.request.user.whouse)
+        user = self.request.user
+        whouse_id = self.request.data.get('whouse')
+        if whouse_id:
+            serializer.save(whouse_id=whouse_id)
+        else:
+            # Default to first whouse for managers, or the only whouse for others
+            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+            serializer.save(whouse=whouse)
 
 class ProductTypeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = ProductType.objects.all()
