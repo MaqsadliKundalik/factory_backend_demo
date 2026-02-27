@@ -10,7 +10,7 @@ class ProductTypeViewSet(ModelViewSet):
     queryset = ProductType.objects.all()
     serializer_class = ProductTypeSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product_type", read_perm="read_product_type")]
+    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
 
     def get_queryset(self):
         user = self.request.user
@@ -34,7 +34,7 @@ class ProductUnitViewSet(ModelViewSet):
     queryset = ProductUnit.objects.all()
     serializer_class = ProductUnitSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product_unit", read_perm="read_product_unit")]
+    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
 
     def get_queryset(self):
         user = self.request.user
