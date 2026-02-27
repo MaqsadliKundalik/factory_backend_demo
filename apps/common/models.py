@@ -43,6 +43,7 @@ class UserPermissions(BaseModel):
     crud_driver = models.BooleanField(default=False)
     crud_guard = models.BooleanField(default=False)
     crud_product_type = models.BooleanField(default=False)
+    crud_transport = models.BooleanField(default=False)
 
     read_whouse = models.BooleanField(default=False)
     read_whouse_manager = models.BooleanField(default=False)
@@ -50,5 +51,6 @@ class UserPermissions(BaseModel):
     read_driver = models.BooleanField(default=False)
     read_guard = models.BooleanField(default=False)
     read_product_type = models.BooleanField(default=False)
+    read_transport = models.BooleanField(default=False)
 
     
