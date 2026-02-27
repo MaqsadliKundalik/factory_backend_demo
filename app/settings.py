@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'apps.factory_operator.apps.FactoryOperatorConfig',
     'apps.guard.apps.GuardConfig',
     'data.transports.apps.TransportsConfig',
+    'data.users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
