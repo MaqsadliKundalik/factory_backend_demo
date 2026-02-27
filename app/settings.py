@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'apps.whouse_manager.apps.WhouseManagerConfig',
     'apps.factory_operator.apps.FactoryOperatorConfig',
     'apps.guard.apps.GuardConfig',
+    'data.transports.apps.TransportsConfig',
 ]
 
 MIDDLEWARE = [
