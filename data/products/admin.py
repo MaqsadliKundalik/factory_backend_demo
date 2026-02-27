@@ -1,9 +1,21 @@
 from django.contrib import admin
-from .models import ProductType
+from .models import ProductType, ProductUnit, Product
 
-# Register your models here.
 @admin.register(ProductType)
 class ProductTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'whouse')
     search_fields = ('name', 'whouse__name')
     list_filter = ('whouse',)
+
+@admin.register(ProductUnit)
+class ProductUnitAdmin(admin.ModelAdmin):
+    list_display = ('name', 'whouse')
+    search_fields = ('name', 'whouse__name')
+    list_filter = ('whouse',)
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'whouse')
+    search_fields = ('name', 'whouse__name')
+    list_filter = ('whouse',)
+    filter_horizontal = ('types',)
