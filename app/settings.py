@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
     'drf_yasg',
     'apps.common.apps.CommonConfig',
     'apps.drivers.apps.DriversConfig',
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -89,11 +91,22 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Use DATABASE_URL if available, otherwise construct from components
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    db_user = os.environ.get("POSTGRES_USER", "postgres")
-    db_pass = os.environ.get("POSTGRES_PASSWORD", "message_sender")
-    db_host = os.environ.get("POSTGRES_HOST", "factory_db")
+    db_user = os.environ.get("POSTGRES_USER")
+    db_pass = os.environ.get("POSTGRES_PASSWORD")
+    db_host = os.environ.get("POSTGRES_HOST")
     db_port = os.environ.get("POSTGRES_PORT", "5432")
-    db_name = os.environ.get("POSTGRES_DB", "sender")
+    db_name = os.environ.get("POSTGRES_DB")
+    
+    # If any the host is missing, we fall back to local defaults ONLY if DEBUG is True
+    if not db_host:
+        if DEBUG:
+            db_user = db_user or "sender_user"
+            db_pass = db_pass or "message_sender"
+            db_host = "factory_db"
+            db_name = db_name or "sender"
+        else:
+            raise ValueError("DATABASE_URL or POSTGRES_HOST must be set in production")
+    
     DATABASE_URL = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 
 DATABASES = {
@@ -140,6 +153,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.render.com,https://*.vercel.app').split(',')
+
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001'
+).split(',')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -1,7 +1,12 @@
-from django.urls import path
-from .views import ProductTypeListCreateAPIView, ProductTypeRetrieveUpdateDestroyAPIView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ProductTypeViewSet, ProductUnitViewSet, ProductViewSet
+
+router = DefaultRouter()
+router.register('types', ProductTypeViewSet, basename='product-type')
+router.register('units', ProductUnitViewSet, basename='product-unit')
+router.register('products', ProductViewSet, basename='product')
 
 urlpatterns = [
-    path('types/', ProductTypeListCreateAPIView.as_view(), name='product-type-list-create'),
-    path('types/<int:pk>/', ProductTypeRetrieveUpdateDestroyAPIView.as_view(), name='product-type-retrieve-update-destroy'),
+    path('', include(router.urls)),
 ]
