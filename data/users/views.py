@@ -20,7 +20,7 @@ class UnifiedUserListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        whouse_id = request.query_param.get('whouse')
+        whouse_id = request.query_params.get('whouse')
         
         # Aggregate querysets
         managers = WhouseManager.objects.all().order_by('-created_at')
