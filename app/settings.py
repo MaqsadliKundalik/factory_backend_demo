@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+import os
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-359pbm8gkkvm=dv*02#6&+y!&q+c(bpmjvzw6yntj93@k1-52e')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-359pbm8gkkvm=dv*02#6&+y!&q+c(bpmjvzw6yntj93@k1-52e')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -86,18 +86,18 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Use DATABASE_URL if available, otherwise construct from components
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    db_user = os.environ.get("POSTGRES_USER", "postgres")
+    db_pass = os.environ.get("POSTGRES_PASSWORD", "message_sender")
+    db_host = os.environ.get("POSTGRES_HOST", "factory_db")
+    db_port = os.environ.get("POSTGRES_PORT", "5432")
+    db_name = os.environ.get("POSTGRES_DB", "sender")
+    DATABASE_URL = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+
 DATABASES = {
-    "default": config(
-        "DATABASE_URL",
-        default="postgres://{}:{}@{}:{}/{}".format(
-            config("POSTGRES_USER", default="postgres"),
-            config("POSTGRES_PASSWORD", default="message_sender"),
-            config("POSTGRES_HOST", default="factory_db"),
-            config("POSTGRES_PORT", default=5432),
-            config("POSTGRES_DB", default="sender"),
-        ),
-        cast=dj_database_url.parse
-    )
+    "default": dj_database_url.parse(DATABASE_URL)
 }
 
 
@@ -139,7 +139,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://*.render.com', cast=lambda v: [s.strip() for s in v.split(',')])
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.render.com,https://*.vercel.app').split(',')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -1,0 +1,11 @@
+.git
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+db.sqlite3
+.idea/
+.vscode/
+venv/
+env/
+*.log
