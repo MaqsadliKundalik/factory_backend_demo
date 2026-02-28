@@ -13,6 +13,9 @@ from apps.common.auth.authentication import UnifiedJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UserListPagination(PageNumberPagination):
     page_size = 10
@@ -43,17 +46,22 @@ class UnifiedUserViewSet(ViewSet):
             reverse=True
         )
 
+    def _get_instance(self, pk):
+        for model in [WhouseManager, FactoryOperator, Driver, Guard]:
+            try:
+                instance = model.objects.filter(id=pk).first()
+                if instance:
+                    return instance
+            except Exception as e:
+                logger.error(f"Error finding user {pk} in {model.__name__}: {str(e)}")
+                continue
+        return None
+
     @swagger_auto_schema(
         operation_summary="List all users",
-        operation_description="Returns a paginated list of all users from all roles (Manager, Operator, Driver, Guard).",
+        operation_description="Returns a paginated list of all users from all roles.",
         manual_parameters=[
-            openapi.Parameter(
-                'whouse', 
-                openapi.IN_QUERY, 
-                description="Filter users by Warehouse ID", 
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_UUID
-            ),
+            openapi.Parameter('whouse', openapi.IN_QUERY, description="Filter by Warehouse ID", type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID),
         ],
         responses={200: UnifiedUserSerializer(many=True)}
     )
@@ -69,77 +77,80 @@ class UnifiedUserViewSet(ViewSet):
 
     @swagger_auto_schema(
         operation_summary="Create a new user",
-        operation_description="Create a new user and map it to the correct role model based on the 'role' field.",
         request_body=UnifiedUserSerializer,
         responses={201: UnifiedUserSerializer()}
     )
     def create(self, request):
         serializer = UnifiedUserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def _get_instance(self, pk):
-        # Try finding in each model
-        for model in [WhouseManager, FactoryOperator, Driver, Guard]:
-            instance = model.objects.filter(id=pk).first()
-            if instance:
-                return instance
-        return None
 
     @swagger_auto_schema(
         operation_summary="Retrieve a user",
-        operation_description="Retrieve details of a specific user by its ID.",
         responses={200: UnifiedUserSerializer()}
     )
     def retrieve(self, request, pk=None):
-        instance = self._get_instance(pk)
-        if not instance:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = UnifiedUserSerializer(instance)
-        return Response(serializer.data)
+        try:
+            instance = self._get_instance(pk)
+            if not instance:
+                return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+            serializer = UnifiedUserSerializer(instance)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.exception("Error in UnifiedUserViewSet.retrieve")
+            return Response({"detail": f"Serialization xatoligi: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @swagger_auto_schema(
         operation_summary="Update a user",
-        operation_description="Update details of a specific user. Note: Role cannot be changed via update.",
         request_body=UnifiedUserSerializer,
         responses={200: UnifiedUserSerializer()}
     )
     def update(self, request, pk=None):
-        instance = self._get_instance(pk)
-        if not instance:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = UnifiedUserSerializer(instance, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            instance = self._get_instance(pk)
+            if not instance:
+                return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+            serializer = UnifiedUserSerializer(instance, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Update xatoligi: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @swagger_auto_schema(
         operation_summary="Partial update a user",
-        operation_description="Partially update details of a specific user.",
         request_body=UnifiedUserSerializer,
         responses={200: UnifiedUserSerializer()}
     )
     def partial_update(self, request, pk=None):
-        instance = self._get_instance(pk)
-        if not instance:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = UnifiedUserSerializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            instance = self._get_instance(pk)
+            if not instance:
+                return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+            serializer = UnifiedUserSerializer(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Partial update xatoligi: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @swagger_auto_schema(
         operation_summary="Delete a user",
-        operation_description="Delete a specific user from the system.",
         responses={204: "Successfully deleted"}
     )
     def destroy(self, request, pk=None):
-        instance = self._get_instance(pk)
-        if not instance:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            instance = self._get_instance(pk)
+            if not instance:
+                return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"detail": f"O'chirishda xatolik: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

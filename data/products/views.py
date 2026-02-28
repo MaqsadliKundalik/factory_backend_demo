@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import SearchFilter
 from .models import ProductType, ProductUnit, Product
 from .serializers import ProductTypeSerializer, ProductUnitSerializer, ProductSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
@@ -66,9 +67,10 @@ class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
-    pagination_class = StandardResultsSetPagination
+    # pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Product.objects.none()
@@ -82,3 +84,6 @@ class ProductViewSet(ModelViewSet):
         whouse_id = self.request.data.get('whouse')
         # Warehouse handling is also in Serializer.create for Product
         serializer.save()
+
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
