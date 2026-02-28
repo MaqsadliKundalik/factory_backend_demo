@@ -23,11 +23,21 @@ class WhouseManagerProfileSerializer(serializers.ModelSerializer):
         model = WhouseManager
         fields = ["id", "name", "phone_number", "whouses", "role"]
 
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['whouses'] = [{'id': wh.id, 'name': wh.name} for wh in instance.whouses.all()]
+        return repr
+
 class FactoryOperatorProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="operator", read_only=True)
     class Meta:
         model = FactoryOperator
         fields = ["id", "name", "phone_number", "whouse", "role"]
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        return repr
 
 class DriverProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="driver", read_only=True)
@@ -35,11 +45,21 @@ class DriverProfileSerializer(serializers.ModelSerializer):
         model = Driver
         fields = ["id", "name", "phone_number", "whouse", "role"]
 
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        return repr
+
 class GuardProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="guard", read_only=True)
     class Meta:
         model = Guard
         fields = ["id", "name", "phone_number", "whouse", "role"]
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        return repr
 
 class UnifiedLogoutSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
