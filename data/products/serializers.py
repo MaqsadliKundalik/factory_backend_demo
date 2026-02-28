@@ -16,16 +16,15 @@ class ProductUnitSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 class ProductSerializer(serializers.ModelSerializer):
-    types = serializers.SlugRelatedField(
+    types = serializers.PrimaryKeyRelatedField(
         many=True,
-        slug_field='name',
         queryset=ProductType.objects.all(),
         required=False
     )
-    unit = serializers.SlugRelatedField(
-        slug_field='name',
+    unit = serializers.PrimaryKeyRelatedField(
         queryset=ProductUnit.objects.all(),
-        required=False
+        required=False,
+        allow_null=True
     )
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -42,74 +41,18 @@ class ProductSerializer(serializers.ModelSerializer):
         return repr
 
     def create(self, validated_data):
-        types_data = self.initial_data.get('types', [])
-        unit_data = self.initial_data.get('unit')
         user = self.context['request'].user
         
-        # Determine warehouse
         whouse = validated_data.get('whouse')
         if not whouse:
             whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
 
-        # Handle Unit
-        unit_obj = None
-        if unit_data:
-            if isinstance(unit_data, int) or (isinstance(unit_data, str) and '-' in unit_data):
-                unit_obj = ProductUnit.objects.filter(id=unit_data).first()
-            
-            if not unit_obj and isinstance(unit_data, str):
-                unit_obj, _ = ProductUnit.objects.get_or_create(name=unit_data, whouse=whouse)
-        
-        # Handle Types
-        type_objs = []
-        for t_data in types_data:
-            t_obj = None
-            if isinstance(t_data, int) or (isinstance(t_data, str) and '-' in t_data):
-                t_obj = ProductType.objects.filter(id=t_data).first()
-            
-            if not t_obj and isinstance(t_data, str):
-                t_obj, _ = ProductType.objects.get_or_create(name=t_data, whouse=whouse)
-            
-            if t_obj:
-                type_objs.append(t_obj)
-
-        validated_data['unit'] = unit_obj
         validated_data['whouse'] = whouse
         
-        validated_data.pop('types', []) 
+        types = validated_data.pop('types', [])
         product = Product.objects.create(**validated_data)
-        product.types.set(type_objs)
+        product.types.set(types)
         return product
 
     def update(self, instance, validated_data):
-        types_data = self.initial_data.get('types')
-        unit_data = self.initial_data.get('unit')
-        user = self.context['request'].user
-        whouse = instance.whouse
-
-        if unit_data is not None:
-            unit_obj = None
-            if isinstance(unit_data, int) or (isinstance(unit_data, str) and '-' in unit_data):
-                unit_obj = ProductUnit.objects.filter(id=unit_data).first()
-            
-            if not unit_obj and isinstance(unit_data, str):
-                unit_obj, _ = ProductUnit.objects.get_or_create(name=unit_data, whouse=whouse)
-            validated_data['unit'] = unit_obj
-
-        if types_data is not None:
-            type_objs = []
-            for t_data in types_data:
-                t_obj = None
-                if isinstance(t_data, int) or (isinstance(t_data, str) and '-' in t_data):
-                    t_obj = ProductType.objects.filter(id=t_data).first()
-                
-                if not t_obj and isinstance(t_data, str):
-                    t_obj, _ = ProductType.objects.get_or_create(name=t_data, whouse=whouse)
-                
-                if t_obj:
-                    type_objs.append(t_obj)
-            
-            instance.types.set(type_objs)
-            validated_data.pop('types', None)
-
         return super().update(instance, validated_data)
