@@ -67,7 +67,7 @@ class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
-    # pagination_class = StandardResultsSetPagination
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
 
