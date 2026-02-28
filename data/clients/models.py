@@ -1,6 +1,6 @@
 from django.db import models
 from apps.common.models import BaseModel
-from apps.whouse.models import Whouse
+from data.whouse.models import Whouse
     
 # Create your models here.
 class Client(BaseModel):

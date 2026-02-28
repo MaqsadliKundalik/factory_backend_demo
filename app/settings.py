@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'apps.guard.apps.GuardConfig',
     'data.transports.apps.TransportsConfig',
     'data.users.apps.UsersConfig',
+    'data.clients.apps.ClientsConfig',
 ]
 
 MIDDLEWARE = [

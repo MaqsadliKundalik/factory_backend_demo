@@ -1,6 +1,7 @@
-from django.urls import path
-from .views import UnifiedUserListView
+from rest_framework.routers import SimpleRouter
+from .views import UnifiedUserViewSet
 
-urlpatterns = [
-    path('', UnifiedUserListView.as_view(), name='unified-user-list'),
-]
+router = SimpleRouter()
+router.register('', UnifiedUserViewSet, basename='unified-user')
+
+urlpatterns = router.urls
