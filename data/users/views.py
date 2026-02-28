@@ -4,7 +4,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from itertools import chain
-from apps.drivers.models import Driver
 from apps.guard.models import Guard
 from apps.factory_operator.models import FactoryOperator
 from apps.whouse_manager.models import WhouseManager
@@ -31,23 +30,21 @@ class UnifiedUserViewSet(ViewSet):
     def _get_all_users_queryset(self, whouse_id=None):
         managers = WhouseManager.objects.all().order_by('-created_at')
         operators = FactoryOperator.objects.all().order_by('-created_at')
-        drivers = Driver.objects.all().order_by('-created_at')
         guards = Guard.objects.all().order_by('-created_at')
 
         if whouse_id:
             managers = managers.filter(whouses__id=whouse_id)
             operators = operators.filter(whouse__id=whouse_id)
-            drivers = drivers.filter(whouse__id=whouse_id)
             guards = guards.filter(whouse__id=whouse_id)
 
         return sorted(
-            chain(managers, operators, drivers, guards),
+            chain(managers, operators, guards),
             key=lambda x: x.created_at,
             reverse=True
         )
 
     def _get_instance(self, pk):
-        for model in [WhouseManager, FactoryOperator, Driver, Guard]:
+        for model in [WhouseManager, FactoryOperator, Guard]:
             try:
                 instance = model.objects.filter(id=pk).first()
                 if instance:

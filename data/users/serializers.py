@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from apps.drivers.models import Driver
 from apps.guard.models import Guard
 from apps.factory_operator.models import FactoryOperator
 from apps.whouse_manager.models import WhouseManager
@@ -14,14 +13,9 @@ class UnifiedUserSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=[
         ("manager", "Manager"),
         ("operator", "Operator"),
-        ("driver", "Driver"),
         ("guard", "Guard")
     ], write_only=True)
     
-    # Driver specific fields
-    car_type = serializers.CharField(max_length=10, required=False, allow_null=True)
-    car_number = serializers.CharField(max_length=15, required=False, allow_null=True)
-
     created_at = serializers.DateTimeField(read_only=True)
 
     def to_representation(self, instance):
@@ -31,15 +25,9 @@ class UnifiedUserSerializer(serializers.Serializer):
         role = "unknown"
         if isinstance(instance, WhouseManager): role = "manager"
         elif isinstance(instance, FactoryOperator): role = "operator"
-        elif isinstance(instance, Driver): role = "driver"
         elif isinstance(instance, Guard): role = "guard"
         
         repr['role_display'] = role
-        
-        # Clean up fields not applicable to the role
-        if role != "driver":
-            repr.pop('car_type', None)
-            repr.pop('car_number', None)
         
         # Handle whouses based on role
         if role == "manager":
@@ -62,18 +50,12 @@ class UnifiedUserSerializer(serializers.Serializer):
         password = validated_data.pop('password', None)
         whouse_id = validated_data.pop('whouse_id', None)
         whouse_ids = validated_data.pop('whouse_ids', [])
-        
-        # Extract driver fields if any
-        car_type = validated_data.pop('car_type', None)
-        car_number = validated_data.pop('car_number', None)
-        
+                
         user_model = None
         if role == "manager":
             user_model = WhouseManager
         elif role == "operator":
             user_model = FactoryOperator
-        elif role == "driver":
-            user_model = Driver
         elif role == "guard":
             user_model = Guard
             
@@ -88,11 +70,6 @@ class UnifiedUserSerializer(serializers.Serializer):
         if role != "manager" and whouse_id and 'whouse' in model_fields:
             instance.whouse_id = whouse_id
             
-        # Add driver specific fields if driver
-        if role == "driver":
-            if car_type: instance.car_type = car_type
-            if car_number: instance.car_number = car_number
-        
         instance.save()
         
         if role == "manager" and whouse_ids:
@@ -104,10 +81,6 @@ class UnifiedUserSerializer(serializers.Serializer):
         password = validated_data.pop('password', None)
         whouse_id = validated_data.pop('whouse_id', None)
         whouse_ids = validated_data.pop('whouse_ids', None)
-        
-        # Driver specific fields
-        car_type = validated_data.pop('car_type', None)
-        car_number = validated_data.pop('car_number', None)
         
         # Role cannot be changed via update
         validated_data.pop('role', None)
@@ -122,10 +95,6 @@ class UnifiedUserSerializer(serializers.Serializer):
             
         if not isinstance(instance, WhouseManager) and whouse_id and 'whouse' in model_fields:
             instance.whouse_id = whouse_id
-            
-        if isinstance(instance, Driver):
-            if car_type: instance.car_type = car_type
-            if car_number: instance.car_number = car_number
             
         instance.save()
         

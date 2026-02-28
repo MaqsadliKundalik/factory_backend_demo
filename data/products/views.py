@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
-from .models import ProductType, ProductUnit, Product
-from .serializers import ProductTypeSerializer, ProductUnitSerializer, ProductSerializer
+from .models import ProductType, ProductUnit, Product, WhouseProducts
+from .serializers import ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, WhouseProductsSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 
@@ -87,3 +87,29 @@ class ProductViewSet(ModelViewSet):
 
     filter_backends = [SearchFilter]
     search_fields = ['name']
+
+from django_filters.rest_framework import DjangoFilterBackend
+
+class WhouseProductsViewSet(ModelViewSet):
+    queryset = WhouseProducts.objects.all()
+    serializer_class = WhouseProductsSerializer
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
+    search_fields = ['product__name']
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return WhouseProducts.objects.none()
+
+        if hasattr(user, 'whouses'):
+            return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
+        return WhouseProducts.objects.filter(whouse=user.whouse)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+        serializer.save(whouse=whouse)
