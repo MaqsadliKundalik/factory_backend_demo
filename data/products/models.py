@@ -2,6 +2,9 @@ from django.db import models
 from data.whouse.models import Whouse
 from apps.common.models import BaseModel
 from data.filedatas.models import File
+from django.db.models.signals import post_save, m2m_changed
+from django.dispatch import receiver
+
 
 class ProductType(BaseModel):
     name = models.CharField(max_length=255)
@@ -48,3 +51,35 @@ class WhouseProducts(BaseModel):
     
     def __str__(self):
         return self.product.name
+
+class WhouseProductsHistory(BaseModel):
+    whouse_product = models.ForeignKey(WhouseProducts, on_delete=models.CASCADE, related_name='history', null=True, blank=True)
+    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    files = models.ManyToManyField(File, related_name='whouse_products_history')
+    status = models.CharField(max_length=20, choices=WhouseProducts.STATUSES, default='pending')
+    
+    def __str__(self):
+        return f"History of {self.product.name} at {self.created_at}"
+
+# Signals for history tracking
+
+@receiver(post_save, sender=WhouseProducts)
+def create_whouse_product_history(sender, instance, **kwargs):
+    history = WhouseProductsHistory.objects.create(
+        whouse_product=instance,
+        whouse=instance.whouse,
+        product=instance.product,
+        quantity=instance.quantity,
+        status=instance.status
+    )
+    if instance.pk:
+        history.files.set(instance.files.all())
+
+@receiver(m2m_changed, sender=WhouseProducts.files.through)
+def update_history_files(sender, instance, action, **kwargs):
+    if action in ["post_add", "post_remove", "post_clear"]:
+        latest_history = instance.history.first()
+        if latest_history:
+            latest_history.files.set(instance.files.all())

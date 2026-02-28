@@ -1,17 +1,42 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
-from .models import ProductType, ProductUnit, Product, WhouseProducts
-from .serializers import ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, WhouseProductsSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
+
+from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory
+from .serializers import (
+    ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, 
+    WhouseProductsSerializer, WhouseProductsHistorySerializer
+)
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100
+
+class WhouseProductsHistoryViewSet(ReadOnlyModelViewSet):
+    queryset = WhouseProductsHistory.objects.all()
+    serializer_class = WhouseProductsHistorySerializer
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['whouse_product', 'whouse', 'product', 'status']
+    search_fields = ['product__name']
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return WhouseProductsHistory.objects.none()
+
+        if hasattr(user, 'whouses'):
+            return WhouseProductsHistory.objects.filter(whouse__in=user.whouses.all())
+        return WhouseProductsHistory.objects.filter(whouse=user.whouse)
 
 
 class ProductTypeViewSet(ModelViewSet):
@@ -87,8 +112,6 @@ class ProductViewSet(ModelViewSet):
 
     filter_backends = [SearchFilter]
     search_fields = ['name']
-
-from django_filters.rest_framework import DjangoFilterBackend
 
 class WhouseProductsViewSet(ModelViewSet):
     queryset = WhouseProducts.objects.all()

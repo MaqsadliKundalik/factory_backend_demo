@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from data.filedatas.models import File
-from .models import ProductType, ProductUnit, Product, WhouseProducts
+from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -92,3 +92,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+
+class WhouseProductsHistorySerializer(serializers.ModelSerializer):
+    whouse = serializers.PrimaryKeyRelatedField(read_only=True)
+    product = serializers.PrimaryKeyRelatedField(read_only=True)
+    files = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+    whouse_product = serializers.PrimaryKeyRelatedField(read_only=True)
+    
+    class Meta:
+        model = WhouseProductsHistory  
+        fields = ['id', 'whouse_product', 'whouse', 'product', 'quantity', 'files', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
