@@ -11,5 +11,7 @@ class Client(BaseModel):
     longitude = models.CharField(max_length=255)
     whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE)
     
+    list_display = ["name", "inn_number", "phone_number", "whouse"]
+    
     def __str__(self):
         return self.name

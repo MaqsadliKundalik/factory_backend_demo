@@ -6,15 +6,15 @@ class ProductTypeSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = ProductType
-        fields = ['id', 'name', 'whouse', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'whouse']
+        read_only_fields = ['id']
 
 class ProductUnitSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = ProductUnit
-        fields = ['id', 'name', 'whouse', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'whouse']
+        read_only_fields = ['id']
 
 class WhouseProductsSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -23,8 +23,8 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = WhouseProducts  
-        fields = ['id', 'whouse', 'product', 'quantity', 'files', 'status', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'whouse', 'product', 'quantity', 'files', 'status']
+        read_only_fields = ['id']
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
@@ -66,8 +66,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'types', 'unit', 'whouse', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'types', 'unit', 'whouse']
+        read_only_fields = ['id']
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
@@ -102,5 +102,5 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = WhouseProductsHistory  
-        fields = ['id', 'whouse_product', 'whouse', 'product', 'quantity', 'files', 'status', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'whouse_product', 'whouse', 'product', 'quantity', 'files', 'status']
+        read_only_fields = ['id']

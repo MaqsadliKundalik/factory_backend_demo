@@ -15,6 +15,8 @@ class Guard(BaseModel):
     # Dynamic Permissions
     permissions = GenericRelation(UserPermissions)
 
+    list_display = ["name", "phone_number", "password", "whouse"]
+
     def has_perm(self, perm_name):
         perm_obj = self.permissions.first()
         if not perm_obj:
