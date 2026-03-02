@@ -22,7 +22,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
                 ('object_id', models.CharField(max_length=255)),
-                ('crud_whouse', models.BooleanField(default=False)),
                 ('crud_whouse_manager', models.BooleanField(default=False)),
                 ('crud_factory_operator', models.BooleanField(default=False)),
                 ('crud_driver', models.BooleanField(default=False)),

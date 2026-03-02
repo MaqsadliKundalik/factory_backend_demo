@@ -9,7 +9,6 @@ class UserPermissionsSerializer(serializers.ModelSerializer):
         model = UserPermissions
         fields = [
             "id", "content_type", "object_id", "content_type_name",
-            "crud_whouse", "read_whouse",
             "crud_whouse_manager", "read_whouse_manager",
             "crud_factory_operator", "read_factory_operator",
             "crud_driver", "read_driver",

@@ -9,7 +9,6 @@ def create_manager_permissions(sender, instance, created, **kwargs):
     if created:
         UserPermissions.objects.create(
             content_object=instance,
-            crud_whouse=True,
             read_whouse=True,
             crud_whouse_manager=True,
             read_whouse_manager=True,
@@ -28,7 +27,6 @@ def create_operator_permissions(sender, instance, created, **kwargs):
     if created:
         UserPermissions.objects.create(
             content_object=instance,
-            crud_whouse=True,
             read_whouse=True,
             crud_whouse_manager=False,
             read_whouse_manager=True,
