@@ -145,7 +145,7 @@ class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
 
 from rest_framework import mixins, viewsets
 
-class WhouseProductsActionViewSet(PermissionMetaMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
     authentication_classes = [UnifiedJWTAuthentication]

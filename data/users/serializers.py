@@ -17,6 +17,7 @@ class UnifiedUserSerializer(serializers.Serializer):
         ("guard", "Guard")
     ], write_only=True)
     
+    permissions = UserPermissionsSerializer(required=False, allow_null=True)
     created_at = serializers.DateTimeField(read_only=True)
 
     def to_representation(self, instance):
@@ -68,6 +69,8 @@ class UnifiedUserSerializer(serializers.Serializer):
         model_fields = [f.name for f in user_model._meta.fields]
         create_data = {k: v for k, v in validated_data.items() if k in model_fields}
         
+        permissions_data = validated_data.pop('permissions', None)
+        
         instance = user_model(**create_data)
         if password:
             instance.set_password(password)
@@ -80,6 +83,18 @@ class UnifiedUserSerializer(serializers.Serializer):
         if role == "manager" and whouse_ids:
             instance.whouses.set(whouse_ids)
             
+        # Handle permissions
+        if permissions_data:
+            from apps.common.models import UserPermissions
+            # Check if signal already created permissions
+            perm_obj = instance.permissions.first()
+            if perm_obj:
+                for attr, value in permissions_data.items():
+                    setattr(perm_obj, attr, value)
+                perm_obj.save()
+            else:
+                UserPermissions.objects.create(content_object=instance, **permissions_data)
+        
         return instance
 
     def update(self, instance, validated_data):
@@ -90,6 +105,8 @@ class UnifiedUserSerializer(serializers.Serializer):
         # Role cannot be changed via update
         validated_data.pop('role', None)
 
+        permissions_data = validated_data.pop('permissions', None)
+        
         model_fields = [f.name for f in instance.__class__._meta.fields]
         for attr, value in validated_data.items():
             if attr in model_fields:
@@ -105,5 +122,16 @@ class UnifiedUserSerializer(serializers.Serializer):
         
         if isinstance(instance, WhouseManager) and whouse_ids is not None:
             instance.whouses.set(whouse_ids)
+            
+        # Handle permissions
+        if permissions_data:
+            from apps.common.models import UserPermissions
+            perm_obj = instance.permissions.first()
+            if perm_obj:
+                for attr, value in permissions_data.items():
+                    setattr(perm_obj, attr, value)
+                perm_obj.save()
+            else:
+                UserPermissions.objects.create(content_object=instance, **permissions_data)
             
         return instance

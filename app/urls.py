@@ -45,7 +45,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     path('auth/', include(auth_urls)),
-    path('common/', include('apps.common.urls')),
+    # path('common/', include('apps.common.urls')),
 
     path('whouse-managers/', include(whouse_manager_urls)),
     path('factory-operators/', include(factory_operator_urls)),
