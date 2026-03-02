@@ -17,7 +17,7 @@ class UnifiedUserSerializer(serializers.Serializer):
         ("guard", "Guard")
     ], write_only=True)
     
-    permissions = UserPermissionsSerializer(required=False, allow_null=True)
+    permissions = UserPermissionsSerializer(required=False, allow_null=True, write_only=True)
     created_at = serializers.DateTimeField(read_only=True)
 
     def to_representation(self, instance):
