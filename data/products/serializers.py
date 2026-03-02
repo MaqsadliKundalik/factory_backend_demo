@@ -20,10 +20,10 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
-    
+    product_type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.all())
     class Meta:
         model = WhouseProducts  
-        fields = ['id', 'whouse', 'product', 'quantity', 'files', 'status']
+        fields = ['id', 'whouse', 'product', 'product_type', 'quantity', 'files', 'status']
         read_only_fields = ['id']
 
     def to_representation(self, instance):
@@ -33,6 +33,11 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
             repr['product_details'] = {
                 'id': instance.product.id,
                 'name': instance.product.name
+            }
+        if instance.product_type:
+            repr['product_type_details'] = {
+                'id': instance.product_type.id,
+                'name': instance.product_type.name
             }
         repr['file_details'] = [
             {'id': f.id, 'url': f.file.url if f.file else None} 

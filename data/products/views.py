@@ -31,7 +31,7 @@ class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['whouse_product', 'whouse', 'product', 'status']
+    filterset_fields = ['whouse_product', 'whouse', 'product', 'product_type', 'status']
     search_fields = ['product__name']
 
     def get_queryset(self):
