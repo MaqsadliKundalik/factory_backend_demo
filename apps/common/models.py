@@ -37,7 +37,6 @@ class UserPermissions(BaseModel):
     object_id = models.CharField(max_length=255)
     content_object = GenericForeignKey("content_type", "object_id")
     
-    crud_whouse = models.BooleanField(default=False)
     crud_whouse_manager = models.BooleanField(default=False)
     crud_factory_operator = models.BooleanField(default=False)
     crud_driver = models.BooleanField(default=False)

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'data.users.apps.UsersConfig',
     'data.clients.apps.ClientsConfig',
     'data.filedatas.apps.FiledatasConfig',
+    'data.notifications.apps.NotificationsConfig',
 ]
 
 MIDDLEWARE = [

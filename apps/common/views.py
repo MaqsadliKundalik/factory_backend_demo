@@ -4,7 +4,9 @@ from .serializers import UserPermissionsSerializer
 from .auth.authentication import UnifiedJWTAuthentication
 from .permissions import HasDynamicPermission
 
-class UserPermissionsViewSet(ModelViewSet):
+from .mixins import PermissionMetaMixin
+
+class UserPermissionsViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = UserPermissions.objects.all()
     serializer_class = UserPermissionsSerializer
     authentication_classes = [UnifiedJWTAuthentication]

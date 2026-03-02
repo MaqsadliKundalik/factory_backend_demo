@@ -4,6 +4,7 @@ from apps.common.models import BaseModel
 from data.filedatas.models import File
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
+from data.notifications.models import Notification
 
 
 class ProductType(BaseModel):
@@ -67,6 +68,15 @@ class WhouseProductsHistory(BaseModel):
 
 @receiver(post_save, sender=WhouseProducts)
 def create_whouse_product_history(sender, instance, **kwargs):
+    if instance.status == 'pending':
+        Notification.objects.create(
+            to_role='whouse_manager',
+            from_role='guard',
+            title='New product added',
+            message=f'New product {instance.product.name} added to whouse {instance.whouse.name}',
+        )
+
+
     history = WhouseProductsHistory.objects.create(
         whouse_product=instance,
         whouse=instance.whouse,

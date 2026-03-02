@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -7,6 +8,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
+from apps.common.mixins import PermissionMetaMixin
+from data.notifications.models import Notification
 
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory
 from .serializers import (
@@ -19,7 +22,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-class WhouseProductsHistoryViewSet(ReadOnlyModelViewSet):
+class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     queryset = WhouseProductsHistory.objects.all()
     serializer_class = WhouseProductsHistorySerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -39,7 +42,7 @@ class WhouseProductsHistoryViewSet(ReadOnlyModelViewSet):
         return WhouseProductsHistory.objects.filter(whouse=user.whouse)
 
 
-class ProductTypeViewSet(ModelViewSet):
+class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ProductType.objects.all()
     serializer_class = ProductTypeSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -63,7 +66,7 @@ class ProductTypeViewSet(ModelViewSet):
             whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
             serializer.save(whouse=whouse)
 
-class ProductUnitViewSet(ModelViewSet):
+class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ProductUnit.objects.all()
     serializer_class = ProductUnitSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -87,7 +90,7 @@ class ProductUnitViewSet(ModelViewSet):
             whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
             serializer.save(whouse=whouse)
 
-class ProductViewSet(ModelViewSet):
+class ProductViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -113,7 +116,7 @@ class ProductViewSet(ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['name']
 
-class WhouseProductsViewSet(ModelViewSet):
+class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -136,3 +139,55 @@ class WhouseProductsViewSet(ModelViewSet):
         user = self.request.user
         whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
         serializer.save(whouse=whouse)
+
+class ConfirmOrRejectWhouseProducts(PermissionMetaMixin, ModelViewSet):
+    queryset = WhouseProducts.objects.all()
+    serializer_class = WhouseProductsSerializer
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
+    search_fields = ['product__name']
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return WhouseProducts.objects.none()
+
+        if hasattr(user, 'whouses'):
+            return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
+        return WhouseProducts.objects.filter(whouse=user.whouse)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+        serializer.save(whouse=whouse)
+
+    @action(detail=True, methods=['post'])
+    def confirm(self, request, pk=None):
+        instance = self.get_object()
+        instance.status = 'confirmed'
+        instance.save()
+        
+        Notification.objects.create(
+            to_role='guard',
+            from_role='whouse_manager',
+            title='Product confirmed',
+            message=f'Product {instance.product.name} has been confirmed by manager',
+        )
+        return Response({'status': 'confirmed'})
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        instance = self.get_object()
+        instance.status = 'rejected'
+        instance.save()
+        
+        Notification.objects.create(
+            to_role='guard',
+            from_role='whouse_manager',
+            title='Product rejected',
+            message=f'Product {instance.product.name} has been rejected by manager',
+        )
+        return Response({'status': 'rejected'})

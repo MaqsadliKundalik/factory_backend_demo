@@ -3,8 +3,9 @@ from .models import Whouse
 from .serializers import WhouseGetSerializer, WhouseCreateUpdateSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
+from apps.common.mixins import PermissionMetaMixin
 
-class WhouseViewSet(ModelViewSet):
+class WhouseViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Whouse.objects.all()
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_whouse", read_perm="read_whouse")]

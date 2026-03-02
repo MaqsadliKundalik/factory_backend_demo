@@ -3,6 +3,7 @@ from .models import Transport
 from .serializers import TransportSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
+from apps.common.mixins import PermissionMetaMixin
 from rest_framework.pagination import PageNumberPagination
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -10,7 +11,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-class TransportViewSet(ModelViewSet):
+class TransportViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Transport.objects.all()
     serializer_class = TransportSerializer
     authentication_classes = [UnifiedJWTAuthentication]

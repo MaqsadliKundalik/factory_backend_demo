@@ -25,6 +25,7 @@ from apps.factory_operator.urls import urlpatterns as factory_operator_urls
 from apps.guard.urls import urlpatterns as guard_urls
 from data.products.urls import urlpatterns as products_urls
 from data.transports.urls import urlpatterns as transports_urls
+from data.notifications.urls import urlpatterns as notifications_urls
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
@@ -55,6 +56,7 @@ urlpatterns = [
     path('products/', include(products_urls)),
     path('transports/', include(transports_urls)),
     path('users/', include(users_urls)),
+    path('notifications/', include(notifications_urls)),
 
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]

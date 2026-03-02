@@ -10,6 +10,7 @@ from apps.whouse_manager.models import WhouseManager
 from .serializers import UnifiedUserSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
+from apps.common.mixins import PermissionMetaMixin
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import logging
@@ -21,7 +22,7 @@ class UserListPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-class UnifiedUserViewSet(ViewSet):
+class UnifiedUserViewSet(PermissionMetaMixin, ViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [IsAuthenticated]
     pagination_class = UserListPagination
