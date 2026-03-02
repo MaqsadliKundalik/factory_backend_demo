@@ -1,5 +1,7 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.decorators import action
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -111,6 +113,7 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
         user = self.request.user
         whouse_id = self.request.data.get('whouse')
         # Warehouse handling is also in Serializer.create for Product
+
         serializer.save()
 
     filter_backends = [SearchFilter]
@@ -140,7 +143,9 @@ class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
         whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
         serializer.save(whouse=whouse)
 
-class RejectWhouseProducts(PermissionMetaMixin, ModelViewSet):
+from rest_framework import mixins, viewsets
+
+class WhouseProductsActionViewSet(PermissionMetaMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -158,50 +163,6 @@ class RejectWhouseProducts(PermissionMetaMixin, ModelViewSet):
         if hasattr(user, 'whouses'):
             return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
         return WhouseProducts.objects.filter(whouse=user.whouse)
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
-        serializer.save(whouse=whouse)
-
-    @action(detail=True, methods=['post'])
-    def reject(self, request, pk=None):
-        instance = self.get_object()
-        instance.status = 'rejected'
-        instance.save()
-        
-        Notification.objects.create(
-            to_role='guard',
-            from_role='whouse_manager',
-            title='Product rejected',
-            message=f'Product {instance.product.name} has been rejected by manager',
-        )
-        return Response({'status': 'rejected'})
-
-
-class ConfirmWhouseProducts(PermissionMetaMixin, ModelViewSet):
-    queryset = WhouseProducts.objects.all()
-    serializer_class = WhouseProductsSerializer
-    authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
-    search_fields = ['product__name']
-
-    def get_queryset(self):
-        user = self.request.user
-        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
-            return WhouseProducts.objects.none()
-
-        if hasattr(user, 'whouses'):
-            return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
-        return WhouseProducts.objects.filter(whouse=user.whouse)
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
-        serializer.save(whouse=whouse)
 
     @action(detail=True, methods=['post'])
     def confirm(self, request, pk=None):
@@ -216,3 +177,17 @@ class ConfirmWhouseProducts(PermissionMetaMixin, ModelViewSet):
             message=f'Product {instance.product.name} has been confirmed by manager',
         )
         return Response({'status': 'confirmed'})
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        instance = self.get_object()
+        instance.status = 'rejected'
+        instance.save()
+        
+        Notification.objects.create(
+            to_role='guard',
+            from_role='whouse_manager',
+            title='Product rejected',
+            message=f'Product {instance.product.name} has been rejected by manager',
+        )
+        return Response({'status': 'rejected'})

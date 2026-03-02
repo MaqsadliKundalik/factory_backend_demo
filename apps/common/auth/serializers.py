@@ -5,6 +5,7 @@ from apps.whouse_manager.models import WhouseManager
 from apps.factory_operator.models import FactoryOperator
 from apps.drivers.models import Driver
 from apps.guard.models import Guard
+from apps.common.serializers import UserPermissionsSerializer
 
 class UnifiedLoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField(
@@ -21,44 +22,54 @@ class WhouseManagerProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="manager", read_only=True)
     class Meta:
         model = WhouseManager
-        fields = ["id", "name", "phone_number", "whouses", "role"]
+        fields = ["id", "name", "phone_number", "whouses", "role", "permissions"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         repr['whouses'] = [{'id': wh.id, 'name': wh.name} for wh in instance.whouses.all()]
+        perm_obj = instance.permissions.first()
+        repr['permissions'] = UserPermissionsSerializer(perm_obj).data if perm_obj else None
         return repr
 
 class FactoryOperatorProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="operator", read_only=True)
     class Meta:
         model = FactoryOperator
-        fields = ["id", "name", "phone_number", "whouse", "role"]
+        fields = ["id", "name", "phone_number", "whouse", "role", "permissions"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        perm_obj = instance.permissions.first()
+        repr['permissions'] = UserPermissionsSerializer(perm_obj).data if perm_obj else None
         return repr
 
 class DriverProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="driver", read_only=True)
     class Meta:
         model = Driver
-        fields = ["id", "name", "phone_number", "whouse", "role"]
+        fields = ["id", "name", "phone_number", "whouse", "role", "permissions"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        if instance.whouse:
+            repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        perm_obj = instance.permissions.first()
+        repr['permissions'] = UserPermissionsSerializer(perm_obj).data if perm_obj else None
         return repr
 
 class GuardProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="guard", read_only=True)
     class Meta:
         model = Guard
-        fields = ["id", "name", "phone_number", "whouse", "role"]
+        fields = ["id", "name", "phone_number", "whouse", "role", "permissions"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        if instance.whouse:
+            repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        perm_obj = instance.permissions.first()
+        repr['permissions'] = UserPermissionsSerializer(perm_obj).data if perm_obj else None
         return repr
 
 class UnifiedLogoutSerializer(serializers.Serializer):

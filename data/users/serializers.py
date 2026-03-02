@@ -3,6 +3,7 @@ from apps.guard.models import Guard
 from apps.factory_operator.models import FactoryOperator
 from apps.whouse_manager.models import WhouseManager
 from data.whouse.models import Whouse
+from apps.common.serializers import UserPermissionsSerializer
 import re
 
 class UnifiedUserSerializer(serializers.Serializer):
@@ -36,6 +37,10 @@ class UnifiedUserSerializer(serializers.Serializer):
             repr['whouses'] = [str(instance.whouse.id)]
         else:
             repr['whouses'] = []
+            
+        # Handle permissions
+        perm_obj = instance.permissions.first()
+        repr['permissions'] = UserPermissionsSerializer(perm_obj).data if perm_obj else None
             
         return repr
 
