@@ -140,7 +140,46 @@ class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
         whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
         serializer.save(whouse=whouse)
 
-class ConfirmOrRejectWhouseProducts(PermissionMetaMixin, ModelViewSet):
+class RejectWhouseProducts(PermissionMetaMixin, ModelViewSet):
+    queryset = WhouseProducts.objects.all()
+    serializer_class = WhouseProductsSerializer
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
+    search_fields = ['product__name']
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return WhouseProducts.objects.none()
+
+        if hasattr(user, 'whouses'):
+            return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
+        return WhouseProducts.objects.filter(whouse=user.whouse)
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+        serializer.save(whouse=whouse)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        instance = self.get_object()
+        instance.status = 'rejected'
+        instance.save()
+        
+        Notification.objects.create(
+            to_role='guard',
+            from_role='whouse_manager',
+            title='Product rejected',
+            message=f'Product {instance.product.name} has been rejected by manager',
+        )
+        return Response({'status': 'rejected'})
+
+
+class ConfirmWhouseProducts(PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -177,17 +216,3 @@ class ConfirmOrRejectWhouseProducts(PermissionMetaMixin, ModelViewSet):
             message=f'Product {instance.product.name} has been confirmed by manager',
         )
         return Response({'status': 'confirmed'})
-
-    @action(detail=True, methods=['post'])
-    def reject(self, request, pk=None):
-        instance = self.get_object()
-        instance.status = 'rejected'
-        instance.save()
-        
-        Notification.objects.create(
-            to_role='guard',
-            from_role='whouse_manager',
-            title='Product rejected',
-            message=f'Product {instance.product.name} has been rejected by manager',
-        )
-        return Response({'status': 'rejected'})
