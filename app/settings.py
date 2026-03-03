@@ -113,6 +113,9 @@ if not DATABASE_URL:
             raise ValueError("DATABASE_URL or POSTGRES_HOST must be set in production")
     
     DATABASE_URL = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+else:
+    # If DATABASE_URL is already provided, we don't need to do anything
+    pass
 
 DATABASES = {
     "default": dj_database_url.parse(DATABASE_URL)
