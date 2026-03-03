@@ -17,7 +17,7 @@ class TransportViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Transport.objects.all()
     serializer_class = TransportSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_transport", read_perm="read_transport")]
+    permission_classes = [HasDynamicPermission(crud_perm="transports_page", read_perm="transports_page")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['whouse', "created_at", "updated_at"]

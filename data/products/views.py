@@ -30,7 +30,7 @@ class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     queryset = WhouseProductsHistory.objects.all()
     serializer_class = WhouseProductsHistorySerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    permission_classes = [HasDynamicPermission(crud_perm="products_page", read_perm="products_page")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['whouse_product', 'whouse', 'product', 'product_type', 'status']
@@ -49,7 +49,7 @@ class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ProductType.objects.all()
     serializer_class = ProductTypeSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    permission_classes = [HasDynamicPermission(crud_perm="products_page", read_perm="products_page")]
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['whouse']
     search_fields = ['name']
@@ -75,7 +75,7 @@ class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ProductUnit.objects.all()
     serializer_class = ProductUnitSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    permission_classes = [HasDynamicPermission(crud_perm="products_page", read_perm="products_page")]
 
     def get_queryset(self):
         user = self.request.user
@@ -98,7 +98,7 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    permission_classes = [HasDynamicPermission(crud_perm="products_page", read_perm="products_page")]
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
@@ -120,7 +120,7 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['name']
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], pagination_class=None)
     def select(self, request):
         user = self.request.user
         if not user.is_authenticated:
@@ -141,7 +141,7 @@ class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    permission_classes = [HasDynamicPermission(crud_perm="products_page", read_perm="products_page")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
@@ -166,7 +166,7 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    permission_classes = [HasDynamicPermission(crud_perm="products_page", read_perm="products_page")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
