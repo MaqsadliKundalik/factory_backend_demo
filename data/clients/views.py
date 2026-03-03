@@ -3,6 +3,7 @@ from .models import Client
 from .serializers import ClientSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
+from apps.common.filters import BaseDateFilterSet
 from apps.common.mixins import PermissionMetaMixin
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,6 +14,11 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+class ClientFilter(BaseDateFilterSet):
+    class Meta:
+        model = Client
+        fields = ['whouse', 'created_at', 'updated_at', 'start_date', 'end_date']
+
 class ClientViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
@@ -20,7 +26,7 @@ class ClientViewSet(PermissionMetaMixin, ModelViewSet):
     permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['whouse', "created_at", "updated_at"]
+    filterset_class = ClientFilter
     search_fields = ['name', 'phone_number']
     ordering_fields = ['created_at', 'updated_at']
 

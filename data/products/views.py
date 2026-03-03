@@ -27,6 +27,16 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+class WhouseProductsFilter(BaseDateFilterSet):
+    class Meta:
+        model = WhouseProducts
+        fields = ['whouse', 'product', 'status', 'created_at', 'updated_at', 'start_date', 'end_date']
+
+class WhouseProductsHistoryFilter(BaseDateFilterSet):
+    class Meta:
+        model = WhouseProductsHistory
+        fields = ['whouse_product', 'whouse', 'product', 'status', 'start_date', 'end_date']
+
 class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     queryset = WhouseProductsHistory.objects.all()
     serializer_class = WhouseProductsHistorySerializer
@@ -34,7 +44,7 @@ class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['whouse_product', 'whouse', 'product', 'product_type', 'status']
+    filterset_class = WhouseProductsHistoryFilter
     search_fields = ['product__name']
 
     def get_queryset(self):
@@ -148,8 +158,7 @@ class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
+    filterset_class = WhouseProductsFilter
     search_fields = ['product__name']
 
     def get_queryset(self):
@@ -173,8 +182,7 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
+    filterset_class = WhouseProductsFilter
     search_fields = ['product__name']
 
     def get_queryset(self):
