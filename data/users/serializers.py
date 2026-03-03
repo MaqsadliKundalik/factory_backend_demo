@@ -4,12 +4,11 @@ from data.users.models import FactoryUser
 import re
 
 class FactoryUserSerializer(serializers.ModelSerializer):
-    role_display = serializers.CharField(source='role', read_only=True)
     
     class Meta:
         model = FactoryUser
         fields = [
-            'id', 'name', 'phone_number', 'password', 'role', 'role_display',
+            'id', 'name', 'phone_number', 'password', 'role',
             'crud_whouse_manager', 'crud_factory_operator', 'crud_driver', 
             'crud_guard', 'crud_product', 'crud_transport', 'crud_client', 
             'read_whouse', 'read_whouse_manager', 'read_factory_operator', 
