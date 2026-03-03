@@ -25,7 +25,7 @@ class Command(BaseCommand):
                 password=password,
                 name=name,
                 role='manager',
-                whouse=whouse,
+                # whouses cannot be passed to create_superuser directly (M2M)
                 is_active=True,
                 # Set all permissions to True for superuser
                 crud_whouse_manager=True,
@@ -44,12 +44,13 @@ class Command(BaseCommand):
                 read_transport=True,
                 read_client=True
             )
+            user.whouses.add(whouse)
             self.stdout.write(self.style.SUCCESS(f'Successfully created FactoryUser (Superuser): {phone}'))
         else:
             user.set_password(password)
             user.is_superuser = True
             user.is_staff = True
             user.role = 'manager'
-            user.whouse = whouse
+            user.whouses.add(whouse)
             user.save()
             self.stdout.write(self.style.SUCCESS(f'Successfully updated FactoryUser (Superuser): {phone}'))

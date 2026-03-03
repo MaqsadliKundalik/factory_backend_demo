@@ -1,1 +1,0 @@
-from .whouse_manager import WhouseManagerSerializer

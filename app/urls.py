@@ -20,9 +20,6 @@ from apps.drivers.urls import urlpatterns as driver_urls
 from data.whouse.urls import urlpatterns as whouse_urls
 from data.users.urls import urlpatterns as users_urls
 from apps.common.auth.urls import urlpatterns as auth_urls
-from apps.whouse_manager.urls import urlpatterns as whouse_manager_urls
-from apps.factory_operator.urls import urlpatterns as factory_operator_urls
-from apps.guard.urls import urlpatterns as guard_urls
 from data.products.urls import urlpatterns as products_urls
 from data.transports.urls import urlpatterns as transports_urls
 from data.notifications.urls import urlpatterns as notifications_urls
@@ -51,12 +48,12 @@ urlpatterns = [
     path('auth/', include(auth_urls)),
     # path('common/', include('apps.common.urls')),
 
-    path('whouse-managers/', include(whouse_manager_urls)),
-    path('factory-operators/', include(factory_operator_urls)),
+    # path('whouse-managers/', include(whouse_manager_urls)),
+    # path('factory-operators/', include(factory_operator_urls)),
     path('whouse/', include(whouse_urls)),
 
     path('drivers/', include(driver_urls)),
-    path('guards/', include(guard_urls)),
+    # path('guards/', include(guard_urls)),
     path('products/', include(products_urls)),
     path('transports/', include(transports_urls)),
     path('users/', include(users_urls)),
