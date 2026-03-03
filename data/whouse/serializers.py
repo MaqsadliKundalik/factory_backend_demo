@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Whouse
 from data.users.models import FactoryUser
+from apps.drivers.models import Driver
 from apps.drivers.serializers import DriverSerializer
 from data.users.serializers import FactoryUserSerializer
 
