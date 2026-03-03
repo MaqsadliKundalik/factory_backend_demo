@@ -2,7 +2,7 @@
 
 # Apply database migrations
 echo "Applying database migrations..."
-python manage.py migrate --noinput
+python manage.py migrate --noinput --fake-initial
 
 # Create superuser if it doesn't exist
 echo "Setting up admin user..."
