@@ -4,7 +4,7 @@ from django.urls import path, include
 from .views import (
     ProductTypeViewSet, ProductUnitViewSet, ProductViewSet, 
     WhouseProductsViewSet, WhouseProductsHistoryViewSet, 
-    WhouseProductsActionViewSet, SelectProductListView
+    WhouseProductsActionViewSet
 )
 
 router = DefaultRouter()
@@ -16,6 +16,5 @@ router.register('actions', WhouseProductsActionViewSet, basename='whouse-product
 router.register('', ProductViewSet, basename='products')
 
 urlpatterns = [
-    path('select/', SelectProductListView.as_view(), name='select-product'),
     path('', include(router.urls)),
 ]

@@ -19,22 +19,7 @@ from .serializers import (
     WhouseProductsSerializer, WhouseProductsHistorySerializer,  SelectProductSerializer
 )
 
-class SelectProductListView(ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = SelectProductSerializer
-    authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['whouse']
-    search_fields = ['name']
 
-    def get_queryset(self):
-        user = self.request.user
-        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
-            return Product.objects.none()
-
-        whouses = user.whouses.all()
-        return Product.objects.filter(whouse__in=whouses)
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -134,6 +119,23 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
 
     filter_backends = [SearchFilter]
     search_fields = ['name']
+
+    @action(detail=False, methods=['get'])
+    def select(self, request):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"}, status=401)
+        
+        whouses = user.whouses.all()
+        queryset = Product.objects.filter(whouse__in=whouses)
+        
+        # Apply search if provided
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+            
+        serializer = SelectProductSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
