@@ -120,7 +120,7 @@ class ProductItemViewSet(PermissionMetaMixin, ModelViewSet):
     pagination_class = StandardResultsSetPagination
     filterset_class = ProductItemFilter
     search_fields = ['name']
-    
+
 class ProductViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -167,28 +167,6 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
             
         data = queryset.values('id', 'name')
         return Response(list(data))
-
-    @swagger_auto_schema(
-        operation_summary="Get options for creating product items (types, units, products)",
-        responses={200: "Object with types, units, and products lists"}
-    )
-    @action(detail=False, methods=['get'], pagination_class=None)
-    def item_options(self, request):
-        user = self.request.user
-        if not user.is_authenticated:
-            return Response({"detail": "Not authenticated"}, status=401)
-        
-        whouses = user.whouses.all()
-        types = ProductType.objects.filter(whouse__in=whouses)
-        units = ProductUnit.objects.filter(whouse__in=whouses)
-        products = Product.objects.filter(whouse__in=whouses)
-        
-        return Response({
-            "types": ProductTypeSerializer(types, many=True).data,
-            "units": ProductUnitSerializer(units, many=True).data,
-            "products": SelectProductSerializer(products, many=True).data
-        })
-
 class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
