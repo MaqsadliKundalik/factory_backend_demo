@@ -28,7 +28,12 @@ class Product(BaseModel):
 
     def __str__(self):
         return self.name
-
+class ProductItem(BaseModel):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='items')
+    type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='items')
+    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='items')
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
 class WhouseProducts(BaseModel):
     """
     PENDING - qorovul qoshsa tushadigan status
@@ -93,3 +98,4 @@ def update_history_files(sender, instance, action, **kwargs):
         latest_history = instance.history.first()
         if latest_history:
             latest_history.files.set(instance.files.all())
+

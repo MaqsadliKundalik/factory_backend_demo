@@ -1,6 +1,14 @@
 from rest_framework import serializers
 from data.filedatas.models import File
-from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory
+from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
+
+class ProductItemSerializer(serializers.ModelSerializer):
+    type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.all())
+    unit = serializers.PrimaryKeyRelatedField(queryset=ProductUnit.objects.all())
+    class Meta:
+        model = ProductItem
+        fields = ['id', 'type', 'unit', 'quantity']
+        read_only_fields = ['id']
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -39,6 +47,11 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
                 'id': instance.product_type.id,
                 'name': instance.product_type.name
             }
+        if instance.items:
+            repr['items_details'] = [
+                {'id': i.id, 'name': i.name, 'quantity': i.quantity, 'unit': i.unit, 'type': i.type} 
+                for i in instance.items.all()
+            ]
         repr['file_details'] = [
             {'id': f.id, 'url': f.file.url if f.file else None} 
             for f in instance.files.all()
@@ -72,11 +85,12 @@ class ProductSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+    items = ProductItemSerializer(many=True, required=False, allow_null=True, allow_empty=True)
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'types', 'unit', 'whouse']
+        fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']
         read_only_fields = ['id']
 
     def to_representation(self, instance):
@@ -84,24 +98,47 @@ class ProductSerializer(serializers.ModelSerializer):
         repr['types'] = [{'id': t.id, 'name': t.name} for t in instance.types.all()]
         if instance.unit:
             repr['unit'] = {'id': instance.unit.id, 'name': instance.unit.name}
+        # Nested items representation is handled by the 'items' field defined above
         return repr
 
     def create(self, validated_data):
         user = self.context['request'].user
+        items_data = validated_data.pop('items', [])
+        types = validated_data.pop('types', [])
         
+        # Determine warehouse
         whouse = validated_data.get('whouse')
         if not whouse:
             whouse = user.whouses.first()
-
         validated_data['whouse'] = whouse
-        
-        types = validated_data.pop('types', [])
+
         product = Product.objects.create(**validated_data)
         product.types.set(types)
+
+        # Create nested items
+        for item_data in items_data:
+            ProductItem.objects.create(product=product, **item_data)
+        
         return product
 
     def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        items_data = validated_data.pop('items', None)
+        types = validated_data.pop('types', None)
+
+        # Update basic fields
+        instance = super().update(instance, validated_data)
+
+        if types is not None:
+            instance.types.set(types)
+
+        if items_data is not None:
+            # Simple atomic replacement for items: 
+            # delete old ones and create new ones to handle removals easily
+            instance.items.all().delete()
+            for item_data in items_data:
+                ProductItem.objects.create(product=instance, **item_data)
+
+        return instance
 
 
 class WhouseProductsHistorySerializer(serializers.ModelSerializer):
@@ -114,3 +151,5 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
         model = WhouseProductsHistory  
         fields = ['id', 'whouse_product', 'whouse', 'product', 'quantity', 'files', 'status']
         read_only_fields = ['id']
+
+

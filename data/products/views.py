@@ -15,10 +15,10 @@ from apps.common.mixins import PermissionMetaMixin
 from data.notifications.models import Notification
 from drf_yasg.utils import swagger_auto_schema
 
-from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory
+from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 from .serializers import (
     ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, 
-    WhouseProductsSerializer, WhouseProductsHistorySerializer,  SelectProductSerializer
+    WhouseProductsSerializer, WhouseProductsHistorySerializer,  SelectProductSerializer, ProductItemSerializer
 )
 
 
@@ -38,6 +38,11 @@ class WhouseProductsHistoryFilter(BaseDateFilterSet):
         model = WhouseProductsHistory
         fields = ['whouse_product', 'whouse', 'product', 'status', 'start_date', 'end_date']
 
+class ProductItemFilter(BaseDateFilterSet):
+    class Meta:
+        model = ProductItem
+        fields = ['product', 'type', 'unit']
+
 class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     queryset = WhouseProductsHistory.objects.all()
     serializer_class = WhouseProductsHistorySerializer
@@ -55,6 +60,7 @@ class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
 
         whouses = user.whouses.all()
         return WhouseProductsHistory.objects.filter(whouse__in=whouses)
+
 
 
 class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
@@ -152,6 +158,27 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
             
         data = queryset.values('id', 'name')
         return Response(list(data))
+
+    @swagger_auto_schema(
+        operation_summary="Get options for creating product items (types, units, products)",
+        responses={200: "Object with types, units, and products lists"}
+    )
+    @action(detail=False, methods=['get'], pagination_class=None)
+    def item_options(self, request):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"}, status=401)
+        
+        whouses = user.whouses.all()
+        types = ProductType.objects.filter(whouse__in=whouses)
+        units = ProductUnit.objects.filter(whouse__in=whouses)
+        products = Product.objects.filter(whouse__in=whouses)
+        
+        return Response({
+            "types": ProductTypeSerializer(types, many=True).data,
+            "units": ProductUnitSerializer(units, many=True).data,
+            "products": SelectProductSerializer(products, many=True).data
+        })
 
 class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
