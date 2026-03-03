@@ -48,7 +48,7 @@ class FactoryUserViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = UserListPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['whouse', "created_at", "updated_at"]
+    filterset_fields = ['whouses', "created_at", "updated_at"]
     search_fields = ['name', 'phone_number']
     ordering_fields = ['created_at', 'updated_at']
 
