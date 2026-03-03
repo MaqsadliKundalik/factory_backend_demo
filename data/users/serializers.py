@@ -13,7 +13,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
             'crud_guard', 'crud_product', 'crud_transport', 'crud_client', 
             'read_whouse', 'read_whouse_manager', 'read_factory_operator', 
             'read_driver', 'read_guard', 'read_product', 'read_transport', 
-            'read_client', 'whouse'
+            'read_client', 'whouses'
         ]
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}

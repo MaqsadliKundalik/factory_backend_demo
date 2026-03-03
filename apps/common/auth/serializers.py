@@ -19,12 +19,11 @@ class FactoryUserProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="user", read_only=True)
     class Meta:
         model = FactoryUser
-        fields = ["id", "name", "phone_number", "role", "whouse", "crud_whouse_manager", "crud_factory_operator", "crud_driver", "crud_guard", "crud_product", "crud_transport", "crud_client", "read_whouse", "read_whouse_manager", "read_factory_operator", "read_driver", "read_guard", "read_product", "read_transport", "read_client"]
+        fields = ["id", "name", "phone_number", "role", "whouses", "crud_whouse_manager", "crud_factory_operator", "crud_driver", "crud_guard", "crud_product", "crud_transport", "crud_client", "read_whouse", "read_whouse_manager", "read_factory_operator", "read_driver", "read_guard", "read_product", "read_transport", "read_client"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        if instance.whouse:
-            repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        repr['whouses'] = [{'id': wh.id, 'name': wh.name} for wh in instance.whouses.all()]
         return repr
 
 

@@ -39,9 +39,8 @@ class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return WhouseProductsHistory.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return WhouseProductsHistory.objects.filter(whouse__in=user.whouses.all())
-        return WhouseProductsHistory.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return WhouseProductsHistory.objects.filter(whouse__in=whouses)
 
 
 class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
@@ -58,9 +57,8 @@ class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return ProductType.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return ProductType.objects.filter(whouse__in=user.whouses.all())
-        return ProductType.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return ProductType.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -68,7 +66,7 @@ class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
         else:
-            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+            whouse = user.whouses.first()
             serializer.save(whouse=whouse)
 
 class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
@@ -82,9 +80,8 @@ class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return ProductUnit.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return ProductUnit.objects.filter(whouse__in=user.whouses.all())
-        return ProductUnit.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return ProductUnit.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -92,7 +89,7 @@ class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
         else:
-            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+            whouse = user.whouses.first()
             serializer.save(whouse=whouse)
 
 class ProductViewSet(PermissionMetaMixin, ModelViewSet):
@@ -108,9 +105,8 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Product.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return Product.objects.filter(whouse__in=user.whouses.all())
-        return Product.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return Product.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -143,7 +139,7 @@ class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
 
     def perform_create(self, serializer):
         user = self.request.user
-        whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+        whouse = user.whouses.first()
         serializer.save(whouse=whouse)
 
 from rest_framework import mixins, viewsets

@@ -42,7 +42,7 @@ class FactoryUser(AbstractBaseUser, PermissionsMixin):
     read_transport = models.BooleanField(default=False)
     read_client = models.BooleanField(default=False)
 
-    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
+    whouses = models.ManyToManyField('factory_whouse.Whouse', blank=True, related_name='users')
     
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)

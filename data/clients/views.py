@@ -29,9 +29,8 @@ class ClientViewSet(PermissionMetaMixin, ModelViewSet):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Client.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return Client.objects.filter(whouse__in=user.whouses.all())
-        return Client.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return Client.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -39,5 +38,5 @@ class ClientViewSet(PermissionMetaMixin, ModelViewSet):
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
         else:
-            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+            whouse = user.whouses.first()
             serializer.save(whouse=whouse)

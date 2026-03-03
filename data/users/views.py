@@ -68,8 +68,17 @@ class FactoryUserViewSet(ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return FactoryUser.objects.none()
+            
         queryset = super().get_queryset()
+        
+        # Superuser sees all, others see users in their warehouses
+        if not user.is_superuser:
+            queryset = queryset.filter(whouses__in=user.whouses.all()).distinct()
+            
         whouse_id = self.request.query_params.get('whouse')
         if whouse_id:
-            queryset = queryset.filter(whouse_id=whouse_id)
+            queryset = queryset.filter(whouses__id=whouse_id)
         return queryset
