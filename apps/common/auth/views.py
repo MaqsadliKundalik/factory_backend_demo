@@ -69,7 +69,7 @@ class UnifiedProfileAPIView(APIView):
     @swagger_auto_schema(
         tags=["Web Unified Auth"],
         operation_summary="Get Profile",
-        responses={200: "Profile Data"}
+        responses={200: FactoryUserProfileSerializer()}
     )
     def get(self, request: HttpRequest | Request):
         if isinstance(request.user, FactoryUser):
@@ -210,7 +210,7 @@ class UnifiedMobileProfileAPIView(APIView):
     @swagger_auto_schema(
         tags=["Mobile Unified Auth"],
         operation_summary="Get Mobile Profile",
-        responses={200: "Profile Data"}
+        responses={200: FactoryUserProfileSerializer()}
     )
     def get(self, request: HttpRequest | Request):
         if isinstance(request.user, Driver):

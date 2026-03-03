@@ -12,6 +12,7 @@ from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.mixins import PermissionMetaMixin
 from data.notifications.models import Notification
+from drf_yasg.utils import swagger_auto_schema
 
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory
 from .serializers import (
@@ -120,6 +121,10 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['name']
 
+    @swagger_auto_schema(
+        operation_summary="Select products (id and name only)",
+        responses={200: SelectProductSerializer(many=True)}
+    )
     @action(detail=False, methods=['get'], pagination_class=None)
     def select(self, request):
         user = self.request.user
@@ -134,8 +139,8 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
             
-        serializer = SelectProductSerializer(queryset, many=True)
-        return Response(serializer.data)
+        data = queryset.values('id', 'name')
+        return Response(list(data))
 
 class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()

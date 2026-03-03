@@ -8,7 +8,7 @@ from apps.common.mixins import PermissionMetaMixin
 class WhouseViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Whouse.objects.all()
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(read_perm="read_whouse")]
+    permission_classes = [HasDynamicPermission(read_perm="SETTINGS_PAGE", crud_perm="SETTINGS_PAGE")]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:

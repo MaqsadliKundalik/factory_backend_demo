@@ -6,6 +6,7 @@ from rest_framework import status
 from .serializers import FactoryUserSerializer, FactoryUserResetpasswordSerializer
 from data.users.models import FactoryUser
 from apps.common.auth.authentication import UnifiedJWTAuthentication
+from apps.common.permissions import HasDynamicPermission
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
@@ -21,7 +22,7 @@ class UserListPagination(PageNumberPagination):
 
 class FactoryUserResetPasswordViewSet(ViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasDynamicPermission(crud_perm="USERS_PAGE", read_perm="USERS_PAGE")]
     serializer_class = FactoryUserResetpasswordSerializer
     
     @swagger_auto_schema(
@@ -45,7 +46,7 @@ class FactoryUserViewSet(ModelViewSet):
     queryset = FactoryUser.objects.all().order_by('-created_at')
     serializer_class = FactoryUserSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasDynamicPermission(crud_perm="USERS_PAGE", read_perm="USERS_PAGE")]
     pagination_class = UserListPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['whouses', "created_at", "updated_at"]
