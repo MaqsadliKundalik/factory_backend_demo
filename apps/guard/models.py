@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.auth.hashers import make_password, check_password
 
-from apps.common.models import BaseModel, UserPermissions
+from apps.common.models import BaseModel
 # Create your models here.
 
 class Guard(BaseModel):
@@ -12,24 +12,14 @@ class Guard(BaseModel):
     
     whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
 
-    # Dynamic Permissions
-    permissions = GenericRelation(UserPermissions)
 
     list_display = ["name", "phone_number", "password", "whouse"]
 
-    def has_perm(self, perm_name):
-        perm_obj = self.permissions.first()
-        if not perm_obj:
-            return False
-        return getattr(perm_obj, perm_name, False)
 
     @property
     def is_authenticated(self):
         return True
 
-    def new_session(self):
-        from apps.session.models import GuardSession
-        return GuardSession.for_guard(self)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

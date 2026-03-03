@@ -12,9 +12,6 @@ class HasDynamicPermission(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
         
-        if not hasattr(request.user, "has_perm"):
-            return False
-
         # Determine if this is a read or write operation
         if request.method in ["GET", "HEAD", "OPTIONS"]:
             perm_to_check = self.read_perm or self.crud_perm # Fallback to crud if read not specified
@@ -24,6 +21,5 @@ class HasDynamicPermission(BasePermission):
         if not perm_to_check:
             return True # If no permission specified, allow
 
-        return request.user.has_perm(perm_to_check)
-
-
+        # Check the boolean field on FactoryUser directly
+        return getattr(request.user, perm_to_check, False)

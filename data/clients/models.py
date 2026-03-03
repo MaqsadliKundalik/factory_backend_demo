@@ -1,6 +1,5 @@
 from django.db import models
 from apps.common.models import BaseModel
-from data.whouse.models import Whouse
     
 # Create your models here.
 class Client(BaseModel):
@@ -9,7 +8,7 @@ class Client(BaseModel):
     phone_number = models.CharField(max_length=255)
     latitude = models.CharField(max_length=255)
     longitude = models.CharField(max_length=255)
-    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE)
+    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE)
     
     list_display = ["name", "inn_number", "phone_number", "whouse"]
     

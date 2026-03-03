@@ -169,14 +169,21 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = 'users.FactoryUser'
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # settings.py
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://factory-backend-demo.onrender.com',
-]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'apps.common.auth.authentication.UnifiedJWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True

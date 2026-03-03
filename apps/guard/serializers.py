@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.validators import RegexValidator
-from apps.guard.models import Guard
+from data.users.models import FactoryUser
 from utils.password import password_validator
 
 class GuardSerializer(serializers.ModelSerializer):
@@ -18,12 +18,13 @@ class GuardSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Guard
+        model = FactoryUser
         fields = ["id", "name", "phone_number", "password"]
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        guard = Guard(**validated_data)
+        validated_data['role'] = 'guard'
+        guard = FactoryUser(**validated_data)
         guard.set_password(password)
         guard.save()
         return guard

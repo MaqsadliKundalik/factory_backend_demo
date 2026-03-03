@@ -1,11 +1,11 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from apps.guard.models import Guard
+from data.users.models import FactoryUser
 from apps.guard.serializers import GuardSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 
 class GuardListCreateAPIView(ListCreateAPIView):
-    queryset = Guard.objects.all()
+    queryset = FactoryUser.objects.filter(role='guard')
     serializer_class = GuardSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_guard", read_perm="read_guard")]
@@ -13,11 +13,12 @@ class GuardListCreateAPIView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
-            return Guard.objects.none()
+            return FactoryUser.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return Guard.objects.filter(whouse__in=user.whouses.all())
-        return Guard.objects.filter(whouse=user.whouse)
+        qs = FactoryUser.objects.filter(role='guard')
+        if user.whouse:
+            return qs.filter(whouse=user.whouse)
+        return qs
         
     def perform_create(self, serializer):
         user = self.request.user
@@ -25,11 +26,10 @@ class GuardListCreateAPIView(ListCreateAPIView):
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
         else:
-            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
-            serializer.save(whouse=whouse)
+            serializer.save(whouse=user.whouse)
 
 class GuardRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Guard.objects.all()
+    queryset = FactoryUser.objects.filter(role='guard')
     serializer_class = GuardSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_guard", read_perm="read_guard")]
@@ -37,8 +37,9 @@ class GuardRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
-            return Guard.objects.none()
+            return FactoryUser.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return Guard.objects.filter(whouse__in=user.whouses.all())
-        return Guard.objects.filter(whouse=user.whouse)
+        qs = FactoryUser.objects.filter(role='guard')
+        if user.whouse:
+            return qs.filter(whouse=user.whouse)
+        return qs

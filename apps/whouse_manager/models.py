@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.auth.hashers import make_password, check_password
-from apps.common.models import BaseModel, UserPermissions
+from apps.common.models import BaseModel
 from django.utils import timezone
 from datetime import timedelta
 
@@ -13,22 +13,12 @@ class WhouseManager(BaseModel):
     
     whouses = models.ManyToManyField('factory_whouse.Whouse', related_name='managers')
     
-    # Dynamic Permissions
-    permissions = GenericRelation(UserPermissions)
 
-    def has_perm(self, perm_name):
-        perm_obj = self.permissions.first()
-        if not perm_obj:
-            return False
-        return getattr(perm_obj, perm_name, False)
 
     @property
     def is_authenticated(self):
         return True
 
-    def new_session(self):
-        from apps.session.models import WhouseManagerSession
-        return WhouseManagerSession.for_whouse_manager(self)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

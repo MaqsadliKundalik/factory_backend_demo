@@ -2,35 +2,30 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, NotAuthenticated, AuthenticationFailed
 from rest_framework.request import Request
+from data.users.models import FactoryUser
 from django.http import HttpRequest
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from apps.whouse_manager.models import WhouseManager
-from apps.factory_operator.models import FactoryOperator
 from apps.drivers.models import Driver
-from apps.guard.models import Guard
 from apps.session.models import (
-    WhouseManagerSession, 
-    FactoryOperatorSession,
     DriverSession,
-    GuardSession
+    FactoryUserSession
 )
 from .serializers import (
     UnifiedLoginSerializer, 
-    WhouseManagerProfileSerializer, 
-    FactoryOperatorProfileSerializer,
     DriverProfileSerializer,
-    GuardProfileSerializer,
     UnifiedLogoutSerializer,
-    UnifiedChangePasswordSerializer
+    UnifiedChangePasswordSerializer,
+    FactoryUserProfileSerializer
 )
 from .authentication import UnifiedJWTAuthentication
 
 class UnifiedLoginAPIView(APIView):
+    permission_classes = [AllowAny]
     serializer_class = UnifiedLoginSerializer
 
     @swagger_auto_schema(
@@ -48,16 +43,11 @@ class UnifiedLoginAPIView(APIView):
         role = None
 
         # Try Manager
-        user = WhouseManager.objects.filter(phone_number=data["phone_number"]).first()
+        user = FactoryUser.objects.filter(phone_number=data["phone_number"]).first()
         if user:
-            role = "manager"
-        else:
-            # Try Operator
-            user = FactoryOperator.objects.filter(phone_number=data["phone_number"]).first()
-            if user:
-                role = "operator"
+            role = user.role
 
-        if user is None:
+        if user is None or role in ["driver", "guard"]:
             raise NotFound("Foydalanuvchi topilmadi.")
 
         if not user.check_password(data["password"]):
@@ -82,10 +72,8 @@ class UnifiedProfileAPIView(APIView):
         responses={200: "Profile Data"}
     )
     def get(self, request: HttpRequest | Request):
-        if isinstance(request.user, WhouseManager):
-            serializer = WhouseManagerProfileSerializer(request.user)
-        else:
-            serializer = FactoryOperatorProfileSerializer(request.user)
+        if isinstance(request.user, FactoryUser):
+            serializer = FactoryUserProfileSerializer(request.user)
         return Response(serializer.data)
 
 class UnifiedLogoutAPIView(APIView):
@@ -105,14 +93,9 @@ class UnifiedLogoutAPIView(APIView):
         try:
             token = RefreshToken(refresh_token)
             session_id = token.payload.get("session")
-            role = token.payload.get("role")
             
-            if session_id and role:
-                if role == "manager":
-                    WhouseManagerSession.objects.filter(id=session_id).delete()
-                elif role == "operator":
-                    FactoryOperatorSession.objects.filter(id=session_id).delete()
-                    
+            if session_id:
+                FactoryUserSession.objects.filter(id=session_id).delete()
         except TokenError:
             return Response({"detail": "Yaroqsiz yoki muddati o'tgan token."}, status=400)
             
@@ -136,11 +119,7 @@ class UnifiedChangePasswordAPIView(APIView):
         user = serializer.save()
         
         # Invalidate old sessions
-        role = "manager" if isinstance(user, WhouseManager) else "operator"
-        if role == "manager":
-            WhouseManagerSession.objects.filter(whouse_manager=user).delete()
-        else:
-            FactoryOperatorSession.objects.filter(operator=user).delete()
+        FactoryUserSession.objects.filter(factory_user=user).delete()
             
         new_session = user.new_session()
         refresh = new_session.token
@@ -152,6 +131,7 @@ class UnifiedChangePasswordAPIView(APIView):
         })
 
 class UnifiedTokenRefreshView(APIView):
+    permission_classes = [AllowAny]
     @swagger_auto_schema(
         tags=["Web Unified Auth"],
         operation_summary="Refresh Token",
@@ -177,6 +157,7 @@ class UnifiedTokenRefreshView(APIView):
 # --- MOBILE UNIFIED AUTH ---
 
 class UnifiedMobileLoginAPIView(APIView):
+    permission_classes = [AllowAny]
     serializer_class = UnifiedLoginSerializer
 
     @swagger_auto_schema(
@@ -199,7 +180,7 @@ class UnifiedMobileLoginAPIView(APIView):
             role = "driver"
         else:
             # Try Guard
-            user = Guard.objects.filter(phone_number=data["phone_number"]).first()
+            user = FactoryUser.objects.filter(phone_number=data["phone_number"], role="guard").first()
             if user:
                 role = "guard"
 
@@ -231,7 +212,7 @@ class UnifiedMobileProfileAPIView(APIView):
         if isinstance(request.user, Driver):
             serializer = DriverProfileSerializer(request.user)
         else:
-            serializer = GuardProfileSerializer(request.user)
+            serializer = FactoryUserProfileSerializer(request.user)
         return Response(serializer.data)
 
 class UnifiedMobileLogoutAPIView(APIView):
@@ -257,7 +238,7 @@ class UnifiedMobileLogoutAPIView(APIView):
                 if role == "driver":
                     DriverSession.objects.filter(id=session_id).delete()
                 elif role == "guard":
-                    GuardSession.objects.filter(id=session_id).delete()
+                    FactoryUserSession.objects.filter(id=session_id).delete()
                     
         except TokenError:
             return Response({"detail": "Yaroqsiz yoki muddati o'tgan token."}, status=400)
@@ -286,7 +267,7 @@ class UnifiedMobileChangePasswordAPIView(APIView):
         if role == "driver":
             DriverSession.objects.filter(driver=user).delete()
         else:
-            GuardSession.objects.filter(guard=user).delete()
+            FactoryUserSession.objects.filter(factory_user=user).delete()
             
         new_session = user.new_session()
         refresh = new_session.token

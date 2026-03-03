@@ -1,5 +1,4 @@
 from django.db import models
-from data.whouse.models import Whouse
 from apps.common.models import BaseModel
 from data.filedatas.models import File
 from django.db.models.signals import post_save, m2m_changed
@@ -9,14 +8,14 @@ from data.notifications.models import Notification
 
 class ProductType(BaseModel):
     name = models.CharField(max_length=255)
-    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE, null=True, blank=True)
+    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
 
 class ProductUnit(BaseModel):
     name = models.CharField(max_length=255)
-    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE, null=True, blank=True)
+    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -25,7 +24,7 @@ class Product(BaseModel):
     name = models.CharField(max_length=255)
     types = models.ManyToManyField(ProductType, related_name='products')
     unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='products', null=True, blank=True)
-    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE, null=True, blank=True)
+    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -44,7 +43,7 @@ class WhouseProducts(BaseModel):
         ('confirmed', 'Confirmed'),
     ]
     
-    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE, null=True, blank=True)
+    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -56,7 +55,7 @@ class WhouseProducts(BaseModel):
 
 class WhouseProductsHistory(BaseModel):
     whouse_product = models.ForeignKey(WhouseProducts, on_delete=models.CASCADE, related_name='history', null=True, blank=True)
-    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE, null=True, blank=True)
+    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     files = models.ManyToManyField(File, related_name='whouse_products_history')

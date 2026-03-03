@@ -1,11 +1,9 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken
 from django.utils.translation import gettext_lazy as _
-from apps.whouse_manager.models import WhouseManager
-from apps.factory_operator.models import FactoryOperator
 from apps.drivers.models import Driver
-from apps.guard.models import Guard
-from apps.session.models import WhouseManagerSession, FactoryOperatorSession, DriverSession, GuardSession
+from apps.session.models import DriverSession, FactoryUserSession
+from data.users.models import FactoryUser
 
 class UnifiedJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
@@ -16,38 +14,21 @@ class UnifiedJWTAuthentication(JWTAuthentication):
         except KeyError:
             raise InvalidToken(_("Token contained no recognizable user identification"))
 
-        if role == "manager":
-            return self._authenticate_manager(user_id, session_id)
-        elif role == "operator":
-            return self._authenticate_operator(user_id, session_id)
-        elif role == "driver":
+        if role == "driver":
             return self._authenticate_driver(user_id, session_id)
-        elif role == "guard":
-            return self._authenticate_guard(user_id, session_id)
         else:
-            raise AuthenticationFailed(_("Invalid user role"), code="role_invalid")
+            return self._authenticate_user(user_id, session_id)
 
-    def _authenticate_manager(self, user_id, session_id):
+    def _authenticate_user(self, user_id, session_id):
         try:
-            manager = WhouseManager.objects.get(id=user_id)
-        except WhouseManager.DoesNotExist:
-            raise AuthenticationFailed(_("Manager not found"), code="user_not_found")
+            user = FactoryUser.objects.get(id=user_id)
+        except FactoryUser.DoesNotExist:
+            raise AuthenticationFailed(_("User not found"), code="user_not_found")
         
-        if not WhouseManagerSession.objects.filter(id=session_id, whouse_manager=manager).exists():
+        if not FactoryUserSession.objects.filter(id=session_id, factory_user=user).exists():
             raise AuthenticationFailed(_("Session is invalid or expired"), code="session_invalid")
         
-        return manager
-
-    def _authenticate_operator(self, user_id, session_id):
-        try:
-            operator = FactoryOperator.objects.get(id=user_id)
-        except FactoryOperator.DoesNotExist:
-            raise AuthenticationFailed(_("Factory Operator not found"), code="user_not_found")
-            
-        if not FactoryOperatorSession.objects.filter(id=session_id, operator=operator).exists():
-            raise AuthenticationFailed(_("Session is invalid or expired"), code="session_invalid")
-
-        return operator
+        return user
 
     def _authenticate_driver(self, user_id, session_id):
         try:
@@ -59,14 +40,3 @@ class UnifiedJWTAuthentication(JWTAuthentication):
             raise AuthenticationFailed(_("Session is invalid or expired"), code="session_invalid")
 
         return driver
-
-    def _authenticate_guard(self, user_id, session_id):
-        try:
-            guard = Guard.objects.get(id=user_id)
-        except Guard.DoesNotExist:
-            raise AuthenticationFailed(_("Guard not found"), code="user_not_found")
-            
-        if not GuardSession.objects.filter(id=session_id, guard=guard).exists():
-            raise AuthenticationFailed(_("Session is invalid or expired"), code="session_invalid")
-
-        return guard

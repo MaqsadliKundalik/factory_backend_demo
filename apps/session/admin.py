@@ -1,8 +1,6 @@
 from django.contrib import admin
-from apps.session.models import DriverSession, WhouseManagerSession, FactoryOperatorSession, GuardSession
+from apps.session.models import DriverSession, FactoryUserSession
 
 # Register your models here.
 admin.site.register(DriverSession)
-admin.site.register(WhouseManagerSession)
-admin.site.register(FactoryOperatorSession)
-admin.site.register(GuardSession)
+admin.site.register(FactoryUserSession)

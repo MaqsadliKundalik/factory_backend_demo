@@ -1,136 +1,51 @@
 from rest_framework import serializers
-from apps.guard.models import Guard
-from apps.factory_operator.models import FactoryOperator
-from apps.whouse_manager.models import WhouseManager
 from data.whouse.models import Whouse
-from apps.common.serializers import UserPermissionsSerializer
+from data.users.models import FactoryUser
 import re
 
-class UnifiedUserSerializer(serializers.Serializer):
-    id = serializers.UUIDField(read_only=True)
-    name = serializers.CharField(max_length=100)
-    phone_number = serializers.CharField(max_length=25)
-    password = serializers.CharField(write_only=True, required=False)
-    role = serializers.ChoiceField(choices=[
-        ("manager", "Manager"),
-        ("operator", "Operator"),
-        ("guard", "Guard")
-    ], write_only=True)
+class FactoryUserSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source='role', read_only=True)
     
-    permissions = UserPermissionsSerializer(required=False, allow_null=True, write_only=True)
-
-    def to_representation(self, instance):
-        repr = super().to_representation(instance)
-        
-        # Safely determine role
-        role = "unknown"
-        if isinstance(instance, WhouseManager): role = "manager"
-        elif isinstance(instance, FactoryOperator): role = "operator"
-        elif isinstance(instance, Guard): role = "guard"
-        
-        repr['role_display'] = role
-        
-        # Handle whouses based on role
-        if role == "manager":
-            repr['whouses'] = [str(w.id) for w in instance.whouses.all()]
-        elif hasattr(instance, 'whouse') and instance.whouse:
-            repr['whouses'] = [str(instance.whouse.id)]
-        else:
-            repr['whouses'] = []
-            
-        # Handle permissions
-        perm_obj = instance.permissions.first()
-        repr['permissions'] = UserPermissionsSerializer(perm_obj).data if perm_obj else None
-            
-        return repr
+    class Meta:
+        model = FactoryUser
+        fields = [
+            'id', 'name', 'phone_number', 'password', 'role', 'role_display',
+            'crud_whouse_manager', 'crud_factory_operator', 'crud_driver', 
+            'crud_guard', 'crud_product', 'crud_transport', 'crud_client', 
+            'read_whouse', 'read_whouse_manager', 'read_factory_operator', 
+            'read_driver', 'read_guard', 'read_product', 'read_transport', 
+            'read_client', 'whouse'
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False}
+        }
+        read_only_fields = ['id']
 
     def validate_phone_number(self, value):
-        # Basic Uzbek phone number validation: +998901234567
         if not re.match(r'^\+998\d{9}$', value):
             raise serializers.ValidationError("Phone number must be +998XXXXXXXXX format.")
         return value
 
     def create(self, validated_data):
-        role = validated_data.pop('role')
         password = validated_data.pop('password', None)
-        whouse_id = validated_data.pop('whouse_id', None)
-        whouse_ids = validated_data.pop('whouse_ids', [])
-                
-        user_model = None
-        if role == "manager":
-            user_model = WhouseManager
-        elif role == "operator":
-            user_model = FactoryOperator
-        elif role == "guard":
-            user_model = Guard
-            
-        # Filter validated_data to only include fields present on the model
-        model_fields = [f.name for f in user_model._meta.fields]
-        create_data = {k: v for k, v in validated_data.items() if k in model_fields}
-        
-        permissions_data = validated_data.pop('permissions', None)
-        
-        instance = user_model(**create_data)
+        user = super().create(validated_data)
         if password:
-            instance.set_password(password)
-        
-        if role != "manager" and whouse_id and 'whouse' in model_fields:
-            instance.whouse_id = whouse_id
-            
-        instance.save()
-        
-        if role == "manager" and whouse_ids:
-            instance.whouses.set(whouse_ids)
-            
-        # Handle permissions
-        if permissions_data:
-            from apps.common.models import UserPermissions
-            # Check if signal already created permissions
-            perm_obj = instance.permissions.first()
-            if perm_obj:
-                for attr, value in permissions_data.items():
-                    setattr(perm_obj, attr, value)
-                perm_obj.save()
-            else:
-                UserPermissions.objects.create(content_object=instance, **permissions_data)
-        
-        return instance
+            user.set_password(password)
+            user.save()
+        return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
-        whouse_id = validated_data.pop('whouse_id', None)
-        whouse_ids = validated_data.pop('whouse_ids', None)
-        
-        # Role cannot be changed via update
-        validated_data.pop('role', None)
-
-        permissions_data = validated_data.pop('permissions', None)
-        
-        model_fields = [f.name for f in instance.__class__._meta.fields]
-        for attr, value in validated_data.items():
-            if attr in model_fields:
-                setattr(instance, attr, value)
-        
+        user = super().update(instance, validated_data)
         if password:
-            instance.set_password(password)
-            
-        if not isinstance(instance, WhouseManager) and whouse_id and 'whouse' in model_fields:
-            instance.whouse_id = whouse_id
-            
-        instance.save()
-        
-        if isinstance(instance, WhouseManager) and whouse_ids is not None:
-            instance.whouses.set(whouse_ids)
-            
-        # Handle permissions
-        if permissions_data:
-            from apps.common.models import UserPermissions
-            perm_obj = instance.permissions.first()
-            if perm_obj:
-                for attr, value in permissions_data.items():
-                    setattr(perm_obj, attr, value)
-                perm_obj.save()
-            else:
-                UserPermissions.objects.create(content_object=instance, **permissions_data)
-            
-        return instance
+            user.set_password(password)
+            user.save()
+        return user
+
+class FactoryUserResetpasswordSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    new_password = serializers.CharField(write_only=True)
+
+# For backward compatibility if needed, but pointing to FactoryUser
+class UnifiedUserSerializer(FactoryUserSerializer):
+    pass

@@ -3,7 +3,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password, check_password
-from apps.common.models import BaseModel, UserPermissions
+from apps.common.models import BaseModel
 
 # Create your models here.
 
@@ -18,22 +18,12 @@ class FactoryOperator(models.Model):
     
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, related_name='factory_operators')
 
-    # Dynamic Permissions
-    permissions = GenericRelation(UserPermissions)
 
-    def has_perm(self, perm_name):
-        perm_obj = self.permissions.first()
-        if not perm_obj:
-            return False
-        return getattr(perm_obj, perm_name, False)
 
     @property
     def is_authenticated(self):
         return True
 
-    def new_session(self):
-        from apps.session.models import FactoryOperatorSession
-        return FactoryOperatorSession.for_operator(self)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
