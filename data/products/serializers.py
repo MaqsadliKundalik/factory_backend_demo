@@ -3,12 +3,23 @@ from data.filedatas.models import File
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 
 class ProductItemSerializer(serializers.ModelSerializer):
-    type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.all())
-    unit = serializers.PrimaryKeyRelatedField(queryset=ProductUnit.objects.all())
+    product = serializers.PrimaryKeyRelatedField(read_only=True)
+    type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.all(), required=False, allow_null=True)
+    unit = serializers.PrimaryKeyRelatedField(queryset=ProductUnit.objects.all(), required=False, allow_null=True)
     class Meta:
         model = ProductItem
-        fields = ['id', 'type', 'unit', 'quantity']
+        fields = ['id', 'name', 'type', 'unit', 'quantity', 'product']
         read_only_fields = ['id']
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        if instance.type:
+            repr['type_details'] = {'id': instance.type.id, 'name': instance.type.name}
+        if instance.unit:
+            repr['unit_details'] = {'id': instance.unit.id, 'name': instance.unit.name}
+        if instance.product:
+            repr['product_details'] = {'id': instance.product.id, 'name': instance.product.name}
+        return repr
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -98,12 +109,16 @@ class ProductSerializer(serializers.ModelSerializer):
         repr['types'] = [{'id': t.id, 'name': t.name} for t in instance.types.all()]
         if instance.unit:
             repr['unit'] = {'id': instance.unit.id, 'name': instance.unit.name}
+        if instance.items:
+            repr['items_details'] = [
+                {'id': i.id, 'name': i.name, 'quantity': i.quantity, 'unit': i.unit, 'type': i.type} 
+                for i in instance.items.all()
+            ]
         # Nested items representation is handled by the 'items' field defined above
         return repr
 
     def create(self, validated_data):
         user = self.context['request'].user
-        items_data = validated_data.pop('items', [])
         types = validated_data.pop('types', [])
         
         # Determine warehouse
@@ -115,14 +130,9 @@ class ProductSerializer(serializers.ModelSerializer):
         product = Product.objects.create(**validated_data)
         product.types.set(types)
 
-        # Create nested items
-        for item_data in items_data:
-            ProductItem.objects.create(product=product, **item_data)
-        
         return product
 
     def update(self, instance, validated_data):
-        items_data = validated_data.pop('items', None)
         types = validated_data.pop('types', None)
 
         # Update basic fields
@@ -130,13 +140,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
         if types is not None:
             instance.types.set(types)
-
-        if items_data is not None:
-            # Simple atomic replacement for items: 
-            # delete old ones and create new ones to handle removals easily
-            instance.items.all().delete()
-            for item_data in items_data:
-                ProductItem.objects.create(product=instance, **item_data)
 
         return instance
 

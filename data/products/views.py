@@ -112,6 +112,15 @@ class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
             whouse = user.whouses.first()
             serializer.save(whouse=whouse)
 
+class ProductItemViewSet(PermissionMetaMixin, ModelViewSet):
+    queryset = ProductItem.objects.all()
+    serializer_class = ProductItemSerializer
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
+    pagination_class = StandardResultsSetPagination
+    filterset_class = ProductItemFilter
+    search_fields = ['name']
+    
 class ProductViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
