@@ -4,7 +4,7 @@ from django.urls import path, include
 from .views import (
     ProductTypeViewSet, ProductUnitViewSet, ProductViewSet, 
     WhouseProductsViewSet, WhouseProductsHistoryViewSet, 
-    WhouseProductsActionViewSet
+    WhouseProductsActionViewSet, SelectProductListView
 )
 
 router = DefaultRouter()
