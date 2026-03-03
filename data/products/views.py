@@ -49,6 +49,9 @@ class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
     serializer_class = ProductTypeSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['whouse']
+    search_fields = ['name']
 
     def get_queryset(self):
         user = self.request.user

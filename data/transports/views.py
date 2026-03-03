@@ -21,7 +21,7 @@ class TransportViewSet(PermissionMetaMixin, ModelViewSet):
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['whouse', "created_at", "updated_at"]
-    search_fields = ['name', 'phone_number']
+    search_fields = ['name', 'number']
     ordering_fields = ['created_at', 'updated_at']
 
     def get_queryset(self):

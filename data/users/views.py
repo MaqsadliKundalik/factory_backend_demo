@@ -8,6 +8,8 @@ from data.users.models import FactoryUser
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 import logging
 
 logger = logging.getLogger(__name__)
