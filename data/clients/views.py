@@ -17,7 +17,7 @@ class ClientViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="clients_page", read_perm="clients_page")]
+    permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['whouse', "created_at", "updated_at"]

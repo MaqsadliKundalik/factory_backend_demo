@@ -25,13 +25,13 @@ class FactoryUser(AbstractBaseUser, PermissionsMixin):
     
     role = models.CharField(max_length=50) # manager, operator, guard
     
-    main_page = models.BooleanField(default=False)
-    products_page = models.BooleanField(default=False)
-    orders_page = models.BooleanField(default=False)
-    transports_page = models.BooleanField(default=False)
-    clients_page = models.BooleanField(default=False)
-    users_page = models.BooleanField(default=False)
-    settings_page = models.BooleanField(default=False)
+    MAIN_PAGE = models.BooleanField(default=False)
+    PRODUCTS_PAGE = models.BooleanField(default=False)
+    ORDERS_PAGE = models.BooleanField(default=False)
+    TRANSPORTS_PAGE = models.BooleanField(default=False)
+    CLIENTS_PAGE = models.BooleanField(default=False)
+    USERS_PAGE = models.BooleanField(default=False)
+    SETTINGS_PAGE = models.BooleanField(default=False)
     
     whouses = models.ManyToManyField('factory_whouse.Whouse', blank=True, related_name='users')
     

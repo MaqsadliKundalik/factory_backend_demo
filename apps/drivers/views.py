@@ -8,7 +8,7 @@ from apps.common.auth.authentication import UnifiedJWTAuthentication
 class DriverListCreateAPIView(ListCreateAPIView):
     authentication_classes = [UnifiedJWTAuthentication]
     serializer_class = DriverSerializer
-    permission_classes = [HasDynamicPermission(crud_perm="transports_page", read_perm="transports_page")]
+    permission_classes = [HasDynamicPermission(crud_perm="TRANSPORTS_PAGE", read_perm="TRANSPORTS_PAGE")]
 
     def get_queryset(self):
         user = self.request.user
@@ -30,7 +30,7 @@ class DriverListCreateAPIView(ListCreateAPIView):
 class DriverRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     authentication_classes = [UnifiedJWTAuthentication]
     serializer_class = DriverSerializer
-    permission_classes = [HasDynamicPermission(crud_perm="transports_page", read_perm="transports_page")]
+    permission_classes = [HasDynamicPermission(crud_perm="TRANSPORTS_PAGE", read_perm="TRANSPORTS_PAGE")]
 
     def get_queryset(self):
         user = self.request.user

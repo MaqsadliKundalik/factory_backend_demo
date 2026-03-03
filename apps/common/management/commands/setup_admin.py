@@ -28,13 +28,13 @@ class Command(BaseCommand):
                 # whouses cannot be passed to create_superuser directly (M2M)
                 is_active=True,
                 # Set all permissions to True for superuser
-                main_page=True,
-                products_page=True,
-                orders_page=True,
-                transports_page=True,
-                clients_page=True,
-                users_page=True,
-                settings_page=True,
+                MAIN_PAGE=True,
+                PRODUCTS_PAGE=True,
+                ORDERS_PAGE=True,
+                TRANSPORTS_PAGE=True,
+                CLIENTS_PAGE=True,
+                USERS_PAGE=True,
+                SETTINGS_PAGE=True,
             )
             user.whouses.add(whouse)
             self.stdout.write(self.style.SUCCESS(f'Successfully created FactoryUser (Superuser): {phone}'))
