@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Reset database (one-time fix for migration inconsistency)
-echo "Resetting database..."
-python full_reset_db.py
-
 # Apply database migrations
 echo "Applying database migrations..."
 python manage.py migrate --noinput
