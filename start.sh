@@ -6,8 +6,8 @@ python manage.py makemigrations --noinput
 
 # Optional: Clean database if CLEAN_DATABASE=true
 if [ "$CLEAN_DATABASE" = "true" ]; then
-    echo "Cleaning database (flush)..."
-    python manage.py flush --noinput
+    echo "Hard cleaning database (dropping all tables)..."
+    python manage.py clear_db
 fi
 
 # Apply database migrations
