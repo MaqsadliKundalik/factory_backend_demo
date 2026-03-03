@@ -4,12 +4,6 @@
 echo "Generating database migrations..."
 python manage.py makemigrations --noinput
 
-# Optional: Clean database if CLEAN_DATABASE=true
-if [ "$CLEAN_DATABASE" = "true" ]; then
-    echo "Hard cleaning database (dropping all tables)..."
-    python manage.py clear_db
-fi
-
 # Apply database migrations
 echo "Applying database migrations..."
 python manage.py migrate --noinput
