@@ -45,6 +45,10 @@ class FactoryUserViewSet(ModelViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [IsAuthenticated]
     pagination_class = UserListPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['whouse', "created_at", "updated_at"]
+    search_fields = ['name', 'phone_number']
+    ordering_fields = ['created_at', 'updated_at']
 
     @action(detail=False, methods=['delete'])
     def delete_by_phone(self, request):

@@ -5,6 +5,8 @@ from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.mixins import PermissionMetaMixin
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -17,6 +19,10 @@ class ClientViewSet(PermissionMetaMixin, ModelViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="crud_client", read_perm="read_client")]
     pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['whouse', "created_at", "updated_at"]
+    search_fields = ['name', 'phone_number']
+    ordering_fields = ['created_at', 'updated_at']
 
     def get_queryset(self):
         user = self.request.user
