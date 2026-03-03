@@ -56,6 +56,11 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
                 })
         return attrs
 
+class SelectProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name']
+
 class ProductSerializer(serializers.ModelSerializer):
     types = serializers.PrimaryKeyRelatedField(
         many=True,

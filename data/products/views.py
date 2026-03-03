@@ -16,8 +16,25 @@ from data.notifications.models import Notification
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory
 from .serializers import (
     ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, 
-    WhouseProductsSerializer, WhouseProductsHistorySerializer
+    WhouseProductsSerializer, WhouseProductsHistorySerializer,  SelectProductSerializer
 )
+
+class SelectProductListView(ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = SelectProductSerializer
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="crud_product", read_perm="read_product")]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['whouse']
+    search_fields = ['name']
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return Product.objects.none()
+
+        whouses = user.whouses.all()
+        return Product.objects.filter(whouse__in=whouses)
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -189,3 +206,5 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
             message=f'Product {instance.product.name} has been rejected by manager',
         )
         return Response({'status': 'rejected'})
+
+
