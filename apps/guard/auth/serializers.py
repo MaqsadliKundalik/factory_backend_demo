@@ -19,7 +19,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         from apps.guard.models import Guard
         model = Guard
-        fields = ["id", "name", "phone_number"]
+        fields = ["id", "name", "phone_number", "whouses"]
 
 class LogoutSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()

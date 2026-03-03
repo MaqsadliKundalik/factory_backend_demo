@@ -16,7 +16,7 @@ class FactoryOperator(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     
-    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, related_name='factory_operators')
+    whouses = models.ManyToManyField('factory_whouse.Whouse', related_name='factory_operators')
 
 
 

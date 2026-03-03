@@ -22,7 +22,7 @@ class LoginSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = FactoryOperator
-        fields = ["id", "name", "phone_number", "whouse"]
+        fields = ["id", "name", "phone_number", "whouses"]
         ref_name = "FactoryOperatorProfile"
 
 class LogoutSerializer(serializers.Serializer):

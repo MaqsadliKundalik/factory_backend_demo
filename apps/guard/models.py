@@ -10,7 +10,7 @@ class Guard(BaseModel):
     phone_number = models.CharField(max_length=25)
     password = models.CharField(max_length=128)
     
-    whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
+    whouses = models.ManyToManyField("factory_whouse.Whouse", related_name='guards')
 
 
     list_display = ["name", "phone_number", "password", "whouse"]
