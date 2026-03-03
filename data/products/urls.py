@@ -16,6 +16,6 @@ router.register('actions', WhouseProductsActionViewSet, basename='whouse-product
 router.register('', ProductViewSet, basename='products')
 
 urlpatterns = [
-    path('', include(router.urls)),
     path('select/', SelectProductListView.as_view(), name='select-product'),
+    path('', include(router.urls)),
 ]

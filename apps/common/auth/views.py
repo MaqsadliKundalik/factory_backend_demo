@@ -74,6 +74,10 @@ class UnifiedProfileAPIView(APIView):
     def get(self, request: HttpRequest | Request):
         if isinstance(request.user, FactoryUser):
             serializer = FactoryUserProfileSerializer(request.user)
+        elif isinstance(request.user, Driver):
+            serializer = DriverProfileSerializer(request.user)
+        else:
+            raise NotFound("Foydalanuvchi topilmadi.")
         return Response(serializer.data)
 
 class UnifiedLogoutAPIView(APIView):
