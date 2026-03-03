@@ -133,9 +133,8 @@ class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return WhouseProducts.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
-        return WhouseProducts.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return WhouseProducts.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
         user = self.request.user

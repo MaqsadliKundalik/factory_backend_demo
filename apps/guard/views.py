@@ -15,18 +15,17 @@ class GuardListCreateAPIView(ListCreateAPIView):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return FactoryUser.objects.none()
 
-        qs = FactoryUser.objects.filter(role='guard')
-        if user.whouse:
-            return qs.filter(whouse=user.whouse)
-        return qs
+        whouses = user.whouses.all()
+        return FactoryUser.objects.filter(role='guard', whouses__in=whouses).distinct()
         
     def perform_create(self, serializer):
         user = self.request.user
         whouse_id = self.request.data.get('whouse')
         if whouse_id:
-            serializer.save(whouse_id=whouse_id)
+            serializer.save(whouses=[whouse_id])
         else:
-            serializer.save(whouse=user.whouse)
+            whouse = user.whouses.first()
+            serializer.save(whouses=[whouse])
 
 class GuardRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = FactoryUser.objects.filter(role='guard')
@@ -39,7 +38,5 @@ class GuardRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return FactoryUser.objects.none()
 
-        qs = FactoryUser.objects.filter(role='guard')
-        if user.whouse:
-            return qs.filter(whouse=user.whouse)
-        return qs
+        whouses = user.whouses.all()
+        return FactoryUser.objects.filter(role='guard', whouses__in=whouses).distinct()

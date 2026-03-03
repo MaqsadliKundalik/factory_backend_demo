@@ -86,7 +86,7 @@ class ProductSerializer(serializers.ModelSerializer):
         
         whouse = validated_data.get('whouse')
         if not whouse:
-            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+            whouse = user.whouses.first()
 
         validated_data['whouse'] = whouse
         

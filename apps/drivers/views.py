@@ -15,9 +15,8 @@ class DriverListCreateAPIView(ListCreateAPIView):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Driver.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return Driver.objects.filter(whouse__in=user.whouses.all())
-        return Driver.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return Driver.objects.filter(whouse__in=whouses)
         
     def perform_create(self, serializer):
         user = self.request.user
@@ -25,7 +24,7 @@ class DriverListCreateAPIView(ListCreateAPIView):
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
         else:
-            whouse = user.whouses.first() if hasattr(user, 'whouses') else user.whouse
+            whouse = user.whouses.first()
             serializer.save(whouse=whouse)
 
 class DriverRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -38,6 +37,5 @@ class DriverRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Driver.objects.none()
 
-        if hasattr(user, 'whouses'):
-            return Driver.objects.filter(whouse__in=user.whouses.all())
-        return Driver.objects.filter(whouse=user.whouse)
+        whouses = user.whouses.all()
+        return Driver.objects.filter(whouse__in=whouses)
