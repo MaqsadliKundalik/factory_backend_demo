@@ -25,7 +25,6 @@ class Migration(migrations.Migration):
                 ('role', models.CharField(max_length=50)),
                 ('main_page', models.BooleanField(default=False)),
                 ('factory_page', models.BooleanField(default=False)),
-                ('drivers_page', models.BooleanField(default=False)),
                 ('guards_page', models.BooleanField(default=False)),
                 ('products_page', models.BooleanField(default=False)),
                 ('transports_page', models.BooleanField(default=False)),
