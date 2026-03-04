@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from apps.common.filters import BaseDateFilterSet
+from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS, IS_READY_PRODUCT_PARAM
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -74,8 +74,20 @@ class WhouseProductsHistoryViewSet(DateFilterSchemaMixin, PermissionMetaMixin, R
             return WhouseProductsHistory.objects.none()
 
         whouses = user.whouses.all()
-        return WhouseProductsHistory.objects.filter(whouse__in=whouses)
+        queryset = WhouseProductsHistory.objects.filter(whouse__in=whouses)
 
+        is_ready = self.request.query_params.get('is_ready_product')
+        if is_ready is not None:
+            if is_ready.lower() == 'true':
+                queryset = queryset.filter(product__items__isnull=False).distinct()
+            elif is_ready.lower() == 'false':
+                queryset = queryset.filter(product__items__isnull=True)
+
+        return queryset
+
+    @swagger_auto_schema(manual_parameters=DATE_FILTER_PARAMS + [IS_READY_PRODUCT_PARAM])
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ProductTypeViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
@@ -147,13 +159,21 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Product.objects.none()
 
         whouses = user.whouses.all()
-        return Product.objects.filter(whouse__in=whouses)
+        queryset = Product.objects.filter(whouse__in=whouses)
+
+        is_ready = self.request.query_params.get('is_ready_product')
+        if is_ready is not None:
+            if is_ready.lower() == 'true':
+                queryset = queryset.filter(items__isnull=False).distinct()
+            elif is_ready.lower() == 'false':
+                queryset = queryset.filter(items__isnull=True)
+
+        return queryset
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -165,6 +185,10 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ProductFilter
     search_fields = ['name']
+
+    @swagger_auto_schema(manual_parameters=DATE_FILTER_PARAMS + [IS_READY_PRODUCT_PARAM])
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(
         operation_summary="Select products (id and name only)",

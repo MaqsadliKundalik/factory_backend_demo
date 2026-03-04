@@ -22,3 +22,10 @@ DATE_FILTER_PARAMS = [
         required=False,
     ),
 ]
+
+IS_READY_PRODUCT_PARAM = openapi.Parameter(
+    'is_ready_product', openapi.IN_QUERY,
+    description="true: items bor productlar, false: items yo'q productlar",
+    type=openapi.TYPE_BOOLEAN,
+    required=False,
+)
