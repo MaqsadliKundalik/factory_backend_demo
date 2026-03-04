@@ -76,7 +76,7 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
         if status == 'created':
             if len(files) < 2:
                 raise serializers.ValidationError({
-                    "files": "Kamida 2 ta fayl yuklanishi shart."
+                    "files": "Необходимо загрузить не менее 2 файлов."
                 })
         return attrs
 

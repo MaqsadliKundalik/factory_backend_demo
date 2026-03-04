@@ -8,7 +8,7 @@ class LoginSerializer(serializers.Serializer):
         validators=[
             RegexValidator(
                 regex=r"^\+998\d{9}$",
-                message="Invalid Uzbek phone number. Format: +998XXXXXXXXX",
+                message="Недопустимый формат номера. Формат: +998XXXXXXXXX",
             )
         ]
     )
@@ -37,7 +37,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         driver: Driver = self.context["driver"]
 
         if not driver.check_password(old_password):
-            raise serializers.ValidationError({"old_password": "Eski parol noto'g'ri kiritildi."})
+            raise serializers.ValidationError({"old_password": "Неверный старый пароль."})
 
         return attrs
 

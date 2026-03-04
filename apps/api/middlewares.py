@@ -42,12 +42,12 @@ class CombinedAuthMiddleware:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         except IndexError:
             return JsonResponse(
-                {"error": "Invalid Authorization header format"}, status=401
+                {"Ошибка": "Неверный формат заголовка Authorization"}, status=401
             )
         except jwt.ExpiredSignatureError:
-            return JsonResponse({"error": "Token has expired"}, status=401)
+            return JsonResponse({"Ошибка": "Срок действия токена истёк"}, status=401)
         except jwt.DecodeError:
-            return JsonResponse({"error": "Invalid token"}, status=401)
+            return JsonResponse({"Ошибка": "Недействительный токен"}, status=401)
 
         # Try Driver
         driver_id = payload.get("driver")
@@ -65,5 +65,5 @@ class CombinedAuthMiddleware:
 
         # Token exists but neither role authenticated
         return JsonResponse(
-            {"error": "Unauthorized access: role or session invalid"}, status=401
+            {"Ошибка": "Неавторизованный доступ: неверная роль или сессия"}, status=401
         )

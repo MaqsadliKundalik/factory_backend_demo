@@ -48,10 +48,10 @@ class UnifiedLoginAPIView(APIView):
             role = user.role
 
         if user is None or role in ["driver", "guard"]:
-            raise NotFound("Foydalanuvchi topilmadi.")
+            raise NotFound("Пользователь не найден.")
 
         if not user.check_password(data["password"]):
-            raise NotAuthenticated("Noto'g'ri parol.")
+            raise NotAuthenticated("Неверный пароль.")
 
         new_session = user.new_session()
         refresh = new_session.token
@@ -101,9 +101,9 @@ class UnifiedLogoutAPIView(APIView):
             if session_id:
                 FactoryUserSession.objects.filter(id=session_id).delete()
         except TokenError:
-            return Response({"detail": "Yaroqsiz yoki muddati o'tgan token."}, status=400)
+            return Response({"detail": "Токен недействителен или истёк."}, status=400)
             
-        return Response({"detail": "Tizimdan muvaffaqiyatli chiqildi."})
+        return Response({"detail": "Вы успешно вышли из системы."})
 
 class UnifiedChangePasswordAPIView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
@@ -129,7 +129,7 @@ class UnifiedChangePasswordAPIView(APIView):
         refresh = new_session.token
         
         return Response({
-            "detail": "Parol muvaffaqiyatli o'zgartirildi.",
+            "detail": "Пароль успешно изменён.",
             "access_token": str(refresh.access_token),
             "refresh_token": str(refresh),
         })
@@ -147,7 +147,7 @@ class UnifiedTokenRefreshView(APIView):
     def post(self, request, *args, **kwargs):   
         refresh_token = request.data.get("refresh")
         if not refresh_token:
-            raise AuthenticationFailed("Refresh token talab qilinadi.")
+            raise AuthenticationFailed("Требуется refresh-токен.")
 
         try:
             refresh = RefreshToken(refresh_token)
@@ -156,7 +156,7 @@ class UnifiedTokenRefreshView(APIView):
                 "refresh": str(refresh),
             })
         except TokenError as e:
-            raise AuthenticationFailed(f"Yaroqsiz refresh token: {str(e)}")
+            raise AuthenticationFailed(f"Недействительный refresh-токен: {str(e)}")
 
 # --- MOBILE UNIFIED AUTH ---
 
@@ -189,7 +189,7 @@ class UnifiedMobileLoginAPIView(APIView):
                 role = "guard"
 
         if user is None:
-            raise NotFound("Foydalanuvchi topilmadi.")
+            raise NotFound("Пользователь не найден.")
 
         if not user.check_password(data["password"]):
             raise NotAuthenticated("Noto'g'ri parol.")
@@ -245,9 +245,9 @@ class UnifiedMobileLogoutAPIView(APIView):
                     FactoryUserSession.objects.filter(id=session_id).delete()
                     
         except TokenError:
-            return Response({"detail": "Yaroqsiz yoki muddati o'tgan token."}, status=400)
+            return Response({"detail": "Токен недействителен или истёк."}, status=400)
             
-        return Response({"detail": "Tizimdan muvaffaqiyatli chiqildi."})
+        return Response({"detail": "Вы успешно вышли из системы."})
 
 class UnifiedMobileChangePasswordAPIView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
@@ -277,7 +277,7 @@ class UnifiedMobileChangePasswordAPIView(APIView):
         refresh = new_session.token
         
         return Response({
-            "detail": "Parol muvaffaqiyatli o'zgartirildi.",
+            "detail": "Пароль успешно изменён.",
             "access_token": str(refresh.access_token),
             "refresh_token": str(refresh),
         })

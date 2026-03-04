@@ -177,9 +177,9 @@ class LogoutAPIView(APIView):
                 DriverSession.objects.filter(id=session_id).delete()
                 
         except TokenError:
-            return Response({"detail": "Invalid or expired token"}, status=400)
+            return Response({"detail": "Токен недействителен или истёк."}, status=400)
             
-        return Response({"detail": "Logged out successfully."})
+        return Response({"detail": "Вы успешно вышли из системы."})
 
 class ChangePasswordAPIView(APIView):
     authentication_classes = [DriverJWTAuthentication]
@@ -229,7 +229,7 @@ class ChangePasswordAPIView(APIView):
         refresh = new_session.token
         
         return Response({
-            "detail": "Parol muvaffaqiyatli o'zgartirildi.",
+            "detail": "Пароль успешно изменён.",
             "access_token": str(refresh.access_token),
             "refresh_token": str(refresh),
         })

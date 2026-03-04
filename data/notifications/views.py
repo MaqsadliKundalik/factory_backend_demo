@@ -80,11 +80,11 @@ class NotificationViewSet(
     def mark_all_read(self, request):
         role = _get_role(request)
         if not role:
-            return Response({"error": "Role aniqlanmadi"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Роль не определена"}, status=status.HTTP_400_BAD_REQUEST)
 
         updated = Notification.objects.filter(to_role=role, is_read=False).update(is_read=True)
         return Response(
-            {"message": "Hammasini o'qildi deb belgilandi", "count": updated},
+            {"message": "Все уведомления отмечены как прочитанные", "count": updated},
             status=status.HTTP_200_OK,
         )
 

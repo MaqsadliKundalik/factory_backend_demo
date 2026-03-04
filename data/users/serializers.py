@@ -25,7 +25,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
 
     def validate_phone_number(self, value):
         if not re.match(r'^\+998\d{9}$', value):
-            raise serializers.ValidationError("Phone number must be +998XXXXXXXXX format.")
+            raise serializers.ValidationError("Номер телефона должен быть в формате +998XXXXXXXXX.")
         return value
 
     def create(self, validated_data):

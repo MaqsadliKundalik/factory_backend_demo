@@ -39,7 +39,7 @@ class FactoryUserResetPasswordViewSet(ViewSet):
                 user = FactoryUser.objects.get(id=serializer.validated_data['id'])
                 user.set_password(serializer.validated_data['new_password'])
                 user.save()
-                return Response({"detail": "Parol muvaffaqiyatli o'zgartirildi."}, status=status.HTTP_200_OK)
+                return Response({"detail": "Пароль успешно изменён."}, status=status.HTTP_200_OK)
             except Exception as e:
                 return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -64,14 +64,14 @@ class FactoryUserViewSet(DateFilterSchemaMixin, ModelViewSet):
     def delete_by_phone(self, request):
         phone = request.data.get('phone')
         if not phone:
-            return Response({"error": "Phone number required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Необходим номер телефона"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             user = FactoryUser.objects.get(phone_number=phone)
             user.delete()
-            return Response({"message": f"User with phone {phone} deleted"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": f"Пользователь с номером {phone} удалён"}, status=status.HTTP_204_NO_CONTENT)
         except FactoryUser.DoesNotExist:
-            return Response({"message": "User not found"}, status=status.HTTP_200_OK) # Return 200 to indicate it's gone
+            return Response({"message": "Пользователь не найден"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
