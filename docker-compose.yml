@@ -33,8 +33,6 @@ services:
     restart: unless-stopped
     command: >
       sh -c "
-        python manage.py migrate --noinput &&
-        python manage.py setup_admin &&
         gunicorn app.wsgi:application
           --bind 0.0.0.0:8000
           --workers 3
