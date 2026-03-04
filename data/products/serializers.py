@@ -46,7 +46,7 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
             repr['product_type'] = ProductTypeSerializer(instance.product_type).data
         repr['files'] = [{
             "id": file.id,
-            "url": BASE_URL + file.file.url
+            "file": BASE_URL + file.file.url
         } for file in instance.files.all()]
         repr['whouse'] = {
             'id': instance.whouse.id,

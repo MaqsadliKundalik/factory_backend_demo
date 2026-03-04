@@ -21,7 +21,7 @@ class ClientSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['photo'] = {
             "id": instance.photo.id,
-            "url": BASE_URL + instance.photo.file.url
+            "file": BASE_URL + instance.photo.file.url
         } if instance.photo else None
         representation['branches'] = ClientBranchesSerializer(instance.branches, many=True).data
         representation['whouse'] = {
