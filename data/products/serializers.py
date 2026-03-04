@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from data.filedatas.models import File
 from data.filedatas.serializers import FileSerializer
-from data.whouse.serializers import WhouseSerializer
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 
 class ProductItemSerializer(serializers.ModelSerializer):
@@ -46,7 +45,10 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
         if instance.product_type:
             repr['product_type'] = ProductTypeSerializer(instance.product_type).data
         repr['files'] = FileSerializer(instance.files, many=True).data
-        repr['whouse'] = WhouseSerializer(instance.whouse).data
+        repr['whouse'] = {
+            'id': instance.whouse.id,
+            'name': instance.whouse.name
+        }
         return repr
 
     def validate(self, attrs):
