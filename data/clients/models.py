@@ -1,4 +1,5 @@
 from django.db import models
+from data.filedatas.models import File
 from apps.common.models import BaseModel
 
 
@@ -6,6 +7,7 @@ class Client(BaseModel):
     name = models.CharField(max_length=255)
     inn_number = models.CharField(max_length=9)
     phone_number = models.CharField(max_length=255)
+    photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE)
     
     list_display = ["name", "inn_number", "phone_number", "whouse"]
