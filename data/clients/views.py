@@ -17,7 +17,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class ClientFilter(BaseDateFilterSet):
     class Meta:
         model = Client
-        fields = ['whouse', 'created_at', 'updated_at', 'start_date', 'end_date']
+        fields = ['whouse', 'created_at', 'updated_at']
 
 class ClientViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Client.objects.all()

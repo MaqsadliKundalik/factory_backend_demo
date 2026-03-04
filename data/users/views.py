@@ -46,7 +46,7 @@ class FactoryUserResetPasswordViewSet(ViewSet):
 class FactoryUserFilter(BaseDateFilterSet):
     class Meta:
         model = FactoryUser
-        fields = ['whouses', 'role', 'is_active', 'start_date', 'end_date']
+        fields = ['whouses', 'role', 'is_active']
 
 class FactoryUserViewSet(ModelViewSet):
     queryset = FactoryUser.objects.all().order_by('-created_at')

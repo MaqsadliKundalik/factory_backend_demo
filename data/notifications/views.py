@@ -16,7 +16,7 @@ from .serializers import NotificationSerializer
 class NotificationFilter(BaseDateFilterSet):
     class Meta:
         model = Notification
-        fields = ['to_role', 'is_read', 'from_role', 'start_date', 'end_date']
+        fields = ['to_role', 'is_read', 'from_role']
 
 class NotificationViewSet(PermissionMetaMixin, ModelViewSet):
     serializer_class = NotificationSerializer

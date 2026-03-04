@@ -31,32 +31,32 @@ class StandardResultsSetPagination(PageNumberPagination):
 class WhouseProductsFilter(BaseDateFilterSet):
     class Meta:
         model = WhouseProducts
-        fields = ['whouse', 'product', 'status', 'created_at', 'updated_at', 'start_date', 'end_date']
+        fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
 
 class WhouseProductsHistoryFilter(BaseDateFilterSet):
     class Meta:
         model = WhouseProductsHistory
-        fields = ['whouse_product', 'whouse', 'product', 'status', 'start_date', 'end_date']
+        fields = ['whouse_product', 'whouse', 'product', 'status']
 
 class ProductItemFilter(BaseDateFilterSet):
     class Meta:
         model = ProductItem
-        fields = ['product', 'type', 'unit', 'start_date', 'end_date']
+        fields = ['product', 'type', 'unit']
 
 class ProductFilter(BaseDateFilterSet):
     class Meta:
         model = Product
-        fields = ['whouse', 'unit', 'start_date', 'end_date']
+        fields = ['whouse', 'unit']
 
 class ProductTypeFilter(BaseDateFilterSet):
     class Meta:
         model = ProductType
-        fields = ['whouse', 'start_date', 'end_date']
+        fields = ['whouse']
 
 class ProductUnitFilter(BaseDateFilterSet):
     class Meta:
         model = ProductUnit
-        fields = ['whouse', 'start_date', 'end_date']
+        fields = ['whouse']
 
 class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     queryset = WhouseProductsHistory.objects.all()

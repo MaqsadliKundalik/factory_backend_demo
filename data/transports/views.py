@@ -17,7 +17,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class TransportFilter(BaseDateFilterSet):
     class Meta:
         model = Transport
-        fields = ['whouse', 'created_at', 'updated_at', 'start_date', 'end_date']
+        fields = ['whouse', 'created_at', 'updated_at']
 
 class TransportViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Transport.objects.all()
