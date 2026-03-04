@@ -76,7 +76,7 @@ class ClientBranchesViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
         return ClientBranches.objects.all()
 
 
-class ClientAndBranchesCreateUpdateView(APIView):
+class ClientAndBranchesCreateView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
 
@@ -87,25 +87,8 @@ class ClientAndBranchesCreateUpdateView(APIView):
     )
     @transaction.atomic
     def post(self, request):
-        user = request.user
-        data = request.data.copy()
-        
-        # Whouse handling
-        if not data.get('whouse'):
-            whouse = user.whouses.first()
-            if whouse:
-                data['whouse'] = whouse.id
-        
-        client_serializer = ClientSerializer(data=data)
-        client_serializer.is_valid(raise_exception=True)
-        client = client_serializer.save()
-        
-        branches_data = data.get('branches', [])
-        for branch_item in branches_data:
-            branch_item['client'] = client.id
-            branch_serializer = ClientBranchesSerializer(data=branch_item)
-            branch_serializer.is_valid(raise_exception=True)
-            branch_serializer.save()
-            
+        serializer = ClientAndBranchesBulkSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        client = serializer.save()
         return Response(ClientSerializer(client).data, status=status.HTTP_201_CREATED)
 

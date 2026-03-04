@@ -12,6 +12,12 @@ class ClientBranchesSerializer(serializers.ModelSerializer):
             'client': {'read_only': False, 'required': False}
         }
 
+class ClientBranchesBulkSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True)
+    address = serializers.CharField(required=True)
+    longitude = serializers.FloatField(required=True)
+    latitude = serializers.FloatField(required=True)
+
 class ClientSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, read_only=True)
     class Meta:
@@ -32,9 +38,8 @@ class ClientSerializer(serializers.ModelSerializer):
         }
         return representation
 
-class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
-    branches = ClientBranchesSerializer(many=True, required=False)
-    
+class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):    
+    branches = ClientBranchesBulkSerializer(many=True, required=False)
     class Meta:
         model = Client
         fields = ['id', 'name', 'inn_number', 'phone_number', 'photo', 'whouse', 'branches']
@@ -42,3 +47,20 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             'id': {'read_only': False, 'required': False},
             'whouse': {'required': False}
         }
+
+    def create(self, validated_data):
+        branches_data = validated_data.pop('branches', [])
+        
+        # Handle whouse fallback
+        if not validated_data.get('whouse'):
+            user = self.context['request'].user
+            whouse = user.whouses.first()
+            if whouse:
+                validated_data['whouse'] = whouse
+        
+        client = Client.objects.create(**validated_data)
+        
+        for branch_item in branches_data:
+            ClientBranches.objects.create(client=client, **branch_item)
+            
+        return client
