@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from data.whouse.models import Whouse
+from data.users.models import FactoryUser
 import os
 
 User = get_user_model()
@@ -18,16 +19,31 @@ class Command(BaseCommand):
         if not whouse:
             whouse = Whouse.objects.create(name="Default Warehouse")
 
-        user = User.objects.filter(phone_number=phone).first()
-        if not user:
-            user = User.objects.create_superuser(
-                phone_number=phone,
+        # 1. Handle Standard Django Admin Superuser
+        admin_username = 'admin'
+        admin_user = User.objects.filter(username=admin_username).first()
+        if not admin_user:
+            User.objects.create_superuser(
+                username=admin_username,
                 password=password,
+                email='admin@factory.com'
+            )
+            self.stdout.write(self.style.SUCCESS(f'Successfully created standard Superuser: {admin_username}'))
+        else:
+            admin_user.set_password(password)
+            admin_user.save()
+            self.stdout.write(self.style.SUCCESS(f'Successfully updated standard Superuser: {admin_username}'))
+
+        # 2. Handle FactoryUser
+        f_user = FactoryUser.objects.filter(phone_number=phone).first()
+        if not f_user:
+            f_user = FactoryUser.objects.create(
+                phone_number=phone,
                 name=name,
                 role='manager',
-                # whouses cannot be passed to create_superuser directly (M2M)
                 is_active=True,
-                # Set all permissions to True for superuser
+                is_staff=True,
+                is_superuser=True,
                 MAIN_PAGE=True,
                 PRODUCTS_PAGE=True,
                 ORDERS_PAGE=True,
@@ -37,13 +53,14 @@ class Command(BaseCommand):
                 READY_PRODUCTS_PAGE=True,
                 DRIVERS_PAGE=True,
             )
-            user.whouses.add(whouse)
-            self.stdout.write(self.style.SUCCESS(f'Successfully created FactoryUser (Superuser): {phone}'))
+            f_user.set_password(password)
+            f_user.save()
+            f_user.whouses.add(whouse)
+            self.stdout.write(self.style.SUCCESS(f'Successfully created FactoryUser: {phone}'))
         else:
-            user.set_password(password)
-            user.is_superuser = True
-            user.is_staff = True
-            user.role = 'manager'
-            user.whouses.add(whouse)
-            user.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully updated FactoryUser (Superuser): {phone}'))
+            f_user.set_password(password)
+            f_user.name = name
+            f_user.role = 'manager'
+            f_user.whouses.add(whouse)
+            f_user.save()
+            self.stdout.write(self.style.SUCCESS(f'Successfully updated FactoryUser: {phone}'))
