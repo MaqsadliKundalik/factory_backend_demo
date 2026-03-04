@@ -41,7 +41,22 @@ class WhouseProductsHistoryFilter(BaseDateFilterSet):
 class ProductItemFilter(BaseDateFilterSet):
     class Meta:
         model = ProductItem
-        fields = ['product', 'type', 'unit']
+        fields = ['product', 'type', 'unit', 'start_date', 'end_date']
+
+class ProductFilter(BaseDateFilterSet):
+    class Meta:
+        model = Product
+        fields = ['whouse', 'unit', 'start_date', 'end_date']
+
+class ProductTypeFilter(BaseDateFilterSet):
+    class Meta:
+        model = ProductType
+        fields = ['whouse', 'start_date', 'end_date']
+
+class ProductUnitFilter(BaseDateFilterSet):
+    class Meta:
+        model = ProductUnit
+        fields = ['whouse', 'start_date', 'end_date']
 
 class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
     queryset = WhouseProductsHistory.objects.all()
@@ -69,7 +84,7 @@ class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['whouse']
+    filterset_class = ProductTypeFilter
     search_fields = ['name']
 
     def get_queryset(self):
@@ -94,6 +109,9 @@ class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
     serializer_class = ProductUnitSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_class = ProductUnitFilter
+    search_fields = ['name']
 
     def get_queryset(self):
         user = self.request.user
@@ -144,7 +162,8 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
 
         serializer.save()
 
-    filter_backends = [SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_class = ProductFilter
     search_fields = ['name']
 
     @swagger_auto_schema(

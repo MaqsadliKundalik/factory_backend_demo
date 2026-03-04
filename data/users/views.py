@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from apps.common.filters import BaseDateFilterSet
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,11 @@ class FactoryUserResetPasswordViewSet(ViewSet):
                 return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class FactoryUserFilter(BaseDateFilterSet):
+    class Meta:
+        model = FactoryUser
+        fields = ['whouses', 'role', 'is_active', 'start_date', 'end_date']
+
 class FactoryUserViewSet(ModelViewSet):
     queryset = FactoryUser.objects.all().order_by('-created_at')
     serializer_class = FactoryUserSerializer
@@ -49,7 +55,7 @@ class FactoryUserViewSet(ModelViewSet):
     permission_classes = [HasDynamicPermission(crud_perm="USERS_PAGE", read_perm="USERS_PAGE")]
     pagination_class = UserListPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['whouses', "created_at", "updated_at"]
+    filterset_class = FactoryUserFilter
     search_fields = ['name', 'phone_number']
     ordering_fields = ['created_at', 'updated_at']
 

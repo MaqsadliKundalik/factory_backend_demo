@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from apps.common.filters import BaseDateFilterSet
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
@@ -12,13 +13,18 @@ from apps.common.mixins import PermissionMetaMixin
 from .models import Notification
 from .serializers import NotificationSerializer
 
+class NotificationFilter(BaseDateFilterSet):
+    class Meta:
+        model = Notification
+        fields = ['to_role', 'is_read', 'from_role', 'start_date', 'end_date']
+
 class NotificationViewSet(PermissionMetaMixin, ModelViewSet):
     serializer_class = NotificationSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = Notification.objects.all()
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ['to_role', 'is_read', 'from_role']
+    filterset_class = NotificationFilter
     ordering_fields = ['created_at']
     ordering = ['-created_at']
 
