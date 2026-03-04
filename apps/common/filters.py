@@ -5,4 +5,4 @@ class BaseDateFilterSet(filters.FilterSet):
     end_date = filters.DateFilter(field_name="created_at", lookup_expr='date__lte')
 
     class Meta:
-        fields = ['start_date', 'end_date']
+        fields = []
