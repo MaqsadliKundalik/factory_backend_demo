@@ -4,6 +4,7 @@ from .views import ClientViewSet, ClientBranchesViewSet, ClientAndBranchesCreate
 
 router = DefaultRouter()
 router.register(r'', ClientViewSet)
+router.register(r'branches', ClientBranchesViewSet)
 
 urlpatterns = [
     path('create-update/', ClientAndBranchesCreateUpdateView.as_view(), name='client-create-update'),

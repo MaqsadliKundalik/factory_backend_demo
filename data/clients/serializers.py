@@ -7,8 +7,10 @@ class ClientBranchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientBranches
         fields = ['id', 'client', 'name', 'address', 'longitude', 'latitude']
-        read_only_fields = [] # Remove read-only for id so it can be passed in PUT
-
+        extra_kwargs = {
+            'id': {'read_only': False, 'required': False},
+            'client': {'read_only': False, 'required': False}
+        }
 
 class ClientSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, read_only=True)
@@ -29,7 +31,6 @@ class ClientSerializer(serializers.ModelSerializer):
             "name": instance.whouse.name
         }
         return representation
-
 
 class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, required=False)

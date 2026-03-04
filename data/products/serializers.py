@@ -15,8 +15,6 @@ class ProductItemSerializer(serializers.ModelSerializer):
             repr['type'] = ProductTypeSerializer(instance.type).data
         if instance.unit:
             repr['unit'] = ProductUnitSerializer(instance.unit).data
-        if instance.product:
-            repr['product'] = ProductSerializer(instance.product).data
         return repr
  
 class ProductTypeSerializer(serializers.ModelSerializer):
