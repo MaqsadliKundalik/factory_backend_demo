@@ -40,7 +40,7 @@ class DriverSession(models.Model):
 
 class FactoryUserSession(models.Model):
     factory_user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sessions",
+        "users.FactoryUser", on_delete=models.CASCADE, related_name="sessions",
         null=True, blank=True
     )
 

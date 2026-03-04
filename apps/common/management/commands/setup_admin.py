@@ -34,7 +34,8 @@ class Command(BaseCommand):
                 TRANSPORTS_PAGE=True,
                 CLIENTS_PAGE=True,
                 USERS_PAGE=True,
-                SETTINGS_PAGE=True,
+                READY_PRODUCTS_PAGE=True,
+                DRIVERS_PAGE=True,
             )
             user.whouses.add(whouse)
             self.stdout.write(self.style.SUCCESS(f'Successfully created FactoryUser (Superuser): {phone}'))

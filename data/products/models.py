@@ -42,19 +42,18 @@ class WhouseProducts(BaseModel):
     REJECTED - skladchi qorovul qo’shgan mahsulotni rad etsa chiqadigan status
     CONFIRMED - skladchi qorovul qo'shgan mahsulotni tasdiqlaydi
     """
-    STATUSES = [
-        ('pending', 'Pending'),
-        ('created', 'Created'),
-        ('rejected', 'Rejected'),
-        ('confirmed', 'Confirmed'),
-    ]
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        CREATED = 'CREATED', 'Created'
+        REJECTED = 'REJECTED', 'Rejected'
+        CONFIRMED = 'CONFIRMED', 'Confirmed'
     
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     files = models.ManyToManyField(File, related_name='whouse_products')
-    status = models.CharField(max_length=20, choices=STATUSES, default='pending')
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     
     def __str__(self):
         return self.product.name
@@ -65,7 +64,7 @@ class WhouseProductsHistory(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     files = models.ManyToManyField(File, related_name='whouse_products_history')
-    status = models.CharField(max_length=20, choices=WhouseProducts.STATUSES, default='pending')
+    status = models.CharField(max_length=20, choices=WhouseProducts.Status.choices, default=WhouseProducts.Status.PENDING)
     
     def __str__(self):
         return f"History of {self.product.name} at {self.created_at}"
@@ -74,7 +73,7 @@ class WhouseProductsHistory(BaseModel):
 
 @receiver(post_save, sender=WhouseProducts)
 def create_whouse_product_history(sender, instance, **kwargs):
-    if instance.status == 'pending':
+    if instance.status == WhouseProducts.Status.PENDING:
         Notification.objects.create(
             to_role='whouse_manager',
             from_role='guard',

@@ -175,7 +175,7 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'users.FactoryUser'
+# AUTH_USER_MODEL = 'users.FactoryUser'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'

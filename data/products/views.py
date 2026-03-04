@@ -116,7 +116,7 @@ class ProductItemViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ProductItem.objects.all()
     serializer_class = ProductItemSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
+    permission_classes = [HasDynamicPermission(crud_perm="READY_PRODUCTS_PAGE", read_perm="READY_PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
     filterset_class = ProductItemFilter
     search_fields = ['name']

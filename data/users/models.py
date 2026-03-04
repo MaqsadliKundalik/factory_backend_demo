@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from apps.common.models import BaseModel
 from django.contrib.auth.hashers import make_password, check_password
 
 # Create your managers here.
@@ -18,7 +19,7 @@ class FactoryUserManager(BaseUserManager):
         return self.create_user(phone_number, password, **extra_fields)
 
 # Create your models here.
-class FactoryUser(AbstractBaseUser, PermissionsMixin):
+class FactoryUser(BaseModel, AbstractBaseUser):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=100, unique=True)
     # password field is provided by AbstractBaseUser
@@ -31,14 +32,11 @@ class FactoryUser(AbstractBaseUser, PermissionsMixin):
     TRANSPORTS_PAGE = models.BooleanField(default=False)
     CLIENTS_PAGE = models.BooleanField(default=False)
     USERS_PAGE = models.BooleanField(default=False)
-    SETTINGS_PAGE = models.BooleanField(default=False)
-    
+    READY_PRODUCTS_PAGE = models.BooleanField(default=False)
+    DRIVERS_PAGE = models.BooleanField(default=False)
+
     whouses = models.ManyToManyField('factory_whouse.Whouse', blank=True, related_name='users')
     
-    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -48,7 +46,7 @@ class FactoryUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name']
 
     def has_perm(self, perm, obj=None):
-        return getattr(self, perm, False) or super().has_perm(perm, obj)
+        return self.is_staff or self.is_superuser
 
     def has_module_perms(self, app_label):
         return self.is_staff or self.is_superuser
