@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from data.filedatas.models import File
-from data.filedatas.serializers import FileSerializer
+from app.settings import BASE_URL
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 
 class ProductItemSerializer(serializers.ModelSerializer):
@@ -18,7 +18,7 @@ class ProductItemSerializer(serializers.ModelSerializer):
         if instance.product:
             repr['product'] = ProductSerializer(instance.product).data
         return repr
-
+ 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductType
@@ -44,7 +44,10 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
             repr['product'] = ProductSerializer(instance.product).data
         if instance.product_type:
             repr['product_type'] = ProductTypeSerializer(instance.product_type).data
-        repr['files'] = FileSerializer(instance.files, many=True).data
+        repr['files'] = [{
+            "id": file.id,
+            "url": BASE_URL + file.file.url
+        } for file in instance.files.all()]
         repr['whouse'] = {
             'id': instance.whouse.id,
             'name': instance.whouse.name

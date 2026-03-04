@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Client, ClientBranches
 from data.filedatas.serializers import FileSerializer
+from app.settings import BASE_URL
 
 class ClientBranchesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,7 +21,7 @@ class ClientSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['photo'] = {
             "id": instance.photo.id,
-            "url": instance.photo.file.url
+            "url": BASE_URL + instance.photo.file.url
         } if instance.photo else None
         representation['branches'] = ClientBranchesSerializer(instance.branches, many=True).data
         representation['whouse'] = {
