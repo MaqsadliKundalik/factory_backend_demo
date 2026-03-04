@@ -39,6 +39,7 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
     files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
+    items = ProductItemSerializer(many=True, required=False, allow_null=True, allow_empty=True)
     product_type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.all())
     class Meta:
         model = WhouseProducts  
