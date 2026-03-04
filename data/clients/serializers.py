@@ -28,3 +28,15 @@ class ClientSerializer(serializers.ModelSerializer):
             "name": instance.whouse.name
         }
         return representation
+
+
+class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
+    branches = ClientBranchesSerializer(many=True, required=False)
+    
+    class Meta:
+        model = Client
+        fields = ['id', 'name', 'inn_number', 'phone_number', 'photo', 'whouse', 'branches']
+        extra_kwargs = {
+            'id': {'read_only': False, 'required': False},
+            'whouse': {'required': False}
+        }

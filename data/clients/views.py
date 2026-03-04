@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from .models import Client, ClientBranches
-from .serializers import ClientSerializer, ClientBranchesSerializer
+from .serializers import ClientSerializer, ClientBranchesSerializer, ClientAndBranchesBulkSerializer
+from drf_yasg.utils import swagger_auto_schema
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.filters import BaseDateFilterSet
@@ -79,6 +80,11 @@ class ClientAndBranchesCreateUpdateView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
 
+    @swagger_auto_schema(
+        operation_summary="Create client and branches",
+        request_body=ClientAndBranchesBulkSerializer,
+        responses={201: ClientSerializer}
+    )
     @transaction.atomic
     def post(self, request):
         user = request.user
@@ -103,6 +109,11 @@ class ClientAndBranchesCreateUpdateView(APIView):
             
         return Response(ClientSerializer(client).data, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_summary="Update client and branches",
+        request_body=ClientAndBranchesBulkSerializer,
+        responses={200: ClientSerializer}
+    )
     @transaction.atomic
     def put(self, request):
         pk = request.data.get('id')
