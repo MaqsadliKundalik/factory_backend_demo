@@ -15,7 +15,6 @@ from .models import Notification
 from .serializers import NotificationSerializer
 
 
-# ─── Helpers ─────────────────────────────────────────────────────────────────
 
 def _get_role(request):
     """Auth qilingan userning rolini oladi (FactoryUser yoki Driver)."""
@@ -24,7 +23,6 @@ def _get_role(request):
     )
 
 
-# ─── Pagination ───────────────────────────────────────────────────────────────
 
 class NotificationPagination(PageNumberPagination):
     page_size = 20
@@ -32,7 +30,6 @@ class NotificationPagination(PageNumberPagination):
     max_page_size = 100
 
 
-# ─── FilterSet ────────────────────────────────────────────────────────────────
 
 class NotificationFilter(BaseDateFilterSet):
     class Meta:
@@ -40,7 +37,6 @@ class NotificationFilter(BaseDateFilterSet):
         fields = ['is_read', 'from_role']
 
 
-# ─── ViewSet ──────────────────────────────────────────────────────────────────
 
 class NotificationViewSet(
     DateFilterSchemaMixin,
@@ -48,11 +44,6 @@ class NotificationViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    """
-    Faqat READ endpointlar: list, retrieve, mark-all-read, mark-as-read.
-    Frontend hech qanday extra ma'lumot yuborishi shart emas —
-    token orqali kim ekanini aniqlab, o'sha rolga tegishli bildirishnomalarni qaytaradi.
-    """
     serializer_class = NotificationSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -73,17 +64,13 @@ class NotificationViewSet(
 
         return Notification.objects.filter(to_role=role)
 
-    # ── mark-all-read ─────────────────────────────────────────────────────────
-
     @swagger_auto_schema(
-        operation_summary="Barcha bildirishnomalarni o'qildi deb belgilash",
-        operation_description="Hech qanday body yuborish shart emas. Token orqali aniqlangan rolga tegishli barcha bildirishnomalar o'qildi bo'ladi.",
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
         responses={
             200: openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'message': openapi.Schema(type=openapi.TYPE_STRING, example="Hammasini o'qildi deb belgilandi"),
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
                     'count': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
                 },
             )
@@ -101,11 +88,7 @@ class NotificationViewSet(
             status=status.HTTP_200_OK,
         )
 
-    # ── mark-as-read ──────────────────────────────────────────────────────────
-
     @swagger_auto_schema(
-        operation_summary="Bitta bildirishnomani o'qildi deb belgilash",
-        operation_description="Hech qanday body yuborish shart emas. ID yetarli.",
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
         responses={200: NotificationSerializer()},
     )
@@ -117,11 +100,7 @@ class NotificationViewSet(
             notification.save(update_fields=['is_read'])
         return Response(NotificationSerializer(notification).data)
 
-    # ── unread count ──────────────────────────────────────────────────────────
-
     @swagger_auto_schema(
-        operation_summary="O'qilmagan bildirishnomalar soni",
-        operation_description="Frontend badge uchun. Hech qanday param shart emas.",
         responses={
             200: openapi.Schema(
                 type=openapi.TYPE_OBJECT,
