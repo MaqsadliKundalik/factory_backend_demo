@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-359pbm8gkkvm=dv*02#6&+y!&q+c(bpmjvzw6yntj93@k1-52e')
-
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

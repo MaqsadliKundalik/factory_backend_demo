@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from data.filedatas.models import File
+from data.filedatas.serializers import FileSerializer
+from app.settings import BASE_URL
+from data.whouses.serializers import WhouseSerializer
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 
 class ProductItemSerializer(serializers.ModelSerializer):
-    product = serializers.PrimaryKeyRelatedField(read_only=True)
-    type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.all(), required=False, allow_null=True)
-    unit = serializers.PrimaryKeyRelatedField(queryset=ProductUnit.objects.all(), required=False, allow_null=True)
     class Meta:
         model = ProductItem
         fields = ['id', 'name', 'type', 'unit', 'quantity', 'product']
@@ -14,15 +14,14 @@ class ProductItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         if instance.type:
-            repr['type_details'] = {'id': instance.type.id, 'name': instance.type.name}
+            repr['type'] = ProductTypeSerializer(instance.type).data
         if instance.unit:
-            repr['unit_details'] = {'id': instance.unit.id, 'name': instance.unit.name}
+            repr['unit'] = ProductUnitSerializer(instance.unit).data
         if instance.product:
-            repr['product_details'] = {'id': instance.product.id, 'name': instance.product.name}
+            repr['product'] = ProductSerializer(instance.product).data
         return repr
 
 class ProductTypeSerializer(serializers.ModelSerializer):
-    whouse = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = ProductType
         fields = ['id', 'name', 'whouse']
@@ -36,10 +35,6 @@ class ProductUnitSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class WhouseProductsSerializer(serializers.ModelSerializer):
-    whouse = serializers.PrimaryKeyRelatedField(read_only=True)
-    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
-    files = serializers.PrimaryKeyRelatedField(queryset=File.objects.all(), many=True, required=False)
-    product_type = serializers.PrimaryKeyRelatedField(queryset=ProductType.objects.all())
     class Meta:
         model = WhouseProducts  
         fields = ['id', 'whouse', 'product', 'product_type', 'quantity', 'files', 'status']
@@ -47,26 +42,12 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        # Add product details
         if instance.product:
-            repr['product_details'] = {
-                'id': instance.product.id,
-                'name': instance.product.name
-            }
+            repr['product'] = ProductSerializer(instance.product).data
         if instance.product_type:
-            repr['product_type_details'] = {
-                'id': instance.product_type.id,
-                'name': instance.product_type.name
-            }
-        if instance.product.items:
-            repr['items_details'] = [
-                {'id': i.id, 'name': i.name, 'quantity': i.quantity, 'unit': i.unit, 'type': i.type} 
-                for i in instance.product.items.all()
-            ]
-        repr['file_details'] = [
-            {'id': f.id, 'url': f.file.url if f.file else None} 
-            for f in instance.files.all()
-        ]
+            repr['product_type'] = ProductTypeSerializer(instance.product_type).data
+        repr['files'] = FileSerializer(instance.files, many=True).data
+        repr['whouse'] = WhouseSerializer(instance.whouse).data
         return repr
 
     def validate(self, attrs):
@@ -86,19 +67,6 @@ class SelectProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class ProductSerializer(serializers.ModelSerializer):
-    types = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=ProductType.objects.all(),
-        required=False
-    )
-    unit = serializers.PrimaryKeyRelatedField(
-        queryset=ProductUnit.objects.all(),
-        required=False,
-        allow_null=True
-    )
-    items = ProductItemSerializer(many=True, required=False, allow_null=True, allow_empty=True)
-    whouse = serializers.PrimaryKeyRelatedField(read_only=True)
-
     class Meta:
         model = Product
         fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']
@@ -106,15 +74,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        repr['types'] = [{'id': t.id, 'name': t.name} for t in instance.types.all()]
+        repr['types'] = ProductTypeSerializer(instance.types, many=True).data
         if instance.unit:
-            repr['unit'] = {'id': instance.unit.id, 'name': instance.unit.name}
+            repr['unit'] = ProductUnitSerializer(instance.unit).data
         if instance.items:
-            repr['items_details'] = [
-                {'id': i.id, 'name': i.name, 'quantity': i.quantity, 'unit': i.unit, 'type': i.type} 
-                for i in instance.items.all()
-            ]
-        # Nested items representation is handled by the 'items' field defined above
+            repr['items'] = ProductItemSerializer(instance.items, many=True).data
         return repr
 
     def create(self, validated_data):
