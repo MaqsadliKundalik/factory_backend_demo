@@ -6,7 +6,8 @@ class ClientBranchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientBranches
         fields = ['id', 'client', 'name', 'address', 'longitude', 'latitude']
-        read_only_fields = ['id']
+        read_only_fields = [] # Remove read-only for id so it can be passed in PUT
+
 
 class ClientSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, read_only=True)

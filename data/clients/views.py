@@ -4,6 +4,10 @@ from .serializers import ClientSerializer, ClientBranchesSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.filters import BaseDateFilterSet
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.db import transaction
+from rest_framework import status
 from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
@@ -70,3 +74,72 @@ class ClientBranchesViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
 
         return ClientBranches.objects.all()
 
+
+class ClientAndBranchesCreateUpdateView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
+
+    @transaction.atomic
+    def post(self, request):
+        user = request.user
+        data = request.data.copy()
+        
+        # Whouse handling
+        if not data.get('whouse'):
+            whouse = user.whouses.first()
+            if whouse:
+                data['whouse'] = whouse.id
+        
+        client_serializer = ClientSerializer(data=data)
+        client_serializer.is_valid(raise_exception=True)
+        client = client_serializer.save()
+        
+        branches_data = data.get('branches', [])
+        for branch_item in branches_data:
+            branch_item['client'] = client.id
+            branch_serializer = ClientBranchesSerializer(data=branch_item)
+            branch_serializer.is_valid(raise_exception=True)
+            branch_serializer.save()
+            
+        return Response(ClientSerializer(client).data, status=status.HTTP_201_CREATED)
+
+    @transaction.atomic
+    def put(self, request):
+        pk = request.data.get('id')
+        if not pk:
+            return Response({"detail": "Client 'id' is required for update."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            client = Client.objects.get(pk=pk)
+        except Client.DoesNotExist:
+            return Response({"detail": "Client not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+        client_serializer = ClientSerializer(client, data=request.data, partial=True)
+        client_serializer.is_valid(raise_exception=True)
+        client = client_serializer.save()
+        
+        branches_data = request.data.get('branches', [])
+        incoming_branch_ids = []
+        
+        for branch_item in branches_data:
+            branch_item['client'] = client.id
+            branch_id = branch_item.get('id')
+            
+            if branch_id:
+                try:
+                    branch_instance = ClientBranches.objects.get(id=branch_id, client=client)
+                    branch_serializer = ClientBranchesSerializer(branch_instance, data=branch_item)
+                    incoming_branch_ids.append(branch_id)
+                except ClientBranches.DoesNotExist:
+                    branch_serializer = ClientBranchesSerializer(data=branch_item)
+            else:
+                branch_serializer = ClientBranchesSerializer(data=branch_item)
+                
+            branch_serializer.is_valid(raise_exception=True)
+            saved_branch = branch_serializer.save()
+            if not branch_id:
+                incoming_branch_ids.append(saved_branch.id)
+                
+        ClientBranches.objects.filter(client=client).exclude(id__in=incoming_branch_ids).delete()
+        
+        return Response(ClientSerializer(client).data)
