@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from data.filedatas.models import File
 from data.filedatas.serializers import FileSerializer
-from app.settings import BASE_URL
-from data.whouses.serializers import WhouseSerializer
+from data.whouse.serializers import WhouseSerializer
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 
 class ProductItemSerializer(serializers.ModelSerializer):
