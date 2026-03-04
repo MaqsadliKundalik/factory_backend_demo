@@ -42,9 +42,8 @@ RUN python manage.py collectstatic --noinput
 # TLS protokollari
 ENV JAVA_OPTS="-Djdk.tls.client.protocols=TLSv1,TLSv1.1,TLSv1.2 -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2"
 
-# Start command
-RUN chmod +x start.sh
-CMD ["sh", "start.sh"]
+# Default command (docker-compose override qiladi)
+CMD ["gunicorn", "app.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
 
 
 

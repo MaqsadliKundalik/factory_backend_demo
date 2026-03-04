@@ -8,4 +8,6 @@ db.sqlite3
 .vscode/
 venv/
 env/
+myenv/
+tmp/
 *.log

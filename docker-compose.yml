@@ -1,7 +1,3 @@
-x-shared-volumes: &shared_volumes
-  - ./:/usr/src/app
-  - ./data:/usr/src/app/data
-
 services:
   factory_db:
     image: postgres:alpine
@@ -14,22 +10,38 @@ services:
       - db_oktell:/var/lib/postgresql/data/
     ports:
       - "5434:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   factory_django:
     build: .
     container_name: factory_django
     env_file:
       - .env
-    volumes: *shared_volumes
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
     ports:
-      # - "8000:8000"
       - "8002:8000"
     depends_on:
-      - factory_db
-
-    restart: on-failure
-    command:
-       sh -c "python manage.py migrate --noinput && python manage.py setup_admin && python manage.py runserver 0.0.0.0:8000"
+      factory_db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+        python manage.py migrate --noinput &&
+        python manage.py setup_admin &&
+        gunicorn app.wsgi:application
+          --bind 0.0.0.0:8000
+          --workers 3
+          --timeout 120
+          --access-logfile -
+          --error-logfile -
+      "
 
 #   redis:
 #     image: redis:alpine
@@ -67,3 +79,4 @@ services:
 
 volumes:
   db_oktell:
+  static_volume:
