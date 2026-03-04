@@ -10,7 +10,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'phone_number', 'password', 'role',
             'MAIN_PAGE', 'PRODUCTS_PAGE', 'ORDERS_PAGE', 'TRANSPORTS_PAGE', 
-            'CLIENTS_PAGE', 'USERS_PAGE', 'READY_PRODUCTS_PAGE', 'DRIVERS_PAGE', 'whouses'
+            'CLIENTS_PAGE', 'USERS_PAGE', 'READY_PRODUCTS_PAGE', 'DRIVERS_PAGE', 'WHEREHOUSES_PAGE', 'whouses'
         ]
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}

@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
-from apps.common.mixins import PermissionMetaMixin
+from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from data.notifications.models import Notification
 from drf_yasg.utils import swagger_auto_schema
 
@@ -58,11 +58,11 @@ class ProductUnitFilter(BaseDateFilterSet):
         model = ProductUnit
         fields = ['whouse']
 
-class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
+class WhouseProductsHistoryViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ReadOnlyModelViewSet):
     queryset = WhouseProductsHistory.objects.all()
     serializer_class = WhouseProductsHistorySerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
+    permission_classes = [HasDynamicPermission(crud_perm="WHEREHOUSES_PAGE", read_perm="WHEREHOUSES_PAGE")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = WhouseProductsHistoryFilter
@@ -78,7 +78,7 @@ class WhouseProductsHistoryViewSet(PermissionMetaMixin, ReadOnlyModelViewSet):
 
 
 
-class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
+class ProductTypeViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = ProductType.objects.all()
     serializer_class = ProductTypeSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -104,7 +104,7 @@ class ProductTypeViewSet(PermissionMetaMixin, ModelViewSet):
             whouse = user.whouses.first()
             serializer.save(whouse=whouse)
 
-class ProductUnitViewSet(PermissionMetaMixin, ModelViewSet):
+class ProductUnitViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = ProductUnit.objects.all()
     serializer_class = ProductUnitSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -139,7 +139,7 @@ class ProductItemViewSet(PermissionMetaMixin, ModelViewSet):
     filterset_class = ProductItemFilter
     search_fields = ['name']
 
-class ProductViewSet(PermissionMetaMixin, ModelViewSet):
+class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -186,7 +186,7 @@ class ProductViewSet(PermissionMetaMixin, ModelViewSet):
             
         data = queryset.values('id', 'name')
         return Response(list(data))
-class WhouseProductsViewSet(PermissionMetaMixin, ModelViewSet):
+class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
     authentication_classes = [UnifiedJWTAuthentication]

@@ -48,6 +48,7 @@ class Command(BaseCommand):
                 PRODUCTS_PAGE=True,
                 ORDERS_PAGE=True,
                 TRANSPORTS_PAGE=True,
+                WHEREHOUSES_PAGE=True,
                 CLIENTS_PAGE=True,
                 USERS_PAGE=True,
                 READY_PRODUCTS_PAGE=True,

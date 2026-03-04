@@ -9,7 +9,7 @@ from apps.common.filters import BaseDateFilterSet
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
-from apps.common.mixins import PermissionMetaMixin
+from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from .models import Notification
 from .serializers import NotificationSerializer
 
@@ -18,7 +18,7 @@ class NotificationFilter(BaseDateFilterSet):
         model = Notification
         fields = ['to_role', 'is_read', 'from_role']
 
-class NotificationViewSet(PermissionMetaMixin, ModelViewSet):
+class NotificationViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     serializer_class = NotificationSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [IsAuthenticated]

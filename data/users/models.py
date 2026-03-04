@@ -30,6 +30,7 @@ class FactoryUser(BaseModel, AbstractBaseUser):
     PRODUCTS_PAGE = models.BooleanField(default=False)
     ORDERS_PAGE = models.BooleanField(default=False)
     TRANSPORTS_PAGE = models.BooleanField(default=False)
+    WHEREHOUSES_PAGE = models.BooleanField(default=False)
     CLIENTS_PAGE = models.BooleanField(default=False)
     USERS_PAGE = models.BooleanField(default=False)
     READY_PRODUCTS_PAGE = models.BooleanField(default=False)

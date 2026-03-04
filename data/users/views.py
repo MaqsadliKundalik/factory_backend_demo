@@ -8,6 +8,7 @@ from data.users.models import FactoryUser
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from rest_framework.permissions import IsAuthenticated
+from apps.common.mixins import DateFilterSchemaMixin
 from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -48,7 +49,7 @@ class FactoryUserFilter(BaseDateFilterSet):
         model = FactoryUser
         fields = ['whouses', 'role', 'is_active']
 
-class FactoryUserViewSet(ModelViewSet):
+class FactoryUserViewSet(DateFilterSchemaMixin, ModelViewSet):
     queryset = FactoryUser.objects.all().order_by('-created_at')
     serializer_class = FactoryUserSerializer
     authentication_classes = [UnifiedJWTAuthentication]

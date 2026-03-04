@@ -4,7 +4,7 @@ from .serializers import TransportSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.filters import BaseDateFilterSet
-from apps.common.mixins import PermissionMetaMixin
+from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -19,7 +19,7 @@ class TransportFilter(BaseDateFilterSet):
         model = Transport
         fields = ['whouse', 'created_at', 'updated_at']
 
-class TransportViewSet(PermissionMetaMixin, ModelViewSet):
+class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = Transport.objects.all()
     serializer_class = TransportSerializer
     authentication_classes = [UnifiedJWTAuthentication]

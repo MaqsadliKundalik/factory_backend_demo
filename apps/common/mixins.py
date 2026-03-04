@@ -1,5 +1,17 @@
 from rest_framework.viewsets import ModelViewSet
 from apps.common.permissions import HasDynamicPermission
+from drf_yasg.utils import swagger_auto_schema
+from apps.common.filters import DATE_FILTER_PARAMS
+
+class DateFilterSchemaMixin:
+    """
+    Swagger da start_date va end_date filterlarini ko'rsatish uchun mixin.
+    Bu mixin list() va boshqa amallarni dekoratsiya qiladi.
+    """
+    @swagger_auto_schema(manual_parameters=DATE_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class PermissionMetaMixin:
     """

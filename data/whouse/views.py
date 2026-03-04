@@ -3,7 +3,7 @@ from .models import Whouse
 from .serializers import WhouseGetSerializer, WhouseCreateUpdateSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
-from apps.common.mixins import PermissionMetaMixin
+from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -14,7 +14,7 @@ class WhouseFilter(BaseDateFilterSet):
         model = Whouse
         fields = ['name', 'start_date', 'end_date']
 
-class WhouseViewSet(PermissionMetaMixin, ModelViewSet):
+class WhouseViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = Whouse.objects.all()
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(read_perm="MAIN_PAGE", crud_perm="MAIN_PAGE")]

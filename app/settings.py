@@ -195,12 +195,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-SWAGGER_SETTINGS = {
-    'DEFAULT_FILTER_INSPECTORS': [
-        'drf_yasg.inspectors.CoreAPICompatInspector',
-    ],
-}
-
 CSRF_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = False
