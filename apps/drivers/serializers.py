@@ -22,17 +22,10 @@ class DriverSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "phone_number", "password", "car_type", "car_number"]
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
-        driver = Driver(**validated_data)
-        driver.set_password(password)
-        driver.save()
-        return driver
+        return Driver.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        if password:
-            instance.set_password(password)
         instance.save()
         return instance

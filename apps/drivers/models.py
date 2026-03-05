@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from apps.common.models import BaseModel
+# Create your managers here.
 # Create your models here.
 
 class Driver(BaseModel):
@@ -33,6 +35,13 @@ class Driver(BaseModel):
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
+
+    
+
+    def save(self, *args, **kwargs):
+        if self.password and not self.password.startswith(('pbkdf2_sha256$', 'bcrypt$', 'argon2$')):
+            self.set_password(self.password)
+        super().save(*args, **kwargs)
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
