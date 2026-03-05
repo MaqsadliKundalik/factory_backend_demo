@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from apps.common.models import BaseModel
-from data.file_data.models import File
+from data.filedatas.models import File
 # Create your managers here.
 # Create your models here.
 
