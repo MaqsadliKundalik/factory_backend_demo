@@ -192,7 +192,7 @@ class UnifiedMobileLoginAPIView(APIView):
             raise NotFound("Пользователь не найден.")
 
         if not user.check_password(data["password"]):
-            raise NotAuthenticated("Noto'g'ri parol.")
+            raise NotAuthenticated(f"Noto'g'ri parol. {user.check_password(data['password'])}\n{user.password}\n{data['password']}")
 
         new_session = user.new_session()
         refresh = new_session.token
