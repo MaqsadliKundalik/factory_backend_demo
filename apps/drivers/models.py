@@ -20,6 +20,25 @@ class Driver(BaseModel):
 
     whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
 
+    # Permission fields for compatibility with HasDynamicPermission
+    MAIN_PAGE = models.BooleanField(default=False)
+    PRODUCTS_PAGE = models.BooleanField(default=False)
+    ORDERS_PAGE = models.BooleanField(default=False)
+    TRANSPORTS_PAGE = models.BooleanField(default=False)
+    WHEREHOUSES_PAGE = models.BooleanField(default=False)
+    CLIENTS_PAGE = models.BooleanField(default=False)
+    USERS_PAGE = models.BooleanField(default=False)
+    READY_PRODUCTS_PAGE = models.BooleanField(default=False)
+    DRIVERS_PAGE = models.BooleanField(default=False)
+
+    @property
+    def whouses(self):
+        # Returns a queryset for compatibility with FactoryUser.whouses.all()
+        from data.whouse.models import Whouse
+        if self.whouse:
+            return Whouse.objects.filter(id=self.whouse.id)
+        return Whouse.objects.none()
+
     # Simple permissions for drivers
     def has_perm(self, perm_name):
         return False # Drivers usually don't have granular web permissions

@@ -19,7 +19,11 @@ class DriverSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Driver
-        fields = ["id", "name", "phone_number", "password", "car_type", "car_number"]
+        fields = [
+            "id", "name", "phone_number", "password", "car_type", "car_number",
+            "MAIN_PAGE", "PRODUCTS_PAGE", "ORDERS_PAGE", "TRANSPORTS_PAGE",
+            "WHEREHOUSES_PAGE", "CLIENTS_PAGE", "USERS_PAGE", "READY_PRODUCTS_PAGE", "DRIVERS_PAGE"
+        ]
 
     def create(self, validated_data):
         return Driver.objects.create(**validated_data)
