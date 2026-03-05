@@ -63,7 +63,7 @@ class WhouseProducts(BaseModel):
 
 class WhouseProductsHistory(BaseModel):
 
-    product = models.ForeignKey("data.products.Product", on_delete=models.CASCADE, related_name='history', null=True, blank=True)
+    product = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name='history', null=True, blank=True)
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=HistoryStatus.choices, default=HistoryStatus.IN)

@@ -16,12 +16,12 @@ if TYPE_CHECKING:
 # Create your models here.
 class Order(BaseModel):
     display_id = models.IntegerField(primary_key=True)
-    client:"Client" = models.ForeignKey("data.clients.Client", on_delete=models.CASCADE, related_name='orders')
-    branch:"ClientBranches" = models.ForeignKey("data.clients.ClientBranches", on_delete=models.CASCADE, related_name='orders')
-    whouse:"Whouse" = models.ForeignKey("data.whouse.Whouse", on_delete=models.CASCADE, related_name='orders')
-    product:"Product" = models.ForeignKey("data.products.Product", on_delete=models.CASCADE, related_name='orders')
-    type:"ProductType" = models.ForeignKey("data.products.ProductType", on_delete=models.CASCADE, related_name='orders')
-    unit:"ProductUnit" = models.ForeignKey("data.products.ProductUnit", on_delete=models.CASCADE, related_name='orders')
+    client:"Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name='orders')
+    branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.CASCADE, related_name='orders')
+    whouse:"Whouse" = models.ForeignKey("whouse.Whouse", on_delete=models.CASCADE, related_name='orders')
+    product:"Product" = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name='orders')
+    type:"ProductType" = models.ForeignKey("products.ProductType", on_delete=models.CASCADE, related_name='orders')
+    unit:"ProductUnit" = models.ForeignKey("products.ProductUnit", on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=Order.Status.choices, default=Order.Status.PENDING)
     
     def __str__(self):
