@@ -148,6 +148,7 @@ class ProductItemViewSet(PermissionMetaMixin, ModelViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="READY_PRODUCTS_PAGE", read_perm="READY_PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ProductItemFilter
     search_fields = ['name']
 
@@ -216,6 +217,7 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = WhouseProductsFilter
     search_fields = ['product__name']
 
@@ -240,6 +242,7 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = WhouseProductsFilter
     search_fields = ['product__name']
 

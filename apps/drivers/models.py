@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from apps.common.models import BaseModel
+from data.file_data.models import File
 # Create your managers here.
 # Create your models here.
 
@@ -17,6 +18,8 @@ class Driver(BaseModel):
     password = models.CharField(max_length=128)
     car_type = models.CharField(max_length=10, choices=CAR_TYPES)
     car_number = models.CharField(max_length=15)
+
+    photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
 
     whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
 
