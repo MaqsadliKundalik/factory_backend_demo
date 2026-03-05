@@ -34,10 +34,3 @@ class ClientBranches(BaseModel):
     
     def __str__(self):
         return f"{self.name} - {self.client}"
-
-
-
-c = Client.objects.first()
-
-
-c.orders.all()
