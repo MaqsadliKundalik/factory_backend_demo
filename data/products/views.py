@@ -36,7 +36,7 @@ class WhouseProductsFilter(BaseDateFilterSet):
 class WhouseProductsHistoryFilter(BaseDateFilterSet):
     class Meta:
         model = WhouseProductsHistory
-        fields = ['whouse_product', 'whouse', 'product', 'status']
+        fields = ['whouse', 'product', 'status']
 
 class ProductItemFilter(BaseDateFilterSet):
     class Meta:
