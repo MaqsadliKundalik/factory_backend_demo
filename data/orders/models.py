@@ -1,11 +1,13 @@
 from typing import TYPE_CHECKING
 
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from apps.common.models import BaseModel
 
 
 if TYPE_CHECKING:
-    from data.products.models import ProductType, ProductUnit, Product, WhouseProductsHistory, HistoryStatus
+    from data.products.models import ProductType, ProductUnit, Product
     from data.filedatas.models import File
     from data.clients.models import Client, ClientBranches
     from apps.drivers.models import Driver
@@ -29,10 +31,10 @@ class Order(BaseModel):
 
 class SubOrder(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='sub_orders')
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='sub_orders')
-    transport = models.ForeignKey(Transport, on_delete=models.CASCADE, related_name='sub_orders')
+    driver = models.ForeignKey("drivers.Driver", on_delete=models.CASCADE, related_name='sub_orders')
+    transport = models.ForeignKey("transports.Transport", on_delete=models.CASCADE, related_name='sub_orders')
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    files = models.ManyToManyField(File, related_name='sub_orders')
+    files = models.ManyToManyField("filedatas.File", related_name='sub_orders')
     status = models.CharField(max_length=20, choices=SubOrder.Status.choices, default=SubOrder.Status.PENDING)
     
     def __str__(self):
@@ -41,10 +43,12 @@ class SubOrder(BaseModel):
 @receiver(post_save, sender=SubOrder)
 def update_whouse_product_history(sender, instance, **kwargs):
     if instance.status == SubOrder.Status.CREATED:
+        from django.apps import apps
+        WhouseProductsHistory = apps.get_model('products', 'WhouseProductsHistory')
         WhouseProductsHistory.objects.create(
             whouse=instance.order.whouse,
             product=instance.order.product,
             quantity=instance.quantity,
-            status=HistoryStatus.OUT
+            status='OUT'  # HistoryStatus.OUT
         )
 
