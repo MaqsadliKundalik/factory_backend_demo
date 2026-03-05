@@ -18,7 +18,7 @@ class Order(BaseModel):
     display_id = models.IntegerField(primary_key=True)
     client:"Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name='orders')
     branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.CASCADE, related_name='orders')
-    whouse:"Whouse" = models.ForeignKey("whouse.Whouse", on_delete=models.CASCADE, related_name='orders')
+    whouse:"Whouse" = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, related_name='orders')
     product:"Product" = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name='orders')
     type:"ProductType" = models.ForeignKey("products.ProductType", on_delete=models.CASCADE, related_name='orders')
     unit:"ProductUnit" = models.ForeignKey("products.ProductUnit", on_delete=models.CASCADE, related_name='orders')
