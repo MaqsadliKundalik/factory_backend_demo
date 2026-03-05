@@ -5,6 +5,9 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from data.notifications.models import Notification
 
+class HistoryStatus(models.TextChoices):
+    IN = 'IN', 'In'
+    OUT = 'OUT', 'Out'
 
 class ProductType(BaseModel):
     name = models.CharField(max_length=255)
@@ -59,13 +62,12 @@ class WhouseProducts(BaseModel):
         return self.product.name
 
 class WhouseProductsHistory(BaseModel):
-    whouse_product = models.ForeignKey(WhouseProducts, on_delete=models.CASCADE, related_name='history', null=True, blank=True)
+
+    product = models.ForeignKey("data.products.Product", on_delete=models.CASCADE, related_name='history', null=True, blank=True)
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    files = models.ManyToManyField(File, related_name='whouse_products_history')
-    status = models.CharField(max_length=20, choices=WhouseProducts.Status.choices, default=WhouseProducts.Status.PENDING)
-    
+    status = models.CharField(max_length=20, choices=HistoryStatus.choices, default=HistoryStatus.IN)
+
     def __str__(self):
         return f"History of {self.product.name} at {self.created_at}"
 
@@ -79,23 +81,24 @@ def create_whouse_product_history(sender, instance, **kwargs):
             from_role='guard',
             title='New product added',
             message=f'New product {instance.product.name} added to whouse {instance.whouse.name}',
-        )
+        )   
 
 
-    history = WhouseProductsHistory.objects.create(
-        whouse_product=instance,
+    WhouseProductsHistory.objects.create(
         whouse=instance.whouse,
         product=instance.product,
         quantity=instance.quantity,
-        status=instance.status
+        status=HistoryStatus.IN
     )
-    if instance.pk:
-        history.files.set(instance.files.all())
 
-@receiver(m2m_changed, sender=WhouseProducts.files.through)
-def update_history_files(sender, instance, action, **kwargs):
-    if action in ["post_add", "post_remove", "post_clear"]:
-        latest_history = instance.history.first()
-        if latest_history:
-            latest_history.files.set(instance.files.all())
+@receiver(post_save, sender=ProductItem)
+def update_whouse_product_history(sender, instance, **kwargs):
+    if instance.status == ProductItem.Status.CREATED:
+        WhouseProductsHistory.objects.create(
+            whouse=instance.product.whouse,
+            product=instance.product,
+            quantity=instance.quantity,
+            status=HistoryStatus.OUT
+        )
+
 

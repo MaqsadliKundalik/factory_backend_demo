@@ -1,6 +1,11 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from data.filedatas.models import File
 from apps.common.models import BaseModel
+
+if TYPE_CHECKING:
+    from data.orders.models import Order
 
 
 class Client(BaseModel):
@@ -11,7 +16,10 @@ class Client(BaseModel):
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE)
     
     list_display = ["name", "inn_number", "phone_number", "whouse"]
-    
+
+
+    orders: "models.QuerySet[Order]" 
+
     def __str__(self):
         return self.name
 
@@ -26,3 +34,10 @@ class ClientBranches(BaseModel):
     
     def __str__(self):
         return f"{self.name} - {self.client}"
+
+
+
+c = Client.objects.first()
+
+
+c.orders.all()

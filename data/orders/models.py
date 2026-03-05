@@ -1,21 +1,27 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from apps.common.models import BaseModel
-from data.products.models import ProductType, ProductUnit, Product
-from data.filedatas.models import File
-from data.clients.models import Client, ClientBranches
-from apps.drivers.models import Driver
-from data.transports.models import Transport
-from data.whouse.models import Whouse
+
+
+if TYPE_CHECKING:
+    from data.products.models import ProductType, ProductUnit, Product, WhouseProductsHistory, HistoryStatus
+    from data.filedatas.models import File
+    from data.clients.models import Client, ClientBranches
+    from apps.drivers.models import Driver
+    from data.transports.models import Transport
+    from data.whouse.models import Whouse
+
 
 # Create your models here.
 class Order(BaseModel):
     display_id = models.IntegerField(primary_key=True)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='orders')
-    branch = models.ForeignKey(ClientBranches, on_delete=models.CASCADE, related_name='orders')
-    whouse = models.ForeignKey(Whouse, on_delete=models.CASCADE, related_name='orders')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
-    type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='orders')
-    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='orders')
+    client:"Client" = models.ForeignKey("data.clients.Client", on_delete=models.CASCADE, related_name='orders')
+    branch:"ClientBranches" = models.ForeignKey("data.clients.ClientBranches", on_delete=models.CASCADE, related_name='orders')
+    whouse:"Whouse" = models.ForeignKey("data.whouse.Whouse", on_delete=models.CASCADE, related_name='orders')
+    product:"Product" = models.ForeignKey("data.products.Product", on_delete=models.CASCADE, related_name='orders')
+    type:"ProductType" = models.ForeignKey("data.products.ProductType", on_delete=models.CASCADE, related_name='orders')
+    unit:"ProductUnit" = models.ForeignKey("data.products.ProductUnit", on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=Order.Status.choices, default=Order.Status.PENDING)
     
     def __str__(self):
@@ -31,3 +37,14 @@ class SubOrder(BaseModel):
     
     def __str__(self):
         return f"SubOrd-{self.id} for Ord-{self.order.display_id:03}"
+
+@receiver(post_save, sender=SubOrder)
+def update_whouse_product_history(sender, instance, **kwargs):
+    if instance.status == SubOrder.Status.CREATED:
+        WhouseProductsHistory.objects.create(
+            whouse=instance.order.whouse,
+            product=instance.order.product,
+            quantity=instance.quantity,
+            status=HistoryStatus.OUT
+        )
+

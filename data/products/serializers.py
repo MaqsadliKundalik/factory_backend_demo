@@ -112,13 +112,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class WhouseProductsHistorySerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
-    product = serializers.PrimaryKeyRelatedField(read_only=True)
-    files = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-    whouse_product = serializers.PrimaryKeyRelatedField(read_only=True)
-    
+    product = serializers.PrimaryKeyRelatedField(read_only=True) 
     class Meta:
         model = WhouseProductsHistory  
-        fields = ['id', 'whouse_product', 'whouse', 'product', 'quantity', 'files', 'status']
+        fields = ['id', 'whouse', 'product', 'quantity', 'status']
         read_only_fields = ['id']
 
 
