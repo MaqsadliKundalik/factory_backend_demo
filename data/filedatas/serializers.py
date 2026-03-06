@@ -10,5 +10,5 @@ class FileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['file'] = f"{BASE_URL}{instance.file.url}" if instance.file else None
+        representation['file'] = f"{BASE_URL}{instance.file}" if instance.file else None
         return representation
