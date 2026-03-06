@@ -17,10 +17,10 @@ class StatusHistorySerializer(serializers.Serializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     external_drivers = ExternalDriverSerializer(many=True, required=False)
-
+    sub_orders = SubOrderSerializer(many=True, read_only=True)
     class Meta:
         model = Order
-        fields = ['id', 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers']
+        fields = ['id', 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders"]
         read_only_fields = ['id']
 
     def to_representation(self, instance):
@@ -34,6 +34,7 @@ class OrderSerializer(serializers.ModelSerializer):
         repr['product'] = ProductSerializer(instance.product).data
         repr['type'] = ProductTypeSerializer(instance.type).data
         repr['unit'] = ProductUnitSerializer(instance.unit).data
+        repr['sub_orders'] = SubOrderSerializer(instance.sub_orders, many=True).data
         return repr
 
 class SubOrderSerializer(serializers.ModelSerializer):
@@ -54,3 +55,32 @@ class SubOrderSerializer(serializers.ModelSerializer):
 class OrderStatusHistorySerizalizer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
     timestamp = serializers.DateTimeField()
+
+class OrderSerializer(serializers.ModelSerializer):
+    external_drivers = ExternalDriverSerializer(many=True, required=False)
+    sub_orders = SubOrderSerializer(many=True, required=True)
+    class Meta:
+        model = Order
+        fields = ['id', 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders"]
+        read_only_fields = ['id']
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['client'] = ClientSerializer(instance.client).data
+        repr['branch'] = ClientBranchesSerializer(instance.branch).data
+        repr['whouse'] = {
+            'id': instance.whouse.id,
+            'name': instance.whouse.name
+        }
+        repr['product'] = ProductSerializer(instance.product).data
+        repr['type'] = ProductTypeSerializer(instance.type).data
+        repr['unit'] = ProductUnitSerializer(instance.unit).data
+        repr['sub_orders'] = SubOrderSerializer(instance.sub_orders, many=True).data
+        return repr
+
+    def create(self, validated_data):
+        sub_orders = validated_data.pop('sub_orders')
+        order = Order.objects.create(**validated_data)
+        for sub_order in sub_orders:
+            SubOrder.objects.create(order=order, **sub_order)
+        return order

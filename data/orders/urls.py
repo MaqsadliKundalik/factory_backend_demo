@@ -5,4 +5,6 @@ router = DefaultRouter()
 router.register('sub-orders', SubOrderViewSet, basename='suborder')
 router.register('', OrderViewSet, basename='order')
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('create-order-and-suborder/', OrderAndSubOrderCreateView.as_view(), name='order-and-suborder-create'),
+] + router.urls

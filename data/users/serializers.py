@@ -2,6 +2,7 @@ from rest_framework import serializers
 from data.whouse.models import Whouse
 from data.users.models import FactoryUser
 import re
+from data.filedatas.serializers import FileSerializer
 
 class FactoryUserSerializer(serializers.ModelSerializer):
     
@@ -21,7 +22,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['whouses'] = [{"id": whouse.id, "name": whouse.name} for whouse in instance.whouses.all()]
-        representation['photo'] = instance.photo.get_url() if instance.photo else None
+        representation['photo'] = FileSerializer(instance.photo).data if instance.photo else None
         return representation
 
     def validate_phone_number(self, value):

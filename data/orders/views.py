@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,7 +16,7 @@ from apps.common.mixins import PermissionMetaMixin
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
-from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer
+from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer, OrderAndSubOrderCreateSerializer
 
 ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('client', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"),
@@ -125,3 +126,19 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
+class OrderAndSubOrderCreateView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
+
+    @swagger_auto_schema(
+        operation_summary="Create client and branches",
+        request_body=OrderAndSubOrderCreateSerializer,
+        responses={201: OrderSerializer}
+    )
+    @transaction.atomic
+    def post(self, request):
+        serializer = OrderAndSubOrderCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
