@@ -69,7 +69,7 @@ class SelectProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class ProductSerializer(serializers.ModelSerializer):
-    items = ProductItemSerializer(many=True, required=False)
+    items = ProductItemSerializer(many=True, read_only=True)
     class Meta:
         model = Product
         fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']

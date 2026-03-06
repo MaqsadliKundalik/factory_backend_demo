@@ -91,11 +91,11 @@ def create_whouse_product_history(sender, instance, **kwargs):
         status=HistoryStatus.IN
     )
 
-@receiver(post_save, sender=ProductItem)
-def update_whouse_product_history(sender, instance, **kwargs):
-    if instance.status == ProductItem.Status.CREATED:
+@receiver(post_save, sender=WhouseProducts)
+def update_whouse_product_history_extra(sender, instance, **kwargs):
+    if instance.status == WhouseProducts.Status.CREATED:
         WhouseProductsHistory.objects.create(
-            whouse=instance.product.whouse,
+            whouse=instance.whouse,
             product=instance.product,
             quantity=instance.quantity,
             status=HistoryStatus.OUT
