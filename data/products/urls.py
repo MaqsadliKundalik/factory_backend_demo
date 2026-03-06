@@ -4,7 +4,7 @@ from django.urls import path, include
 from .views import (
     ProductTypeViewSet, ProductUnitViewSet, ProductViewSet, 
     WhouseProductsViewSet, WhouseProductsHistoryViewSet, 
-    WhouseProductsActionViewSet, ProductItemViewSet
+    WhouseProductsActionViewSet, ProductItemViewSet, ProductAndItemCreateView
 )
 
 router = DefaultRouter()
@@ -17,5 +17,6 @@ router.register('items', ProductItemViewSet, basename='product-item')
 router.register('', ProductViewSet, basename='products')
 
 urlpatterns = [
+    path('create-product-and-item/', ProductAndItemCreateView.as_view(), name='create-product-and-item'),
     path('', include(router.urls)),
 ]

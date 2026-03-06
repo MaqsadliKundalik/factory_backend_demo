@@ -120,3 +120,37 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
         read_only_fields = ['id', "created_at"]
 
 
+class ProductAndItemCreateSerializer(serializers.ModelSerializer):
+    items = ProductItemSerializer(many=True, required=True)
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']
+        read_only_fields = ['id']
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['types'] = ProductTypeSerializer(instance.types, many=True).data
+        if instance.unit:
+            repr['unit'] = ProductUnitSerializer(instance.unit).data
+        if instance.items:
+            repr['items'] = ProductItemSerializer(instance.items, many=True).data
+        return repr
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        types = validated_data.pop('types', [])
+        items = validated_data.pop('items', [])
+        
+        # Determine warehouse
+        whouse = validated_data.get('whouse')
+        if not whouse:
+            whouse = user.whouses.first()
+        validated_data['whouse'] = whouse
+
+        product = Product.objects.create(**validated_data)
+        product.types.set(types)
+
+        for item in items:
+            ProductItem.objects.create(product=product, **item)
+
+        return product

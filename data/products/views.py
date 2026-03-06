@@ -17,7 +17,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 from .serializers import (
-    ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, 
+    ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, ProductAndItemCreateSerializer,
     WhouseProductsSerializer, WhouseProductsHistorySerializer,  SelectProductSerializer, ProductItemSerializer
 )
 
@@ -284,3 +284,18 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
         return Response({'status': 'rejected'})
 
 
+class ProductAndItemCreateView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
+
+    @swagger_auto_schema(
+        operation_summary="Create product and items",
+        request_body=ProductAndItemCreateSerializer,
+        responses={201: ProductSerializer}
+    )
+    @transaction.atomic
+    def post(self, request):
+        serializer = ProductAndItemCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        product = serializer.save()
+        return Response(ProductSerializer(product).data, status=status.HTTP_201_CREATED)

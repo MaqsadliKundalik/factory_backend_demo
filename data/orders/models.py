@@ -39,12 +39,12 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
         COMPLETED = 'COMPLETED', 'Completed'
 
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
-    client:"Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name='orders')
+    client:"Client" = models.ForeignKey("clients.Client", on_delete=models.PROTECT, related_name='orders')
     branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.PROTECT, related_name='orders')
-    whouse:"Whouse" = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, related_name='orders')
-    product:"Product" = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name='orders')
-    type:"ProductType" = models.ForeignKey("products.ProductType", on_delete=models.CASCADE, related_name='orders')
-    unit:"ProductUnit" = models.ForeignKey("products.ProductUnit", on_delete=models.CASCADE, related_name='orders')    
+    whouse:"Whouse" = models.ForeignKey("factory_whouse.Whouse", on_delete=models.PROTECT, related_name='orders')
+    product:"Product" = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name='orders')
+    type:"ProductType" = models.ForeignKey("products.ProductType", on_delete=models.PROTECT, related_name='orders')
+    unit:"ProductUnit" = models.ForeignKey("products.ProductUnit", on_delete=models.PROTECT, related_name='orders')    
     external_drivers = models.JSONField(default=list)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
 
@@ -67,8 +67,8 @@ class SubOrder(BaseModel):
         COMPLETED = 'COMPLETED', 'Completed'
         
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='sub_orders')
-    driver = models.ForeignKey("factory_drivers.Driver", on_delete=models.CASCADE, related_name='sub_orders')
-    transport = models.ForeignKey("transports.Transport", on_delete=models.CASCADE, related_name='sub_orders')
+    driver = models.ForeignKey("factory_drivers.Driver", on_delete=models.PROTECT, related_name='sub_orders')
+    transport = models.ForeignKey("transports.Transport", on_delete=models.PROTECT, related_name='sub_orders')
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     files = models.ManyToManyField("filedatas.File", related_name='sub_orders')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
