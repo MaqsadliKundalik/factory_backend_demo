@@ -15,6 +15,22 @@ class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
     timestamp = serializers.DateTimeField()
 
+
+class SubOrderSerializer(serializers.ModelSerializer):
+    status_history = StatusHistorySerializer(many=True, required=False)
+    files = FileSerializer(many=True, required=False)
+    class Meta:
+        model = SubOrder
+        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'files', 'status', 'status_history']
+        read_only_fields = ['id']
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr['driver'] = DriverSerializer(instance.driver).data
+        repr['transport'] = TransportSerializer(instance.transport).data
+        repr['files'] = FileSerializer(instance.files, many=True).data
+        return repr
+
 class OrderSerializer(serializers.ModelSerializer):
     external_drivers = ExternalDriverSerializer(many=True, required=False)
     sub_orders = SubOrderSerializer(many=True, read_only=True)
@@ -37,26 +53,12 @@ class OrderSerializer(serializers.ModelSerializer):
         repr['sub_orders'] = SubOrderSerializer(instance.sub_orders, many=True).data
         return repr
 
-class SubOrderSerializer(serializers.ModelSerializer):
-    status_history = StatusHistorySerializer(many=True, required=False)
-    files = FileSerializer(many=True, required=False)
-    class Meta:
-        model = SubOrder
-        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'files', 'status', 'status_history']
-        read_only_fields = ['id']
-
-    def to_representation(self, instance):
-        repr = super().to_representation(instance)
-        repr['driver'] = DriverSerializer(instance.driver).data
-        repr['transport'] = TransportSerializer(instance.transport).data
-        repr['files'] = FileSerializer(instance.files, many=True).data
-        return repr
 
 class OrderStatusHistorySerizalizer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
     timestamp = serializers.DateTimeField()
 
-class OrderSerializer(serializers.ModelSerializer):
+class OrderAndSubOrderCreateSerializer(serializers.ModelSerializer):
     external_drivers = ExternalDriverSerializer(many=True, required=False)
     sub_orders = SubOrderSerializer(many=True, required=True)
     class Meta:
