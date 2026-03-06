@@ -10,7 +10,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'phone_number', 'password', 'role',
             'MAIN_PAGE', 'PRODUCTS_PAGE', 'ORDERS_PAGE', 'TRANSPORTS_PAGE', 
-            'CLIENTS_PAGE', 'USERS_PAGE', 'READY_PRODUCTS_PAGE', 'DRIVERS_PAGE', 'WHEREHOUSES_PAGE', 'whouses'
+            'CLIENTS_PAGE', 'USERS_PAGE', 'READY_PRODUCTS_PAGE', 'DRIVERS_PAGE', 'WHEREHOUSES_PAGE', 'whouses', 'photo'
         ]
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
@@ -21,6 +21,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['whouses'] = [{"id": whouse.id, "name": whouse.name} for whouse in instance.whouses.all()]
+        representation['photo'] = instance.photo.get_url() if instance.photo else None
         return representation
 
     def validate_phone_number(self, value):
