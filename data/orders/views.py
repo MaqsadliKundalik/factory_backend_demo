@@ -1,6 +1,9 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 
@@ -10,7 +13,7 @@ from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
-from .serialziers import OrderSerializer, SubOrderSerializer
+from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -72,3 +75,19 @@ class SubOrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     @swagger_auto_schema(manual_parameters=DATE_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=StatusHistorySerializer(many=True),
+        responses={200: "Successfully updated status history"}
+    )
+    @action(detail=True, methods=['post'], url_path='update-status-history')
+    def update_status_history(self, request, pk=None):
+        instance = self.get_object()
+        serializer = StatusHistorySerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            history = instance.status_history or []
+            history.extend(serializer.data)
+            instance.status_history = history
+            instance.save()
+            return Response({"status": "Success"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

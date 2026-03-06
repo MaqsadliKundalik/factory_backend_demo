@@ -51,3 +51,6 @@ class SubOrderSerializer(serializers.ModelSerializer):
         repr['files'] = FileSerializer(instance.files, many=True).data
         return repr
 
+class OrderStatusHistorySerizalizer(serializers.Serializer):
+    status = serializers.CharField(max_length=50)
+    timestamp = serializers.DateTimeField()
