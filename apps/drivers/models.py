@@ -8,18 +8,12 @@ from data.filedatas.models import File
 # Create your models here.
 
 class Driver(BaseModel):
-    CAR_TYPES = (
-        ('truck', 'Truck'),
-        ('van', 'Van'),
-        ('car', 'Car'),
-    )
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=25)
     password = models.CharField(max_length=128)
-    car_type = models.CharField(max_length=10, choices=CAR_TYPES)
-    car_number = models.CharField(max_length=15)
-
+    
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
+    files = models.ManyToManyField(File, related_name='drivers', blank=True)
 
     whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
 

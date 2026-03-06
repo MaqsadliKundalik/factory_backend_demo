@@ -20,18 +20,25 @@ class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
         fields = [
-            "id", "name", "phone_number", "password", "car_type", "car_number", "photo",
-            "MAIN_PAGE", "PRODUCTS_PAGE", "ORDERS_PAGE", "TRANSPORTS_PAGE",
-            "WHEREHOUSES_PAGE", "CLIENTS_PAGE", "USERS_PAGE", "READY_PRODUCTS_PAGE", "DRIVERS_PAGE"
+            "id", "name", "phone_number", "password", "photo", "files", "whouse"
         ]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['photo'] = FileSerializer(instance.photo).data if instance.photo else None
+        representation['files'] = FileSerializer(instance.files, many=True).data if instance.files else None
+        representation['whouse'] = {
+            "id": instance.whouse.id,
+            "name": instance.whouse.name
+        } if instance.whouse else None
         return representation
 
     def create(self, validated_data):
-        return Driver.objects.create(**validated_data)
+        return Driver.objects.create(
+            PRODUCTS_PAGE=True,
+            ORDERS_PAGE=True,
+            TRANSPORTS_PAGE=True,
+            **validated_data)
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
