@@ -46,7 +46,7 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
     type:"ProductType" = models.ForeignKey("products.ProductType", on_delete=models.CASCADE, related_name='orders')
     unit:"ProductUnit" = models.ForeignKey("products.ProductUnit", on_delete=models.CASCADE, related_name='orders')    
     external_drivers = models.JSONField(default=list)
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
 
     def save(self, *args, **kwargs):
         if not self.display_id:
@@ -71,7 +71,7 @@ class SubOrder(BaseModel):
     transport = models.ForeignKey("transports.Transport", on_delete=models.CASCADE, related_name='sub_orders')
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     files = models.ManyToManyField("filedatas.File", related_name='sub_orders')
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.CREATED)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     status_history = models.JSONField(default=list)
 
     def __str__(self):
@@ -80,7 +80,7 @@ class SubOrder(BaseModel):
 
 @receiver(post_save, sender=SubOrder)
 def update_whouse_product_history(sender, instance, **kwargs):
-    if instance.status == SubOrder.Status.CREATED:
+    if instance.status == SubOrder.Status.NEW:
         from django.apps import apps
         WhouseProductsHistory = apps.get_model('products', 'WhouseProductsHistory')
         WhouseProductsHistory.objects.create(

@@ -53,6 +53,18 @@ class OrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @swagger_auto_schema(
+        responses={200: SubOrderSerializer(many=True)}
+    )
+    @action(detail=True, methods=['get'], url_path='in-progress')
+    def in_progress_sub_orders(self, request, pk=None):
+        instance = self.get_object()
+        serializer = SubOrderSerializer(
+            instance.sub_orders.exclude(status=SubOrder.Status.COMPLETED), 
+            many=True
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 class SubOrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
@@ -93,16 +105,5 @@ class SubOrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
             instance.save()
             return Response({"status": "Success"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @swagger_auto_schema(
-        request_body=SubOrderSerializer(many=True),
-        responses={200: "Success"}
-    )
-    @action(detail=True, methods=['get'], url_path='in-progress')
-    def get_in_progress_sub_orders(self, request, pk):
-        instance = self.get_object()
-
-        serializer = SubOrderSerializer(instance.sub_orders.exclude(status=SubOrder.Status.COMPLETED), many=True)
-        return Response({"status": "Success", "data": serializer.data}, status=status.HTTP_200_OK)
 
     
