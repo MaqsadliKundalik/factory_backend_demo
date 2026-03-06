@@ -69,6 +69,7 @@ class SelectProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class ProductSerializer(serializers.ModelSerializer):
+    items = ProductItemSerializer(many=True, required=False)
     class Meta:
         model = Product
         fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']

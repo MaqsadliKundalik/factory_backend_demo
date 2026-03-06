@@ -29,7 +29,7 @@ class FactoryUser(BaseModel, AbstractBaseUser):
     # password field is provided by AbstractBaseUser
     
     role = models.CharField(max_length=50) # manager, operator, guard
-    photo : 'File' = models.ForeignKey("data.filedatas.File", on_delete=models.SET_NULL, null=True, blank=True)
+    photo : 'File' = models.ForeignKey("filedatas.File", on_delete=models.SET_NULL, null=True, blank=True)
 
     MAIN_PAGE = models.BooleanField(default=False)
     PRODUCTS_PAGE = models.BooleanField(default=False)
