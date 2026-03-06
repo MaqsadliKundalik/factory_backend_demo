@@ -33,8 +33,8 @@ class ProductUnitSerializer(serializers.ModelSerializer):
 class WhouseProductsSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhouseProducts  
-        fields = ['id', 'whouse', 'product', 'product_type', 'quantity', 'files', 'status']
-        read_only_fields = ['id']
+        fields = ['id', 'whouse', 'product', 'product_type', 'quantity', 'files', 'status', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
@@ -116,7 +116,7 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(read_only=True) 
     class Meta:
         model = WhouseProductsHistory  
-        fields = ['id', 'whouse', 'product', 'quantity', 'status']
-        read_only_fields = ['id']
+        fields = ['id', 'whouse', 'product', 'quantity', 'status', "created_at"]
+        read_only_fields = ['id', "created_at"]
 
 
