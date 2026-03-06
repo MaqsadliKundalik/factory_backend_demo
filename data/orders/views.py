@@ -5,7 +5,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as filters
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
@@ -26,6 +28,15 @@ class OrderFilter(BaseDateFilterSet):
         fields = ['client', 'branch', 'whouse', 'product', 'type', 'unit', 'status']
 
 class SubOrderFilter(BaseDateFilterSet):
+    in_progress = filters.BooleanFilter(method='filter_in_progress', label="Filter: true for active, false for completed")
+
+    def filter_in_progress(self, queryset, name, value):
+        if value is True:
+            return queryset.exclude(status=SubOrder.Status.COMPLETED)
+        elif value is False:
+            return queryset.filter(status=SubOrder.Status.COMPLETED)
+        return queryset
+
     class Meta:
         model = SubOrder
         fields = ['order', 'driver', 'transport', 'status']
@@ -52,18 +63,6 @@ class OrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     @swagger_auto_schema(manual_parameters=DATE_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        responses={200: SubOrderSerializer(many=True)}
-    )
-    @action(detail=True, methods=['get'], url_path='in-progress')
-    def in_progress_sub_orders(self, request, pk=None):
-        instance = self.get_object()
-        serializer = SubOrderSerializer(
-            instance.sub_orders.exclude(status=SubOrder.Status.COMPLETED), 
-            many=True
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
