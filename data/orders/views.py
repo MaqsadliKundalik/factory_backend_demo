@@ -11,8 +11,8 @@ from drf_yasg import openapi
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
-from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
-from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
+from apps.common.mixins import PermissionMetaMixin
+from apps.common.filters import BaseDateFilterSet
 
 from .models import Order, SubOrder
 from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer
@@ -41,7 +41,7 @@ class SubOrderFilter(BaseDateFilterSet):
         model = SubOrder
         fields = ['order', 'driver', 'transport', 'status']
 
-class OrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
+class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -60,13 +60,9 @@ class OrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
             return Order.objects.filter(whouse__in=user.whouses.all())
         return Order.objects.all()
 
-    @swagger_auto_schema(manual_parameters=DATE_FILTER_PARAMS)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
 
-
-class SubOrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
+class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = SubOrder.objects.all()
     serializer_class = SubOrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
@@ -84,10 +80,6 @@ class SubOrderViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
         if hasattr(user, 'whouses') and user.whouses.exists():
             return SubOrder.objects.filter(order__whouse__in=user.whouses.all())
         return SubOrder.objects.all()
-
-    @swagger_auto_schema(manual_parameters=DATE_FILTER_PARAMS)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(
         request_body=StatusHistorySerializer(many=True),
