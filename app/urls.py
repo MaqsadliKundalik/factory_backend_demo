@@ -25,6 +25,7 @@ from data.transports.urls import urlpatterns as transports_urls
 from data.notifications.urls import urlpatterns as notifications_urls
 from data.clients.urls import urlpatterns as clients_urls
 from data.filedatas.urls import urlpatterns as filedatas_urls
+from data.orders.urls import urlpatterns as orders_urls
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -60,6 +61,7 @@ urlpatterns = [
     path('notifications/', include(notifications_urls)),
     path('clients/', include(clients_urls)),
     path('files/', include(filedatas_urls)),
+    path('orders/', include(orders_urls)),
 
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]

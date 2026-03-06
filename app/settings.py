@@ -49,14 +49,12 @@ INSTALLED_APPS = [
     'apps.session.apps.SessionConfig',
     'data.whouse.apps.WhouseConfig',
     'data.products.apps.ProductsConfig',
-    # 'apps.whouse_manager.apps.WhouseManagerConfig',
-    # 'apps.factory_operator.apps.FactoryOperatorConfig',
-    # 'apps.guard.apps.GuardConfig',
     'data.transports.apps.TransportsConfig',
     'data.users.apps.UsersConfig',
     'data.clients.apps.ClientsConfig',
     'data.filedatas.apps.FiledatasConfig',
     'data.notifications.apps.NotificationsConfig',
+    'data.orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
