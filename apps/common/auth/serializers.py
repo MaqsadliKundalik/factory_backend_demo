@@ -32,12 +32,13 @@ class DriverProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="driver", read_only=True)
     class Meta:
         model = Driver
-        fields = ["id", "name", "phone_number", "whouse", "role"]
+        fields = ["id", "name", "phone_number", "whouse", "role", "photo"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         if instance.whouse:
-            repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+            repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}   
+        repr['photo'] = instance.photo.get_url() if instance.photo else None
         repr['permissions'] = None
         return repr
 
