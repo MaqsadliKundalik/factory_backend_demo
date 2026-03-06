@@ -38,7 +38,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class SubOrderSerializer(serializers.ModelSerializer):
     status_history = StatusHistorySerializer(many=True, required=False)
-
+    files = FileSerializer(many=True, required=False)
     class Meta:
         model = SubOrder
         fields = ['id', 'order', 'driver', 'transport', 'quantity', 'files', 'status', 'status_history']
