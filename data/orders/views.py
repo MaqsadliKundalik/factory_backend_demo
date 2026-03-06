@@ -35,6 +35,7 @@ SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('in_progress', openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description="Filter: true for active, false for completed"),
 ]
 
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
