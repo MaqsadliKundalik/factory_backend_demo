@@ -33,7 +33,6 @@ class Product(BaseModel):
         return self.name
 class ProductItem(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='items')
-    name = models.CharField(max_length=255)
     type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)

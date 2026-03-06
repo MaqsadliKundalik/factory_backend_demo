@@ -6,7 +6,7 @@ from .models import ProductType, ProductUnit, Product, WhouseProducts, WhousePro
 class ProductItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductItem
-        fields = ['id', 'name', 'type', 'unit', 'quantity', 'product']
+        fields = ['id', 'type', 'unit', 'quantity', 'product']
         read_only_fields = ['id']
 
     def to_representation(self, instance):
