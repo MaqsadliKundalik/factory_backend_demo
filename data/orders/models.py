@@ -17,11 +17,26 @@ if TYPE_CHECKING:
 
 # Create your models here.
 class Order(BaseModel):
+    """
+    NEW - Buyurtma yaratilgach shu statusda bo’ladi
+
+IN_PROGRESS - JArayon boshlandi. Ya’ni buyurtmadagi mahsulot tayyorlana boshladi.
+
+ON_WAY - haydovchi yo’lga chiqqach buyurtmani shu statusga o’tkazadi
+
+ARRIVED - Haydovchi manzilga yetib kelgach buyurtmani shu holatga o’tkazadi
+
+UNLOADING - Haydovchi yukni tushirishni boshlaganida shu statusga o’tkazadi
+
+COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga o’tkazishidan oldin fayl so’rashi kerak. ya’ni rasm kamida 2ta rasm. va mijozni imzosini talab qilishi kerak
+"""
     class Status(models.TextChoices):
-        PENDING = 'PENDING', 'Pending'
-        CREATED = 'CREATED', 'Created'
-        DELIVERED = 'DELIVERED', 'Delivered'
-        CANCELLED = 'CANCELLED', 'Cancelled'
+        NEW = 'NEW', 'New'
+        IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
+        ON_WAY = 'ON_WAY', 'On Way'
+        ARRIVED = 'ARRIVED', 'Arrived'
+        UNLOADING = 'UNLOADING', 'Unloading'
+        COMPLETED = 'COMPLETED', 'Completed'
 
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
     client:"Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name='orders')
@@ -44,10 +59,12 @@ class Order(BaseModel):
 
 class SubOrder(BaseModel):
     class Status(models.TextChoices):
-        PENDING = 'PENDING', 'Pending'
-        CREATED = 'CREATED', 'Created'
-        DELIVERED = 'DELIVERED', 'Delivered'
-        CANCELLED = 'CANCELLED', 'Cancelled'
+        NEW = 'NEW', 'New'
+        IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
+        ON_WAY = 'ON_WAY', 'On Way'
+        ARRIVED = 'ARRIVED', 'Arrived'
+        UNLOADING = 'UNLOADING', 'Unloading'
+        COMPLETED = 'COMPLETED', 'Completed'
         
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='sub_orders')
     driver = models.ForeignKey("factory_drivers.Driver", on_delete=models.CASCADE, related_name='sub_orders')
