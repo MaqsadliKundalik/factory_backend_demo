@@ -12,10 +12,28 @@ from drf_yasg import openapi
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.mixins import PermissionMetaMixin
-from apps.common.filters import BaseDateFilterSet
+from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
 from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer
+
+ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
+    openapi.Parameter('client', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"),
+    openapi.Parameter('branch', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Branch ID"),
+    openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"),
+    openapi.Parameter('product', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product ID"),
+    openapi.Parameter('type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product Type ID"),
+    openapi.Parameter('unit', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product Unit ID"),
+    openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
+]
+
+SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
+    openapi.Parameter('order', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Order ID"),
+    openapi.Parameter('driver', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Driver ID"),
+    openapi.Parameter('transport', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport ID"),
+    openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
+    openapi.Parameter('in_progress', openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description="Filter: true for active, false for completed"),
+]
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -60,6 +78,10 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
             return Order.objects.filter(whouse__in=user.whouses.all())
         return Order.objects.all()
 
+    @swagger_auto_schema(manual_parameters=ORDER_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 
 class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
@@ -80,6 +102,10 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         if hasattr(user, 'whouses') and user.whouses.exists():
             return SubOrder.objects.filter(order__whouse__in=user.whouses.all())
         return SubOrder.objects.all()
+
+    @swagger_auto_schema(manual_parameters=SUBORDER_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(
         request_body=StatusHistorySerializer(many=True),
