@@ -2,10 +2,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.hashers import make_password, check_password
 from typing import TYPE_CHECKING
+from apps.common.models import BaseModel
 
 if TYPE_CHECKING:
     from data.filedatas.models import File
-    from apps.common.models import BaseModel
 
 # Create your managers here.
 class FactoryUserManager(BaseUserManager):
