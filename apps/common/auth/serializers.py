@@ -39,7 +39,6 @@ class DriverProfileSerializer(serializers.ModelSerializer):
         if instance.whouse:
             repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}   
         repr['photo'] = instance.photo.get_url() if instance.photo else None
-        repr['permissions'] = None
         return repr
 
 class UnifiedLogoutSerializer(serializers.Serializer):
