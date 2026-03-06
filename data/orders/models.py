@@ -40,7 +40,7 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
 
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
     client:"Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name='orders')
-    branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.CASCADE, related_name='orders')
+    branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.PROTECT, related_name='orders')
     whouse:"Whouse" = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, related_name='orders')
     product:"Product" = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name='orders')
     type:"ProductType" = models.ForeignKey("products.ProductType", on_delete=models.CASCADE, related_name='orders')
