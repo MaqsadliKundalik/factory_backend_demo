@@ -3,6 +3,7 @@ from django.core.validators import RegexValidator
 from utils.password import password_validator
 from data.users.models import FactoryUser
 from apps.drivers.models import Driver
+from data.filedatas.serializers import FileSerializer
 
 class UnifiedLoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField(
@@ -24,7 +25,7 @@ class FactoryUserProfileSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         repr['whouses'] = [{'id': wh.id, 'name': wh.name} for wh in instance.whouses.all()]
-        repr['photo'] = instance.photo.get_url() if instance.photo else None
+        repr['photo'] = FileSerializer(instance.photo).data if instance.photo else None
         return repr
 
 
@@ -38,7 +39,7 @@ class DriverProfileSerializer(serializers.ModelSerializer):
         repr = super().to_representation(instance)
         if instance.whouse:
             repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}   
-        repr['photo'] = instance.photo.get_url() if instance.photo else None
+        repr['photo'] =     instance.photo.get_url() if instance.photo else None
         return repr
 
 class UnifiedLogoutSerializer(serializers.Serializer):
