@@ -154,3 +154,35 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
             ProductItem.objects.create(product=product, **item)
 
         return product
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        types = validated_data.pop('types', None)
+        items = validated_data.pop('items', None)
+        
+        # Determine warehouse
+        whouse = validated_data.get('whouse')
+        if whouse:
+            validated_data['whouse'] = whouse
+        elif not whouse and not instance.whouse:
+            whouse = user.whouses.first()
+            validated_data['whouse'] = whouse
+
+        # Update product fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update types if provided
+        if types is not None:
+            instance.types.set(types)
+
+        # Update items if provided
+        if items is not None:
+            # Remove existing items
+            instance.items.all().delete()
+            # Create new items
+            for item in items:
+                ProductItem.objects.create(product=instance, **item)
+
+        return instance

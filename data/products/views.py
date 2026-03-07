@@ -308,3 +308,74 @@ class ProductAndItemCreateView(APIView):
         serializer.is_valid(raise_exception=True)
         product = serializer.save()
         return Response(ProductSerializer(product).data, status=status.HTTP_201_CREATED)
+
+
+class ProductAndItemUpdateView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
+
+    @swagger_auto_schema(
+        operation_summary="Update product and items",
+        request_body=ProductAndItemCreateSerializer,
+        responses={200: ProductSerializer}
+    )
+    @transaction.atomic
+    def put(self, request, pk):
+        try:
+            user = request.user
+            if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+                return Response({"error": "Требуется аутентификация"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Warehousega tegishli productlarni filterlash
+            whouses = user.whouses.all()
+            product = Product.objects.filter(id=pk, whouse__in=whouses).first()
+            
+            if not product:
+                return Response({"error": "Продукт не найден"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = ProductAndItemCreateSerializer(
+                data=request.data, 
+                instance=product,
+                context={'request': request},
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            updated_product = serializer.save()
+            
+            return Response(ProductSerializer(updated_product).data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @swagger_auto_schema(
+        operation_summary="Partially update product and items",
+        request_body=ProductAndItemCreateSerializer,
+        responses={200: ProductSerializer}
+    )
+    @transaction.atomic
+    def patch(self, request, pk):
+        try:
+            user = request.user
+            if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+                return Response({"error": "Требуется аутентификация"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Warehousega tegishli productlarni filterlash
+            whouses = user.whouses.all()
+            product = Product.objects.filter(id=pk, whouse__in=whouses).first()
+            
+            if not product:
+                return Response({"error": "Продукт не найден"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = ProductAndItemCreateSerializer(
+                data=request.data, 
+                instance=product,
+                context={'request': request},
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            updated_product = serializer.save()
+            
+            return Response(ProductSerializer(updated_product).data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
