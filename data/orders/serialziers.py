@@ -26,7 +26,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        
+        repr["order"] = OrderSerializer(instance.order).data if instance.order else None
         repr['driver'] = DriverSerializer(instance.driver).data
         repr['transport'] = TransportSerializer(instance.transport).data
         repr['files'] = FileSerializer(instance.files, many=True).data
