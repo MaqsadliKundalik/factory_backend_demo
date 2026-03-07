@@ -194,7 +194,8 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Select products (id and name only)",
-        responses={200: SelectProductSerializer(many=True)}
+        responses={200: SelectProductSerializer(many=True)},
+        manual_parameters=[IS_READY_PRODUCT_PARAM]
     )
     @action(detail=False, methods=['get'], pagination_class=None)
     def select(self, request):
