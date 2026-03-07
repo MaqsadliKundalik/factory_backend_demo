@@ -15,6 +15,10 @@ class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
     timestamp = serializers.DateTimeField()
 
+class CompetedStatusSerializer(serializers.Serializer):
+    timestamp = serializers.DateTimeField()
+    files = serializers.ListField(child=serializers.UUIDField(), required=True)
+    sign = serializers.UUIDField(required=False)
 
 class SubOrderSerializer(serializers.ModelSerializer):
     status_history = serializers.ListField(child=serializers.JSONField(), required=False)

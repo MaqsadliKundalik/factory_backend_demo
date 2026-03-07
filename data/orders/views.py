@@ -17,7 +17,7 @@ from apps.common.mixins import PermissionMetaMixin
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
-from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer, OrderAndSubOrderCreateSerializer
+from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer, OrderAndSubOrderCreateSerializer, CompetedStatusSerializer
 
 ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('client', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"),
@@ -130,6 +130,41 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             return Response({"status": "Success"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        request_body=CompetedStatusSerializer(),
+        responses={200: "Successfully updated completed status"}
+    )
+    @action(detail=True, methods=['post'], url_path='update-completed-status')
+    def update_completed_status(self, request, pk=None):
+        instance = self.get_object()
+        serializer = CompetedStatusSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        instance.status = SubOrder.Status.COMPLETED
+        instance.status_history = instance.status_history or []
+        
+        completed_data = {
+            "status": "completed",
+            "timestamp": serializer.validated_data.get("timestamp"),
+        }
+        
+        if 'files' in serializer.validated_data:
+            completed_data['files'] = serializer.validated_data['files']
+        if 'sign' in serializer.validated_data:
+            completed_data['sign'] = serializer.validated_data['sign']
+            
+        instance.status_history.append(completed_data)
+        
+        if 'files' in serializer.validated_data:
+            from data.filedatas.models import File
+            files = File.objects.filter(id__in=serializer.validated_data['files'])
+            instance.files.set(files)
+        
+        instance.save()
+        return Response({"status": "Success", "message": "Статус успешно обновлен"}, status=status.HTTP_200_OK)
+            
     
 class OrderAndSubOrderCreateView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
