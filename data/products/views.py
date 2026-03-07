@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS, IS_READY_PRODUCT_PARAM
+from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -204,7 +204,13 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
         
         whouses = user.whouses.all()
         queryset = Product.objects.filter(whouse__in=whouses)
-        
+        is_ready = self.request.query_params.get('is_ready_product')
+        if is_ready is not None:
+            if is_ready.lower() == 'true':
+                queryset = queryset.filter(items__isnull=False).distinct()
+            elif is_ready.lower() == 'false':
+                queryset = queryset.filter(items__isnull=True)
+
         # Apply search if provided
         search = request.query_params.get('search')
         if search:
