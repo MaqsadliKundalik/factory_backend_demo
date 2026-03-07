@@ -45,3 +45,17 @@ class DriverSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class DriverPasswordChangeSerializer(serializers.Serializer):
+    new_password = serializers.CharField(
+        write_only=True, 
+        required=True,
+        validators=[password_validator(8)]
+    )
+    
+    def save(self):
+        driver = self.context['driver']
+        driver.set_password(self.validated_data['new_password'])
+        driver.save()
+        return driver

@@ -1,7 +1,12 @@
 from django.shortcuts import render
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from apps.drivers.models import Driver
-from apps.drivers.serializers import DriverSerializer
+from apps.drivers.serializers import DriverSerializer, DriverPasswordChangeSerializer
 from apps.common.permissions import HasDynamicPermission
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 
@@ -39,3 +44,54 @@ class DriverRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
         whouses = user.whouses.all()
         return Driver.objects.filter(whouse__in=whouses)
+
+
+class DriverPasswordChangeView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="DRIVERS_PAGE", read_perm="DRIVERS_PAGE")]
+
+    @swagger_auto_schema(
+        operation_summary="Изменение пароля водителя",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['new_password'],
+            properties={
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='Новый пароль'),
+            }
+        ),
+        responses={
+            200: "Пароль успешно изменен",
+            400: "Неверные данные",
+            404: "Водитель не найден",
+        }
+    )
+    def post(self, request, driver_id):
+        try:
+            user = request.user
+            if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+                return Response({"error": "Требуется аутентификация"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Faqat o'zining parolini o'zgartirishi mumkin yoki admin bo'lishi kerak
+            if user.__class__.__name__ == 'Driver' and str(user.id) != str(driver_id):
+                return Response({"error": "Вы можете изменить только свой пароль"}, status=status.HTTP_403_FORBIDDEN)
+
+            # Warehousega tegishli driverlarni filterlash
+            whouses = user.whouses.all()
+            driver = Driver.objects.filter(id=driver_id, whouse__in=whouses).first()
+            
+            if not driver:
+                return Response({"error": "Водитель не найден"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = DriverPasswordChangeSerializer(
+                data=request.data, 
+                context={'driver': driver}
+            )
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "Пароль успешно изменен"}, status=status.HTTP_200_OK)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
