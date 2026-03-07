@@ -28,6 +28,6 @@ class WhouseProductsAdmin(admin.ModelAdmin):
 
 @admin.register(ProductItem)
 class ProductItemAdmin(admin.ModelAdmin):
-    list_display = ('product', 'whouse', 'quantity', 'status')
-    list_filter = ('whouse', 'status')
-    search_fields = ('product__name', 'whouse__name')
+    list_display = ('product', 'type', 'unit', 'quantity')
+    list_filter = ('type', 'unit')
+    search_fields = ('product__name', 'type__name', 'unit__name')
