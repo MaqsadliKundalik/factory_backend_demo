@@ -26,7 +26,22 @@ class SubOrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        repr["order"] = OrderSerializer(instance.order).data if instance.order else None
+        repr["order"] = {
+            'id': instance.order.id,
+            "display_id": instance.order.display_id,
+            'client': ClientSerializer(instance.order.client).data,
+            'branch': ClientBranchesSerializer(instance.order.branch).data,
+            'whouse': {
+                'id': instance.order.whouse.id,
+                'name': instance.order.whouse.name
+            },
+            'product': ProductSerializer(instance.order.product).data,
+            'type': ProductTypeSerializer(instance.order.type).data,
+            'unit': ProductUnitSerializer(instance.order.unit).data,
+            'status': instance.order.status,
+            'external_drivers': instance.order.external_drivers,
+            'created_at': instance.order.created_at,
+        }
         repr['driver'] = DriverSerializer(instance.driver).data
         repr['transport'] = TransportSerializer(instance.transport).data
         repr['files'] = FileSerializer(instance.files, many=True).data
