@@ -33,7 +33,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
         return repr
 
 class OrderSerializer(serializers.ModelSerializer):
-    external_drivers = ExternalDriverSerializer(many=True, required=False)
+    external_drivers = serializers.ListField(child=serializers.JSONField(), required=False)
     sub_orders = SubOrderSerializer(many=True, read_only=True)
     class Meta:
         model = Order
@@ -61,7 +61,7 @@ class OrderStatusHistorySerizalizer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
 
 class OrderAndSubOrderCreateSerializer(serializers.ModelSerializer):
-    external_drivers = ExternalDriverSerializer(many=True, required=False)
+    external_drivers = serializers.ListField(child=serializers.JSONField(), required=False)
     sub_orders = SubOrderSerializer(many=True, required=True)
     class Meta:
         model = Order
