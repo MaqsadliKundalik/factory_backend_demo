@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
+from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS, IS_READY_PRODUCT_PARAM
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -218,6 +218,7 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
             
         data = queryset.values('id', 'name')
         return Response(list(data))
+
 class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializer
