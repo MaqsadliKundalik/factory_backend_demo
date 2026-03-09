@@ -35,18 +35,28 @@ class DriverSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         files = validated_data.pop('files', [])
+        # files ni validated_data dan olib tashlaymiz, chunki u ManyToManyField
         driver = Driver.objects.create(
             PRODUCTS_PAGE=True,
             ORDERS_PAGE=True,
             TRANSPORTS_PAGE=True,
             **validated_data)
-        driver.files.set(files)
+        if files:
+            driver.files.set(files)
         return driver
 
     def update(self, instance, validated_data):
+        files = validated_data.pop('files', None)
+        
+        # Avval maydonlarni yangilaymiz
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        
+        # Keyin files ni yangilaymiz (agar berilgan bo'lsa)
+        if files is not None:
+            instance.files.set(files)
+            
         return instance
 
 

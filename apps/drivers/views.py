@@ -10,6 +10,9 @@ from apps.drivers.serializers import DriverSerializer, DriverPasswordChangeSeria
 from apps.common.permissions import HasDynamicPermission
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from rest_framework.pagination import PageNumberPagination
+from apps.common.filters import BaseDateFilterSet
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -17,12 +20,21 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+class DriverFilter(BaseDateFilterSet):
+    class Meta:
+        model = Driver
+        fields = ['whouse', 'created_at', 'updated_at']
+
 
 class DriverListCreateAPIView(ListCreateAPIView):
     authentication_classes = [UnifiedJWTAuthentication]
     serializer_class = DriverSerializer
     permission_classes = [HasDynamicPermission(crud_perm="TRANSPORTS_PAGE", read_perm="TRANSPORTS_PAGE")]
     pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = DriverFilter
+    search_fields = ['name', 'phone_number']
+    ordering_fields = ['created_at', 'updated_at']
     
     def get_queryset(self):
         user = self.request.user
