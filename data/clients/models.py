@@ -8,6 +8,8 @@ from utils.sayqal import SayqalSms
 if TYPE_CHECKING:
     from data.orders.models import Order
 
+sayqal = SayqalSms()
+
 
 class Client(BaseModel):
     name = models.CharField(max_length=255)
@@ -25,7 +27,6 @@ class Client(BaseModel):
         return self.name
     
     def send_sms(self, message: str):
-        sayqal = SayqalSms()
         sayqal.send_sms(self.phone_number, message)
 
 class ClientBranches(BaseModel):
