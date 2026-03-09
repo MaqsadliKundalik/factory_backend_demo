@@ -79,8 +79,9 @@ class ClientViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
             
-        data = queryset.values('id', 'name', "photo", "branches")
-        return Response(list(data))
+        # Serializer bilan to'g'ri ma'lumot berish
+        serializer = SelectClientSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ClientBranchesViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
