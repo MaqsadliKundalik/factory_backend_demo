@@ -9,8 +9,6 @@ class FileCreateView(generics.CreateAPIView):
     serializer_class = FileSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 class FileDownloadView(generics.RetrieveAPIView):
     queryset = File.objects.all()

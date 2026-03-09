@@ -9,12 +9,21 @@ from apps.drivers.models import Driver
 from apps.drivers.serializers import DriverSerializer, DriverPasswordChangeSerializer
 from apps.common.permissions import HasDynamicPermission
 from apps.common.auth.authentication import UnifiedJWTAuthentication
+from rest_framework.pagination import PageNumberPagination
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 
 class DriverListCreateAPIView(ListCreateAPIView):
     authentication_classes = [UnifiedJWTAuthentication]
     serializer_class = DriverSerializer
     permission_classes = [HasDynamicPermission(crud_perm="TRANSPORTS_PAGE", read_perm="TRANSPORTS_PAGE")]
-
+    pagination_class = StandardResultsSetPagination
+    
     def get_queryset(self):
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:

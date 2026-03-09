@@ -6,7 +6,7 @@ from .models import ProductType, ProductUnit, Product, WhouseProducts, WhousePro
 class ProductItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductItem
-        fields = ['id', 'type', 'unit', 'quantity']
+        fields = ['id', "product", 'type', 'unit', 'quantity']
         read_only_fields = ['id']
 
     def to_representation(self, instance):
@@ -146,14 +146,17 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         if not whouse:
             whouse = user.whouses.first()
         validated_data['whouse'] = whouse
-
-        product = Product.objects.create(**validated_data)
-        product.types.set(types)
-
+        
         for item in items:
+            product_id = item.get('product')
+            try:
+                product = Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                raise serializers.ValidationError({"product": "Product not found"})
+            
             ProductItem.objects.create(product=product, **item)
 
-        return product
+        return instance
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
@@ -183,6 +186,11 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
             instance.items.all().delete()
             # Create new items
             for item in items:
-                ProductItem.objects.create(product=instance, **item)
+                product_id = item.get('product')
+                try:
+                    product = Product.objects.get(id=product_id)
+                except Product.DoesNotExist:
+                    raise serializers.ValidationError({"product": "Product not found"})
+                ProductItem.objects.create(product=product, **item)
 
         return instance
