@@ -146,16 +146,9 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         instance.status = SubOrder.Status.COMPLETED
         instance.status_history = instance.status_history or []
         
-        timestamp = serializer.validated_data.get("timestamp")
-        # Timestamp ni string formatga o'tkazish
-        if hasattr(timestamp, 'isoformat'):
-            timestamp_str = timestamp.isoformat()
-        else:
-            timestamp_str = str(timestamp)
-            
         completed_data = {
             "status": "completed",
-            "timestamp": timestamp_str,
+            "timestamp": serializer.validated_data.get("timestamp"),
         }
         
         if 'files' in serializer.validated_data:
