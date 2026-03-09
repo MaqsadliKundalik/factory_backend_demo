@@ -56,8 +56,8 @@ class OrderSerializer(serializers.ModelSerializer):
     sub_orders = SubOrderSerializer(many=True, read_only=True)
     class Meta:
         model = Order
-        fields = ['id', 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders"]
-        read_only_fields = ['id']
+        fields = ['id', "display_id", 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders"]
+        read_only_fields = ['id', "display_id"]
         
 
     def to_representation(self, instance):
@@ -84,8 +84,8 @@ class OrderAndSubOrderCreateSerializer(serializers.ModelSerializer):
     sub_orders = SubOrderSerializer(many=True, required=True)
     class Meta:
         model = Order
-        fields = ['id', 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders"]
-        read_only_fields = ['id']
+        fields = ['id', "display_id", 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders"]
+        read_only_fields = ['id', "display_id"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
