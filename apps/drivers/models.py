@@ -10,6 +10,7 @@ class Driver(BaseModel):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=25)
     password = models.CharField(max_length=128)
+    fcm_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging token")
     
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
     files = models.ManyToManyField(File, related_name='drivers', blank=True)

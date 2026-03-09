@@ -30,6 +30,7 @@ class FactoryUser(BaseModel, AbstractBaseUser):
     
     role = models.CharField(max_length=50) # manager, operator, guard
     photo : 'File' = models.ForeignKey("filedatas.File", on_delete=models.SET_NULL, null=True, blank=True)
+    fcm_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging token")
 
     MAIN_PAGE = models.BooleanField(default=False)
     PRODUCTS_PAGE = models.BooleanField(default=False)
