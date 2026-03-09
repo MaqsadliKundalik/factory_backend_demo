@@ -61,7 +61,6 @@ class ClientViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     @swagger_auto_schema(
         operation_summary="Select products (id and name only)",
         responses={200: SelectClientSerializer(many=True)},
-        manual_parameters=[CLIENTS_PAGE]
     )
     @action(detail=False, methods=['get'], pagination_class=None)
     def select(self, request):
