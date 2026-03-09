@@ -13,6 +13,7 @@ from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from data.clients.serializers import SelectClientSerializer
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -56,6 +57,29 @@ class ClientViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
         else:
             whouse = user.whouses.first()
             serializer.save(whouse=whouse)
+
+    @swagger_auto_schema(
+        operation_summary="Select products (id and name only)",
+        responses={200: SelectClientSerializer(many=True)},
+        manual_parameters=[CLIENTS_PAGE]
+    )
+    @action(detail=False, methods=['get'], pagination_class=None)
+    def select(self, request):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"}, status=401)
+        
+        whouses = user.whouses.all()
+        queryset = Client.objects.filter(whouse__in=whouses)
+
+        # Apply search if provided
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+            
+        data = queryset.values('id', 'name', "photo", "branches")
+        return Response(list(data))
+
 
 class ClientBranchesViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = ClientBranches.objects.all()

@@ -64,3 +64,9 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             ClientBranches.objects.create(client=client, **branch_item)
             
         return client
+
+class SelectClientSerializer(serializers.ModelSerializer):
+    branches = ClientBranchesSerializer(many=True, read_only=True)
+    class Meta:
+        model = Client
+        fields = ['id', 'name', "photo", "branches"]

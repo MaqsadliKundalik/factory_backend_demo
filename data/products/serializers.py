@@ -150,13 +150,23 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         validated_data['whouse'] = whouse
         
         for item in items:
-            product_id = item.get('product')
-            try:
-                product = Product.objects.get(id=product_id)
-            except Product.DoesNotExist:
-                raise serializers.ValidationError({"product": "Product not found"})
+            product = item.get('product')
+            # Product obyektini tekshirish
+            if isinstance(product, str):
+                # Agar string bo'lsa, UUID sifatida qidirish
+                try:
+                    product_obj = Product.objects.get(id=product)
+                except Product.DoesNotExist:
+                    raise serializers.ValidationError({"product": f"Product with id {product} not found"})
+            elif hasattr(product, 'id'):
+                # Agar Product obyekti bo'lsa
+                product_obj = product
+            else:
+                raise serializers.ValidationError({"product": "Invalid product data"})
             
-            ProductItem.objects.create(product=product, **item)
+            # Product obyektini olib tashlab, qolgan maydonlarni saqlash
+            item_data = {k: v for k, v in item.items() if k != 'product'}
+            ProductItem.objects.create(product=product_obj, **item_data)
 
         return instance
 
