@@ -90,20 +90,15 @@ def update_whouse_product_history(sender, instance, **kwargs):
             quantity=instance.quantity,
             status='OUT'  # HistoryStatus.OUT
         )
-    elif instance.status == SubOrder.Status.IN_PROGRESS:
-        print("SMS YUBORILMOQDA...")
-        instance.order.client.send_sms("SubOrder is in progress")
-    elif instance.status == SubOrder.Status.ON_WAY:
-        print("SMS YUBORILMOQDA...")
-        instance.order.client.send_sms("SubOrder is on way")
-    elif instance.status == SubOrder.Status.ARRIVED:
-        print("SMS YUBORILMOQDA...")
-        instance.order.client.send_sms("SubOrder is arrived")
-    elif instance.status == SubOrder.Status.UNLOADING:
-        print("SMS YUBORILMOQDA...")
-        instance.order.client.send_sms("SubOrder is unloading")
-    elif instance.status == SubOrder.Status.COMPLETED:
-        print("SMS YUBORILMOQDA...")
-        instance.order.client.send_sms("SubOrder is completed")
+    # elif instance.status == SubOrder.Status.IN_PROGRESS:
+    #     instance.order.client.send_sms("SubOrder is in progress")
+    # elif instance.status == SubOrder.Status.ON_WAY:
+    #     instance.order.client.send_sms("SubOrder is on way")
+    # elif instance.status == SubOrder.Status.ARRIVED:
+    #     instance.order.client.send_sms("SubOrder is arrived")
+    # elif instance.status == SubOrder.Status.UNLOADING:
+    #     instance.order.client.send_sms("SubOrder is unloading")
+    # elif instance.status == SubOrder.Status.COMPLETED:
+    #     instance.order.client.send_sms("SubOrder is completed")
     
 
