@@ -36,9 +36,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Static fayllarni yig'ish
-RUN python manage.py collectstatic --noinput
-
 # TLS protokollari
 ENV JAVA_OPTS="-Djdk.tls.client.protocols=TLSv1,TLSv1.1,TLSv1.2 -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2"
 
