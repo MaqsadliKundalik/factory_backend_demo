@@ -34,7 +34,7 @@ router.register('', ProductViewSet, basename='products')
 
 urlpatterns = [
 
-    path('update-product-and-item/<int:pk>/', ProductAndItemUpdateView.as_view(), name='update-product-and-item'),
+    path('update-product-and-item/<uuid:pk>/', ProductAndItemUpdateView.as_view(), name='update-product-and-item'),
 
     path('create-product-and-item/', ProductAndItemCreateView.as_view(), name='create-product-and-item'),
 
