@@ -34,11 +34,14 @@ class DriverSerializer(serializers.ModelSerializer):
         return representation
 
     def create(self, validated_data):
-        return Driver.objects.create(
+        files = validated_data.pop('files', [])
+        driver = Driver.objects.create(
             PRODUCTS_PAGE=True,
             ORDERS_PAGE=True,
             TRANSPORTS_PAGE=True,
             **validated_data)
+        driver.files.set(files)
+        return driver
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():

@@ -3,10 +3,12 @@ from typing import TYPE_CHECKING
 from django.db import models
 from data.filedatas.models import File
 from apps.common.models import BaseModel
+from utils.sayqal import SayqalSms
 
 if TYPE_CHECKING:
     from data.orders.models import Order
 
+sayqal = SayqalSms()
 
 class Client(BaseModel):
     name = models.CharField(max_length=255)
@@ -22,6 +24,9 @@ class Client(BaseModel):
 
     def __str__(self):
         return self.name
+    
+    def send_sms(self, message: str):
+        sayqal.send_sms(self.phone_number, message)
 
 class ClientBranches(BaseModel):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="branches")
