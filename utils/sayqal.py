@@ -3,12 +3,13 @@ import os
 from random import randint
 import time
 from requests import post
+from django.conf import settings
 
 class SayqalSms:
     def __init__(self):
-        self.username = os.getenv("SAYQAL_USERNAME")
-        self.token = os.getenv("SAYQAL_TOKEN")
-        self.nickname = os.getenv("SAYQAL_NICKNAME")
+        self.username = getattr(settings, 'SAYQAL_USERNAME', None)
+        self.token = getattr(settings, 'SAYQAL_TOKEN', None)
+        self.nickname = getattr(settings, 'SAYQAL_NICKNAME', None)
 
         assert (
             self.username is not None
