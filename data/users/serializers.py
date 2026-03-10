@@ -32,6 +32,18 @@ class FactoryUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
+        
+        # Phone number unique tekshiruvi
+        phone_number = validated_data.get('phone_number')
+        # FactoryUser da tekshirish (unique=True bor, lekin qo'shimcha tekshiruv)
+        if FactoryUser.objects.filter(phone_number=phone_number).exists():
+            raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon ro'yxatdan o'tgan"})
+        
+        # Driver da tekshirish
+        from apps.drivers.models import Driver
+        if Driver.objects.filter(phone_number=phone_number).exists():
+            raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon haydovchi tomonidan ro'yxatdan o'tgan"})
+        
         user = super().create(validated_data)
         if password:
             user.set_password(password)
@@ -40,6 +52,19 @@ class FactoryUserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
+        
+        # Phone number unique tekshiruvi (agar o'zgartirilayotgan bo'lsa)
+        if 'phone_number' in validated_data:
+            new_phone_number = validated_data['phone_number']
+            # FactoryUser lar orasida tekshirish
+            if FactoryUser.objects.filter(phone_number=new_phone_number).exclude(pk=instance.pk).exists():
+                raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon boshqa foydalanuvchi tomonidan ro'yxatdan o'tgan"})
+            
+            # Driver lar orasida tekshirish
+            from apps.drivers.models import Driver
+            if Driver.objects.filter(phone_number=new_phone_number).exists():
+                raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon haydovchi tomonidan ro'yxatdan o'tgan"})
+        
         user = super().update(instance, validated_data)
         if password:
             user.set_password(password)
