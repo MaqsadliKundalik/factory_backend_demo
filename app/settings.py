@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'data.filedatas.apps.FiledatasConfig',
     'data.notifications.apps.NotificationsConfig',
     'data.orders.apps.OrdersConfig',
+    "data.supplier.apps.SupplierConfig",
 ]
 
 MIDDLEWARE = [

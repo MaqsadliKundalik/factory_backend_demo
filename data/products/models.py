@@ -4,6 +4,11 @@ from data.filedatas.models import File
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from data.notifications.models import Notification
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from data.supplier.models import Supplier
+
 
 class HistoryStatus(models.TextChoices):
     IN = 'IN', 'In'
@@ -52,6 +57,7 @@ class WhouseProducts(BaseModel):
     
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+    supplier: "Supplier | None" = models.ForeignKey('supplier.Supplier', on_delete=models.CASCADE, null=True, blank=True)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     files = models.ManyToManyField(File, related_name='whouse_products')

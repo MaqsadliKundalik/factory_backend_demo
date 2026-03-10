@@ -15,13 +15,18 @@ from apps.common.permissions import HasDynamicPermission
 from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from data.notifications.models import Notification
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
+from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 from .serializers import (
     ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, ProductAndItemCreateSerializer,
     WhouseProductsSerializer, WhouseProductsHistorySerializer,  SelectProductSerializer, ProductItemSerializer
 )
 
+WHOUSE_PRODUCTS_FILTER_PARAMS = DATE_FILTER_PARAMS + [
+    openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"),
+]
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -229,6 +234,11 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = WhouseProductsFilter
     search_fields = ['product__name']
+
+
+    @swagger_auto_schema(manual_parameters=WHOUSE_PRODUCTS_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
         user = self.request.user

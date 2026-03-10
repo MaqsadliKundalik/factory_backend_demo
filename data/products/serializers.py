@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from data.filedatas.models import File
 from app.settings import BASE_URL
+from data.supplier.serializers import SupplierSerializer
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 
 class ProductItemSerializer(serializers.ModelSerializer):
@@ -35,15 +36,20 @@ class ProductUnitSerializer(serializers.ModelSerializer):
 class WhouseProductsSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhouseProducts  
-        fields = ['id', 'whouse', 'product', 'product_type', 'quantity', 'files', 'status', 'created_at']
+        fields = ['id', 'whouse', 'product', "supplier", 'product_type', 'quantity', 'files', 'status', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         if instance.product:
             repr['product'] = ProductSerializer(instance.product).data
+        
         if instance.product_type:
             repr['product_type'] = ProductTypeSerializer(instance.product_type).data
+        
+        if instance.supplier:
+            repr['supplier'] = SupplierSerializer(instance.supplier).data
+            
         repr['files'] = [{
             "id": file.id,
             "file": BASE_URL + file.file.url
@@ -116,9 +122,10 @@ class ProductSerializer(serializers.ModelSerializer):
 class WhouseProductsHistorySerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
     product = serializers.PrimaryKeyRelatedField(read_only=True) 
+    supplier = serializers.PrimaryKeyRelatedField(read_only=True) 
     class Meta:
         model = WhouseProductsHistory  
-        fields = ['id', 'whouse', 'product', 'quantity', 'status', "created_at"]
+        fields = ['id', 'whouse', 'product', 'supplier', 'quantity', 'status', "created_at"]
         read_only_fields = ['id', "created_at"]
 
 
@@ -148,6 +155,12 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         if not whouse:
             whouse = user.whouses.first()
         validated_data['whouse'] = whouse
+        
+        # Create product
+        instance = Product.objects.create(**validated_data)
+        
+        # Add types
+        instance.types.set(types)
         
         for item in items:
             product = item.get('product')
