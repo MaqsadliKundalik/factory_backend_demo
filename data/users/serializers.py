@@ -10,13 +10,13 @@ class FactoryUserSerializer(serializers.ModelSerializer):
         model = FactoryUser
         fields = [
             'id', 'name', 'phone_number', 'password', 'role',
-            'MAIN_PAGE', 'PRODUCTS_PAGE', 'ORDERS_PAGE', 'TRANSPORTS_PAGE', 
+            'MAIN_PAGE', 'PRODUCTS_PAGE', 'ORDERS_PAGE', 'TRANSPORTS_PAGE', "created_at",
             'CLIENTS_PAGE', 'USERS_PAGE', 'READY_PRODUCTS_PAGE', 'DRIVERS_PAGE', 'WHEREHOUSES_PAGE', 'whouses', 'photo'
         ]
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'created_at']
 
 
     def to_representation(self, instance):

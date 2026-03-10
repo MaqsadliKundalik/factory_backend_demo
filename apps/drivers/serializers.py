@@ -3,6 +3,8 @@ from django.core.validators import RegexValidator
 from apps.drivers.models import Driver
 from utils.password import password_validator
 from data.filedatas.serializers import FileSerializer
+from data.orders.models import SubOrder
+from data.users.models import FactoryUser
 
 class DriverSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(
@@ -33,6 +35,14 @@ class DriverSerializer(serializers.ModelSerializer):
             "id": instance.whouse.id,
             "name": instance.whouse.name
         } if instance.whouse else None
+        has_suborder: bool = instance.suborders.filter(status__in=[
+            SubOrder.Status.NEW, 
+            SubOrder.Status.IN_PROGRESS, 
+            SubOrder.Status.ARRIVED,
+            SubOrder.Status.ON_WAY,
+            SubOrder.Status.UNLOADING
+        ]).exists()
+        representation['has_suborder'] = has_suborder
         return representation
 
     def create(self, validated_data):
@@ -41,7 +51,6 @@ class DriverSerializer(serializers.ModelSerializer):
         if Driver.objects.filter(phone_number=phone_number).exists():
             raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon ro'yxatdan o'tgan"})
         
-        from data.users.models import FactoryUser
         if FactoryUser.objects.filter(phone_number=phone_number).exists():
             raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon ro'yxatdan o'tgan"})
         
@@ -62,7 +71,6 @@ class DriverSerializer(serializers.ModelSerializer):
             if Driver.objects.filter(phone_number=new_phone_number).exclude(pk=instance.pk).exists():
                 raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon boshqa haydovchi tomonidan ro'yxatdan o'tgan"})
             
-            from data.users.models import FactoryUser
             if FactoryUser.objects.filter(phone_number=new_phone_number).exists():
                 raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon foydalanuvchi tomonidan ro'yxatdan o'tgan"})
         

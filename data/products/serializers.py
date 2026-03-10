@@ -74,8 +74,8 @@ class ProductSerializer(serializers.ModelSerializer):
     items = ProductItemSerializer(many=True, read_only=True)
     class Meta:
         model = Product
-        fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']
-        read_only_fields = ['id']
+        fields = ['id', 'name', 'types', 'unit', 'whouse', 'items', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
