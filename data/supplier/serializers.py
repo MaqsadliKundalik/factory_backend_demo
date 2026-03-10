@@ -62,9 +62,9 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
         model = Supplier
         fields = ['id', 'name', 'inn_number', 'phone_numbers', 'photo', 'whouse', 'files']
         extra_kwargs = {
-            'id': {'read_only': False, 'required': False},
             'whouse': {'required': False}
         }
+        read_only_fields = ['id', 'created_at']
 
     def create(self, validated_data):
         phone_numbers_data = validated_data.pop('phone_numbers', [])
