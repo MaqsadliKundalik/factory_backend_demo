@@ -29,7 +29,7 @@ class ClientPhoneSerializer(serializers.ModelSerializer):
 
 class ClientSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, read_only=True)
-    phone_numbers = ClientPhoneSerializer(many=True, read_only=True)
+    phone_numbers = ClientPhoneSerializer(many=True, required=False)
     files = FileSerializer(many=True, read_only=True)
     
     class Meta:
@@ -51,6 +51,24 @@ class ClientSerializer(serializers.ModelSerializer):
             "name": instance.whouse.name
         }
         return representation
+
+    def update(self, instance, validated_data):
+        phone_numbers_data = validated_data.pop('phone_numbers', None)
+        
+        # Update client fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Update phone numbers
+        if phone_numbers_data is not None:
+            instance.phones.all().delete()
+            for phone_item in phone_numbers_data:
+                # client field ni olib tashlash kerak, chunki u validated_data da bor
+                phone_data = {k: v for k, v in phone_item.items() if k != 'client'}
+                ClientPhone.objects.create(client=instance, **phone_data)
+        
+        return instance
 
 class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):    
     branches = ClientBranchesBulkSerializer(many=True, required=False)
@@ -119,7 +137,6 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             from data.filedatas.models import File
             files = File.objects.filter(id__in=files_data)
             instance.files.set(files)
-        
         return instance
 
 class SelectClientSerializer(serializers.ModelSerializer):

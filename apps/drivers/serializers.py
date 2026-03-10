@@ -36,17 +36,14 @@ class DriverSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         files = validated_data.pop('files', [])
-        # Phone number unique tekshiruvi
         phone_number = validated_data.get('phone_number')
         if Driver.objects.filter(phone_number=phone_number).exists():
             raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon ro'yxatdan o'tgan"})
         
-        # FactoryUser da ham tekshirish
         from data.users.models import FactoryUser
         if FactoryUser.objects.filter(phone_number=phone_number).exists():
             raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon ro'yxatdan o'tgan"})
         
-        # files ni validated_data dan olib tashlaymiz, chunki u ManyToManyField
         driver = Driver.objects.create(
             PRODUCTS_PAGE=True,
             ORDERS_PAGE=True,
@@ -59,24 +56,19 @@ class DriverSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         files = validated_data.pop('files', None)
         
-        # Phone number unique tekshiruvi (agar o'zgartirilayotgan bo'lsa)
         if 'phone_number' in validated_data:
             new_phone_number = validated_data['phone_number']
-            # Driver lar orasida tekshirish
             if Driver.objects.filter(phone_number=new_phone_number).exclude(pk=instance.pk).exists():
                 raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon boshqa haydovchi tomonidan ro'yxatdan o'tgan"})
             
-            # FactoryUser lar orasida tekshirish
             from data.users.models import FactoryUser
             if FactoryUser.objects.filter(phone_number=new_phone_number).exists():
                 raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon foydalanuvchi tomonidan ro'yxatdan o'tgan"})
         
-        # Avval maydonlarni yangilaymiz
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         
-        # Keyin files ni yangilaymiz (agar berilgan bo'lsa)
         if files is not None:
             instance.files.set(files)
             
