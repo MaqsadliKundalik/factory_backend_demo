@@ -21,8 +21,9 @@ class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
         fields = [
-            "id", "name", "phone_number", "password", "photo", "files", "whouse"
+            "id", "name", "phone_number", "password", "photo", "files", "whouse", "created_at"
         ]
+        read_only_fields = ["id", "created_at"]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

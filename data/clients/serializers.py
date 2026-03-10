@@ -34,8 +34,8 @@ class ClientSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Client
-        fields = ['id', 'name', 'inn_number', 'branches', 'photo', 'phone_numbers', 'files']
-        read_only_fields = ['id']
+        fields = ['id', 'name', 'inn_number', 'branches', 'photo', 'phone_numbers', 'files', "created_at"]
+        read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
