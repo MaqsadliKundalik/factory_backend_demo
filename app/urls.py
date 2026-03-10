@@ -21,6 +21,7 @@ from data.whouse.urls import urlpatterns as whouse_urls
 from data.users.urls import urlpatterns as users_urls
 from apps.common.auth.urls import urlpatterns as auth_urls
 from data.products.urls import urlpatterns as products_urls
+from data.supplier.urls import urlpatterns as supplier_urls
 from data.transports.urls import urlpatterns as transports_urls
 from data.notifications.urls import urlpatterns as notifications_urls
 from data.clients.urls import urlpatterns as clients_urls
@@ -56,6 +57,7 @@ urlpatterns = [
     path('drivers/', include(driver_urls)),
     # path('guards/', include(guard_urls)),
     path('products/', include(products_urls)),
+    path('supplier/', include(supplier_urls)),
     path('transports/', include(transports_urls)),
     path('users/', include(users_urls)),
     path('notifications/', include(notifications_urls)),
