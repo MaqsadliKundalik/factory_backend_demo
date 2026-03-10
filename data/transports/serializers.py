@@ -18,7 +18,7 @@ class TransportSerializer(serializers.ModelSerializer):
             'name': instance.whouse.name
 
         }
-        exists: bool = instance.suborders.filter(status__in=[
+        exists: bool = instance.sub_orders.filter(status__in=[
             SubOrder.Status.NEW, 
             SubOrder.Status.IN_PROGRESS, 
             SubOrder.Status.ARRIVED,

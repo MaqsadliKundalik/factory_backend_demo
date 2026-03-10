@@ -35,7 +35,7 @@ class DriverSerializer(serializers.ModelSerializer):
             "id": instance.whouse.id,
             "name": instance.whouse.name
         } if instance.whouse else None
-        has_suborder: bool = instance.suborders.filter(status__in=[
+        has_suborder: bool = instance.sub_orders.filter(status__in=[
             SubOrder.Status.NEW, 
             SubOrder.Status.IN_PROGRESS, 
             SubOrder.Status.ARRIVED,
