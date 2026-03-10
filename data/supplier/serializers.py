@@ -56,7 +56,7 @@ class SupplierSerializer(serializers.ModelSerializer):
         return instance
 
 class SupplierBulkSerializer(serializers.ModelSerializer):    
-    phone_numbers = SupplierPhoneSerializer(many=True, required=False)
+    phone_numbers = SupplierPhoneBulkSerializer(many=True, required=False)
     files = serializers.ListField(child=serializers.UUIDField(), required=False)
     class Meta:
         model = Supplier
