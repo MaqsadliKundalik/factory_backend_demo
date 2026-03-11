@@ -60,7 +60,6 @@ class WhouseProducts(BaseModel):
     supplier: "Supplier | None" = models.ForeignKey('supplier.Supplier', on_delete=models.CASCADE, null=True, blank=True)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    files = models.ManyToManyField(File, related_name='whouse_products')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     
     def __str__(self):

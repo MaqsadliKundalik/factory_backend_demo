@@ -8,7 +8,6 @@ class Supplier(BaseModel):
     inn_number = models.CharField(max_length=9)
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE)
-    files: "models.QuerySet[File]" = models.ManyToManyField('filedatas.File', related_name='suppliers', null=True, blank=True)
 
     list_display = ["name", "inn_number", "whouse", "files"]
 

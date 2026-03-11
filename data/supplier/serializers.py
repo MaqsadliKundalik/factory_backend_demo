@@ -19,18 +19,16 @@ class SupplierPhoneBulkSerializer(serializers.Serializer):
 
 class SupplierSerializer(serializers.ModelSerializer):
     phone_numbers = SupplierPhoneSerializer(many=True, required=False)
-    files = FileSerializer(many=True, read_only=True)
     
     class Meta:
         model = Supplier
-        fields = ['id', 'name', 'inn_number', 'photo', 'phone_numbers', 'files', "created_at"]
+        fields = ['id', 'name', 'inn_number', 'photo', 'phone_numbers', "created_at"]
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['photo'] = FileSerializer(instance.photo).data if instance.photo else None
         representation['phone_numbers'] = SupplierPhoneSerializer(instance.phones.all(), many=True).data
-        representation['files'] = FileSerializer(instance.files.all(), many=True).data
         representation['whouse'] = {
             "id": instance.whouse.id,
             "name": instance.whouse.name
@@ -57,10 +55,9 @@ class SupplierSerializer(serializers.ModelSerializer):
 
 class SupplierBulkSerializer(serializers.ModelSerializer):    
     phone_numbers = SupplierPhoneBulkSerializer(many=True, required=False)
-    files = serializers.ListField(child=serializers.UUIDField(), required=False)
     class Meta:
         model = Supplier
-        fields = ['id', 'name', 'inn_number', 'phone_numbers', 'photo', 'whouse', 'files']
+        fields = ['id', 'name', 'inn_number', 'phone_numbers', 'photo', 'whouse']
         extra_kwargs = {
             'whouse': {'required': False}
         }
@@ -68,7 +65,6 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         phone_numbers_data = validated_data.pop('phone_numbers', [])
-        files_data = validated_data.pop('files', [])
         
         # Handle whouse fallback
         if not validated_data.get('whouse'):
@@ -81,18 +77,11 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
                 
         for phone_number_item in phone_numbers_data:
             SupplierPhone.objects.create(supplier=supplier, **phone_number_item)
-        
-        # Handle files
-        if files_data:
-            from data.filedatas.models import File
-            files = File.objects.filter(id__in=files_data)
-            supplier.files.set(files)
-            
+                
         return supplier
 
     def update(self, instance, validated_data):
         phone_numbers_data = validated_data.pop('phone_numbers', None)
-        files_data = validated_data.pop('files', None)
         
         # Update client fields
         for attr, value in validated_data.items():
@@ -105,11 +94,6 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
             for phone_number_item in phone_numbers_data:
                 SupplierPhone.objects.create(supplier=instance, **phone_number_item)
         
-        # Update files
-        if files_data is not None:
-            from data.filedatas.models import File
-            files = File.objects.filter(id__in=files_data)
-            instance.files.set(files)
         return instance
 
 class SelectSupplierSerializer(serializers.ModelSerializer):

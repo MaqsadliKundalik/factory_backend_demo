@@ -71,7 +71,6 @@ class SubOrder(BaseModel):
     driver = models.ForeignKey("factory_drivers.Driver", on_delete=models.PROTECT, related_name='sub_orders')
     transport = models.ForeignKey("transports.Transport", on_delete=models.PROTECT, related_name='sub_orders')
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    files = models.ManyToManyField("filedatas.File", related_name='sub_orders')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     status_history = models.JSONField(default=list, encoder=DjangoJSONEncoder)
     sign: "File" = models.ForeignKey("filedatas.File", on_delete=models.PROTECT, related_name='sub_orders_sign', null=True, blank=True)

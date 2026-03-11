@@ -151,17 +151,11 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             "timestamp": serializer.validated_data.get("timestamp"),
         }
         
-        if 'files' in serializer.validated_data:
-            completed_data['files'] = serializer.validated_data['files']
         if 'sign' in serializer.validated_data:
             completed_data['sign'] = serializer.validated_data['sign']
             
         instance.status_history.append(completed_data)
         
-        if 'files' in serializer.validated_data:
-            from data.filedatas.models import File
-            files = File.objects.filter(id__in=serializer.validated_data['files'])
-            instance.files.set(files)
         
         instance.save()
         return Response({"status": "Success", "message": "Статус успешно обновлен"}, status=status.HTTP_200_OK)

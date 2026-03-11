@@ -36,7 +36,7 @@ class ProductUnitSerializer(serializers.ModelSerializer):
 class WhouseProductsSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhouseProducts  
-        fields = ['id', 'whouse', 'product', "supplier", 'product_type', 'quantity', 'files', 'status', 'created_at']
+        fields = ['id', 'whouse', 'product', "supplier", 'product_type', 'quantity', 'status', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
@@ -50,26 +50,12 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
         if instance.supplier:
             repr['supplier'] = SupplierSerializer(instance.supplier).data
             
-        repr['files'] = [{
-            "id": file.id,
-            "file": BASE_URL + file.file.url
-        } for file in instance.files.all()]
         repr['whouse'] = {
             'id': instance.whouse.id,
             'name': instance.whouse.name
         }
         return repr
 
-    def validate(self, attrs):
-        status = attrs.get('status')
-        files = attrs.get('files', [])
-
-        if status == 'created':
-            if len(files) < 2:
-                raise serializers.ValidationError({
-                    "files": "Необходимо загрузить не менее 2 файлов."
-                })
-        return attrs
 
 class SelectProductSerializer(serializers.ModelSerializer):
     class Meta:

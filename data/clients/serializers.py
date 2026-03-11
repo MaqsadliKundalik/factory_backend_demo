@@ -30,11 +30,10 @@ class ClientPhoneSerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, read_only=True)
     phone_numbers = ClientPhoneSerializer(many=True, required=False)
-    files = FileSerializer(many=True, read_only=True)
     
     class Meta:
         model = Client
-        fields = ['id', 'name', 'inn_number', 'branches', 'photo', 'phone_numbers', 'files', "created_at"]
+        fields = ['id', 'name', 'inn_number', 'branches', 'photo', 'phone_numbers',  "created_at"]
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
@@ -45,7 +44,6 @@ class ClientSerializer(serializers.ModelSerializer):
         } if instance.photo else None
         representation['branches'] = ClientBranchesSerializer(instance.branches, many=True).data
         representation['phone_numbers'] = ClientPhoneSerializer(instance.phones.all(), many=True).data
-        representation['files'] = FileSerializer(instance.files.all(), many=True).data
         representation['whouse'] = {
             "id": instance.whouse.id,
             "name": instance.whouse.name
@@ -73,10 +71,9 @@ class ClientSerializer(serializers.ModelSerializer):
 class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):    
     branches = ClientBranchesBulkSerializer(many=True, required=False)
     phone_numbers = ClientPhoneSerializer(many=True, required=False)
-    files = serializers.ListField(child=serializers.UUIDField(), required=False)
     class Meta:
         model = Client
-        fields = ['id', 'name', 'inn_number', 'phone_numbers', 'photo', 'whouse', 'branches', 'files']
+        fields = ['id', 'name', 'inn_number', 'phone_numbers', 'photo', 'whouse', 'branches']
         extra_kwargs = {
             'id': {'read_only': False, 'required': False},
             'whouse': {'required': False}
@@ -85,7 +82,6 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         branches_data = validated_data.pop('branches', [])
         phone_numbers_data = validated_data.pop('phone_numbers', [])
-        files_data = validated_data.pop('files', [])
         
         # Handle whouse fallback
         if not validated_data.get('whouse'):
@@ -101,20 +97,13 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
         
         for phone_number_item in phone_numbers_data:
             ClientPhone.objects.create(client=client, **phone_number_item)
-        
-        # Handle files
-        if files_data:
-            from data.filedatas.models import File
-            files = File.objects.filter(id__in=files_data)
-            client.files.set(files)
-            
+
         return client
 
     def update(self, instance, validated_data):
         branches_data = validated_data.pop('branches', None)
         phone_numbers_data = validated_data.pop('phone_numbers', None)
-        files_data = validated_data.pop('files', None)
-        
+
         # Update client fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -132,17 +121,11 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             for phone_item in phone_numbers_data:
                 ClientPhone.objects.create(client=instance, **phone_item)
         
-        # Update files
-        if files_data is not None:
-            from data.filedatas.models import File
-            files = File.objects.filter(id__in=files_data)
-            instance.files.set(files)
         return instance
 
 class SelectClientSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, read_only=True)
     phone_numbers = ClientPhoneSerializer(many=True, read_only=True)
-    files = FileSerializer(many=True, read_only=True)
     class Meta:
         model = Client
-        fields = ['id', 'name', "photo", "branches", "phone_numbers", "files"]
+        fields = ['id', 'name', "photo", "branches", "phone_numbers"]

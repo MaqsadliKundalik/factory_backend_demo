@@ -5,7 +5,7 @@ from app.settings import BASE_URL
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ['id', 'file', 'created_at', 'updated_at']
+        fields = ['id', 'file', "type", "object_id", 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def to_representation(self, instance):

@@ -3,4 +3,4 @@ from .models import File
 
 @admin.register(File)
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'file', 'created_at', 'updated_at')
+    list_display = ('id', 'file', 'type', 'object_id', 'created_at', 'updated_at')

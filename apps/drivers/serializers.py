@@ -23,14 +23,13 @@ class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
         fields = [
-            "id", "name", "phone_number", "password", "photo", "files", "whouse", "created_at"
+            "id", "name", "phone_number", "password", "photo", "whouse", "created_at"
         ]
         read_only_fields = ["id", "created_at"]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['photo'] = FileSerializer(instance.photo).data if instance.photo else None
-        representation['files'] = FileSerializer(instance.files, many=True).data if instance.files else None
         representation['whouse'] = {
             "id": instance.whouse.id,
             "name": instance.whouse.name
@@ -46,7 +45,6 @@ class DriverSerializer(serializers.ModelSerializer):
         return representation
 
     def create(self, validated_data):
-        files = validated_data.pop('files', [])
         phone_number = validated_data.get('phone_number')
         if Driver.objects.filter(phone_number=phone_number).exists():
             raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon ro'yxatdan o'tgan"})
@@ -59,12 +57,9 @@ class DriverSerializer(serializers.ModelSerializer):
             ORDERS_PAGE=True,
             TRANSPORTS_PAGE=True,
             **validated_data)
-        if files:
-            driver.files.set(files)
         return driver
 
     def update(self, instance, validated_data):
-        files = validated_data.pop('files', None)
         
         if 'phone_number' in validated_data:
             new_phone_number = validated_data['phone_number']
@@ -78,9 +73,6 @@ class DriverSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         
-        if files is not None:
-            instance.files.set(files)
-            
         return instance
 
 

@@ -17,15 +17,13 @@ class StatusHistorySerializer(serializers.Serializer):
 
 class CompetedStatusSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
-    files = serializers.ListField(child=serializers.UUIDField(), required=True)
     sign = serializers.UUIDField(required=False)
 
 class SubOrderSerializer(serializers.ModelSerializer):
     status_history = serializers.ListField(child=serializers.JSONField(), required=False)
-    files = FileSerializer(many=True, required=False)
     class Meta:
         model = SubOrder
-        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'files', 'status', 'status_history']
+        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'status', 'status_history']
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
@@ -48,7 +46,6 @@ class SubOrderSerializer(serializers.ModelSerializer):
         }
         repr['driver'] = DriverSerializer(instance.driver).data
         repr['transport'] = TransportSerializer(instance.transport).data
-        repr['files'] = FileSerializer(instance.files, many=True).data
         return repr
 
 class OrderSerializer(serializers.ModelSerializer):

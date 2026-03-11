@@ -13,8 +13,6 @@ class Driver(BaseModel):
     # fcm_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging token")
     
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
-    files = models.ManyToManyField(File, related_name='drivers', blank=True)
-
     whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
 
     # Permission fields for compatibility with HasDynamicPermission
