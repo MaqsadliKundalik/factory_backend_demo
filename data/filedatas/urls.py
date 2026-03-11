@@ -1,7 +1,8 @@
-from django.urls import path, Router
+from django.urls import path
+from rest_framework.routers import DefaultRouter
 from .views import FileCreateView, FileDownloadView, DocumentsViewSet
 
-router = Router()
+router = DefaultRouter()
 router.register(r'documents', DocumentsViewSet, basename='documents')
 
 urlpatterns = [
