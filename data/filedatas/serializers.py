@@ -16,7 +16,7 @@ class FileSerializer(serializers.ModelSerializer):
 class DocumentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Documents
-        fields = ['id', 'file', 'created_at', 'updated_at']
+        fields = ['id', 'file', "type", "object_id", 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def to_representation(self, instance):
