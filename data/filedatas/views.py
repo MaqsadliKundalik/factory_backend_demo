@@ -4,9 +4,11 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
-from apps.common.filters import BaseDateFilterSet
-from apps.common.mixins import DateFilterSchemaMixin
+from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
+
 from .models import File, Documents
 from .serializers import FileSerializer, DocumentsSerializer
 
@@ -34,9 +36,30 @@ class DocumentsFilter(BaseDateFilterSet):
         fields = ['type', 'object_id']
 
 
-class DocumentsViewSet(DateFilterSchemaMixin, viewsets.ModelViewSet):
+DOCUMENTS_FILTER_PARAMS = DATE_FILTER_PARAMS + [
+    openapi.Parameter(
+        'type', openapi.IN_QUERY,
+        description="Hujjat turi: DRIVER, TRANSPORT, SUPPLIER, CLIENT, SUBORDER, PRODUCT, OTHER",
+        type=openapi.TYPE_STRING,
+        required=False,
+    ),
+    openapi.Parameter(
+        'object_id', openapi.IN_QUERY,
+        description="Bog'liq obyekt UUID si",
+        type=openapi.TYPE_STRING,
+        format=openapi.FORMAT_UUID,
+        required=False,
+    ),
+]
+
+
+class DocumentsViewSet(viewsets.ModelViewSet):
     queryset = Documents.objects.all()
     serializer_class = DocumentsSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = DocumentsFilter
+
+    @swagger_auto_schema(manual_parameters=DOCUMENTS_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
