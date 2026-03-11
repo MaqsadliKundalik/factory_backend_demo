@@ -26,7 +26,8 @@ class Client(BaseModel):
         return self.name
     
     def send_sms(self, message: str):
-        sayqal.send_sms(self.phone_number, message)
+        for phone in self.phones.all():
+            sayqal.send_sms(phone.phone_number, message)
 
 class ClientBranches(BaseModel):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="branches")
