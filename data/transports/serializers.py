@@ -1,9 +1,7 @@
 from rest_framework import serializers
 from .models import Transport
 from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from data.orders.models import SubOrder
+from data.orders.models import SubOrder
 
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
