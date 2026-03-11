@@ -18,3 +18,8 @@ class DocumentsSerializer(serializers.ModelSerializer):
         model = Documents
         fields = ['id', 'file', "type", "object_id", 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['file'] = FileSerializer(instance.file).data if instance.file else None
+        return representation
