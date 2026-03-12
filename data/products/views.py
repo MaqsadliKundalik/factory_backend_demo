@@ -282,6 +282,18 @@ class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelV
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @swagger_auto_schema(consumes=['multipart/form-data'])
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(consumes=['multipart/form-data'])
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(consumes=['multipart/form-data'])
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
 
 class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     queryset = WhouseProducts.objects.all()
