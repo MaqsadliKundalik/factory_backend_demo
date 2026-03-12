@@ -9,6 +9,7 @@ from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
+from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -56,10 +57,8 @@ class TransportSelectView(APIView):
     @swagger_auto_schema(
         operation_summary="Select transports (id and name only)",
         responses={200: SelectTransportSerializer(many=True)},
-        manual_parameters=[]
     )
-    @action(detail=False, methods=['get'], pagination_class=None)
-    def select(self, request):
+    def get(self, request):
         user = self.request.user
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
