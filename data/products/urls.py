@@ -4,9 +4,9 @@ from django.urls import path, include
 
 from .views import (
 
-    ProductTypeViewSet, ProductUnitViewSet, ProductViewSet, 
+    ProductTypeViewSet, ProductUnitViewSet, ProductViewSet,
 
-    WhouseProductsViewSet, WhouseProductsHistoryViewSet, 
+    WhouseProductsViewSet, WhouseProductsV2ViewSet, WhouseProductsHistoryViewSet,
 
     WhouseProductsActionViewSet, ProductItemViewSet, ProductAndItemCreateView, ProductAndItemUpdateView
 
@@ -23,6 +23,8 @@ router.register('units', ProductUnitViewSet, basename='product-unit')
 router.register("history", WhouseProductsHistoryViewSet, basename='whouse-products-history')
 
 router.register('whouse', WhouseProductsViewSet, basename='whouse-products')
+
+router.register('whouse-v2', WhouseProductsV2ViewSet, basename='whouse-products-v2')
 
 router.register('actions', WhouseProductsActionViewSet, basename='whouse-products-actions')
 

@@ -19,9 +19,10 @@ from drf_yasg import openapi
 
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
+from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (
     ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, ProductAndItemCreateSerializer,
-    WhouseProductsSerializer, WhouseProductsHistorySerializer,  SelectProductSerializer, ProductItemSerializer
+    WhouseProductsSerializer, WhouseProductsSerializerV2, WhouseProductsHistorySerializer, SelectProductSerializer, ProductItemSerializer
 )
 
 WHOUSE_PRODUCTS_FILTER_PARAMS = DATE_FILTER_PARAMS + [
@@ -254,6 +255,33 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
         serializer.save(whouse=whouse)
 
 from rest_framework import mixins, viewsets
+
+
+class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
+    queryset = WhouseProducts.objects.all()
+    serializer_class = WhouseProductsSerializerV2
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_class = WhouseProductsFilter
+    search_fields = ['product__name']
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return WhouseProducts.objects.none()
+        return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
+
+    def perform_create(self, serializer):
+        whouse = self.request.user.whouses.first()
+        serializer.save(whouse=whouse)
+
+    @swagger_auto_schema(manual_parameters=WHOUSE_PRODUCTS_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     queryset = WhouseProducts.objects.all()
