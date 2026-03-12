@@ -162,8 +162,17 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
         read_only_fields = ['id', "created_at"]
 
 
+class ProductItemWriteSerializer(serializers.ModelSerializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+
+    class Meta:
+        model = ProductItem
+        fields = ['id', 'product', 'type', 'unit', 'quantity']
+        read_only_fields = ['id']
+
+
 class ProductAndItemCreateSerializer(serializers.ModelSerializer):
-    items = ProductItemSerializer(many=True, required=True)
+    items = ProductItemWriteSerializer(many=True, required=True)
     class Meta:
         model = Product
         fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']
@@ -196,23 +205,8 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         instance.types.set(types)
         
         for item in items:
-            product = item.get('product')
-            # Product obyektini tekshirish
-            if isinstance(product, str):
-                # Agar string bo'lsa, UUID sifatida qidirish
-                try:
-                    product_obj = Product.objects.get(id=product)
-                except Product.DoesNotExist:
-                    raise serializers.ValidationError({"product": f"Product with id {product} not found"})
-            elif hasattr(product, 'id'):
-                # Agar Product obyekti bo'lsa
-                product_obj = product
-            else:
-                raise serializers.ValidationError({"product": "Invalid product data"})
-            
-            # Product obyektini olib tashlab, qolgan maydonlarni saqlash
-            item_data = {k: v for k, v in item.items() if k != 'product'}
-            ProductItem.objects.create(product=product_obj, **item_data)
+            product_obj = item.pop('product')
+            ProductItem.objects.create(product=product_obj, **item)
 
         return instance
 
@@ -244,11 +238,7 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
             instance.items.all().delete()
             # Create new items
             for item in items:
-                product_id = item.get('product')
-                try:
-                    product = Product.objects.get(id=product_id)
-                except Product.DoesNotExist:
-                    raise serializers.ValidationError({"product": "Product not found"})
-                ProductItem.objects.create(product=product, **item)
+                product_obj = item.pop('product')
+                ProductItem.objects.create(product=product_obj, **item)
 
         return instance
