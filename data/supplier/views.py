@@ -3,7 +3,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from django.db import transaction
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
@@ -86,8 +85,7 @@ class SupplierSelectView(APIView):
         responses={200: SelectSupplierSerializer(many=True)},
         manual_parameters=SUPPLIER_FILTER_PARAMS
     )
-    @action(detail=False, methods=['get'], pagination_class=None)
-    def select(self, request):
+    def get(self, request):
         user = self.request.user
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
