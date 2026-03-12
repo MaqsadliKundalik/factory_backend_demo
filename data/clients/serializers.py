@@ -129,3 +129,8 @@ class SelectClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = ['id', 'name', "photo", "branches", "phone_numbers"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['photo'] = FileSerializer(instance.photo).data if instance.photo else None
+        return representation
