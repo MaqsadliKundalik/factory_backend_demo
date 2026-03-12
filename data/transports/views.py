@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from .models import Transport
-from .serializers import TransportSerializer
+from .serializers import TransportSerializer, SelectTransportSerializer
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.filters import BaseDateFilterSet
@@ -8,6 +8,8 @@ from apps.common.mixins import PermissionMetaMixin, DateFilterSchemaMixin
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -46,3 +48,29 @@ class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet)
         else:
             whouse = user.whouses.first()
             serializer.save(whouse=whouse)
+
+class TransportSelectView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(crud_perm="TRANSPORTS_PAGE", read_perm="TRANSPORTS_PAGE")]
+
+    @swagger_auto_schema(
+        operation_summary="Select transports (id and name only)",
+        responses={200: SelectTransportSerializer(many=True)},
+        manual_parameters=[]
+    )
+    @action(detail=False, methods=['get'], pagination_class=None)
+    def select(self, request):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"}, status=401)
+        
+        whouses = user.whouses.all()
+        queryset = Transport.objects.filter(whouse__in=whouses)
+
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+            
+        data = queryset.values('id', 'name')
+        return Response(list(data))
+

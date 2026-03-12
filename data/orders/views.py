@@ -133,6 +133,7 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
+        consumes=['multipart/form-data'],
         request_body=CompetedStatusSerializer(),
         responses={200: "Successfully updated completed status"}
     )

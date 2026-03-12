@@ -27,3 +27,8 @@ class TransportSerializer(serializers.ModelSerializer):
         representation['has_suborder'] = exists
 
         return representation
+
+class SelectTransportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transport
+        fields = ['id', 'name', "number"]

@@ -282,15 +282,33 @@ class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelV
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(consumes=['multipart/form-data'])
+    @swagger_auto_schema(
+        consumes=['multipart/form-data'],
+        request_body=WhouseProductsSerializer(),
+        manual_parameters=[
+            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
+        ],
+    )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @swagger_auto_schema(consumes=['multipart/form-data'])
+    @swagger_auto_schema(
+        consumes=['multipart/form-data'],
+        request_body=WhouseProductsSerializer(),
+        manual_parameters=[
+            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
+        ],
+    )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-    @swagger_auto_schema(consumes=['multipart/form-data'])
+    @swagger_auto_schema(
+        consumes=['multipart/form-data'],
+        request_body=WhouseProductsSerializer(),
+        manual_parameters=[
+            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
+        ],
+    )
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
