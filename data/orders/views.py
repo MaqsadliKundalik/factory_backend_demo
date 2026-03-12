@@ -18,7 +18,8 @@ from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
 from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer, OrderAndSubOrderCreateSerializer, CompetedStatusSerializer
-from data.filedatas.models import File
+from rest_framework.parsers import MultiPartParser, FormParser
+from data.filedatas.models import File, Documents
 
 ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('client', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"),
@@ -135,31 +136,37 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @swagger_auto_schema(
         consumes=['multipart/form-data'],
         request_body=CompetedStatusSerializer(),
+        manual_parameters=[
+            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Files (repeat for multiple)"),
+        ],
         responses={200: "Successfully updated completed status"}
     )
-    @action(detail=True, methods=['post'], url_path='update-completed-status')
+    @action(detail=True, methods=['post'], url_path='update-completed-status', parser_classes=[MultiPartParser, FormParser])
     def update_completed_status(self, request, pk=None):
         instance = self.get_object()
         serializer = CompetedStatusSerializer(data=request.data)
-        
+
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         instance.status = SubOrder.Status.COMPLETED
         instance.status_history = instance.status_history or []
-        
+
         completed_data = {
             "status": "completed",
             "timestamp": str(serializer.validated_data.get("timestamp")),
         }
 
         if 'sign' in serializer.validated_data:
-            file_obj = File.objects.create(file=serializer.validated_data['sign'])
-            instance['sign'] = str(file_obj.id)
-            
+            sign_file = File.objects.create(file=serializer.validated_data['sign'])
+            instance.sign = sign_file
+
+        files = request.FILES.getlist('files')
+        for f in files:
+            file_obj = File.objects.create(file=f)
+            Documents.objects.create(file=file_obj, type='SUBORDER', object_id=instance.id)
+
         instance.status_history.append(completed_data)
-        
-        
         instance.save()
         return Response({"status": "Success", "message": "Статус успешно обновлен"}, status=status.HTTP_200_OK)
             
