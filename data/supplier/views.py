@@ -37,7 +37,7 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
+    permission_classes = [HasDynamicPermission(crud_perm="SUPPLIERS_PAGE", read_perm="SUPPLIERS_PAGE")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = SupplierFilter

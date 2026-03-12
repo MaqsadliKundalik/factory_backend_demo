@@ -25,6 +25,7 @@ class Driver(BaseModel):
     USERS_PAGE = models.BooleanField(default=False)
     READY_PRODUCTS_PAGE = models.BooleanField(default=False)
     DRIVERS_PAGE = models.BooleanField(default=False)
+    SUPPLIERS_PAGE = models.BooleanField(default=False)
 
     @property
     def whouses(self):

@@ -40,6 +40,7 @@ class FactoryUser(BaseModel, AbstractBaseUser):
     USERS_PAGE = models.BooleanField(default=False)
     READY_PRODUCTS_PAGE = models.BooleanField(default=False)
     DRIVERS_PAGE = models.BooleanField(default=False)
+    SUPPLIERS_PAGE = models.BooleanField(default=False)
 
     whouses = models.ManyToManyField('factory_whouse.Whouse', blank=True, related_name='users')
     
