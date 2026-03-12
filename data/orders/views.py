@@ -18,6 +18,7 @@ from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
 from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer, OrderAndSubOrderCreateSerializer, CompetedStatusSerializer
+from data.filedatas.models import File
 
 ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('client', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"),
@@ -148,11 +149,12 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         
         completed_data = {
             "status": "completed",
-            "timestamp": serializer.validated_data.get("timestamp"),
+            "timestamp": str(serializer.validated_data.get("timestamp")),
         }
-        
+
         if 'sign' in serializer.validated_data:
-            completed_data['sign'] = serializer.validated_data['sign']
+            file_obj = File.objects.create(file=serializer.validated_data['sign'])
+            instance['sign'] = str(file_obj.id)
             
         instance.status_history.append(completed_data)
         
