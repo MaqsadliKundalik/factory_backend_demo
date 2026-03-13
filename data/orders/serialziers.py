@@ -50,7 +50,6 @@ class SubOrderSerializer(serializers.ModelSerializer):
         return repr
 
 class SubOrderCreateSerializer(serializers.ModelSerializer):
-    status_history = serializers.ListField(child=serializers.JSONField(), required=False)
     class Meta:
         model = SubOrder
         fields = ['driver', 'transport', 'quantity']
