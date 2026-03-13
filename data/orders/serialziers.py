@@ -13,6 +13,7 @@ class ExternalDriverSerializer(serializers.Serializer):
     car_name = serializers.CharField(max_length=255)
     car_type = serializers.CharField(max_length=255)
     car_number = serializers.CharField(max_length=20)
+    transport_id = serializers.UUIDField(required=False)
     quantity = serializers.IntegerField()
 
 class StatusHistorySerializer(serializers.Serializer):
