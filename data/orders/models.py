@@ -48,6 +48,7 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
     unit:"ProductUnit" = models.ForeignKey("products.ProductUnit", on_delete=models.PROTECT, related_name='orders')    
     external_drivers = models.JSONField(default=list)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):
         if not self.display_id:
