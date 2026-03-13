@@ -70,6 +70,6 @@ class TransportSelectView(APIView):
         if search:
             queryset = queryset.filter(name__icontains=search)
             
-        data = queryset.values('id', 'name')
+        data = queryset.values('id', 'name', "number")
         return Response(list(data))
 

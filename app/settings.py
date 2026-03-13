@@ -210,6 +210,21 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 
 
+# # Celery
+# CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+# CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+# CELERY_TIMEZONE = TIME_ZONE
+
+# from celery.schedules import crontab
+
+# CELERY_BEAT_SCHEDULE = {
+#     'expire-excavator-orders-daily': {
+#         'task': 'data.excavator.tasks.expire_excavator_orders',
+#         'schedule': crontab(hour=0, minute=0),  # har kecha yarim tunda
+#     },
+# }
+
+
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'Bearer': {
