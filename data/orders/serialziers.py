@@ -8,13 +8,13 @@ from data.filedatas.serializers import FileSerializer
 
 
 class ExternalDriverSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255)
-    phone_number = serializers.CharField(max_length=20)
-    car_name = serializers.CharField(max_length=255)
-    car_type = serializers.CharField(max_length=255)
-    car_number = serializers.CharField(max_length=20)
-    transport_id = serializers.UUIDField(required=False)
-    quantity = serializers.IntegerField()
+    name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
+    phone_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
+    car_name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
+    car_type = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
+    car_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
+    transport_id = serializers.UUIDField(required=False, allow_null=True, default=None)
+    quantity = serializers.IntegerField(required=False, allow_null=True, default=None)
 
 class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
