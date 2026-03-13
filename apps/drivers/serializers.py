@@ -89,3 +89,7 @@ class DriverPasswordChangeSerializer(serializers.Serializer):
         driver.set_password(self.validated_data['new_password'])
         driver.save()
         return driver
+
+class SelectDriverSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()

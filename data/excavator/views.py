@@ -102,14 +102,6 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
         }
         return Response(data)
 
-    @swagger_auto_schema(responses={200: "Payment status updated"})
-    @action(detail=True, methods=['patch'], url_path='mark-paid')
-    def mark_paid(self, request, pk=None):
-        instance = self.get_object()
-        instance.payment_status = ExcavatorOrder.PaymentStatus.PAID
-        instance.save(update_fields=['payment_status'])
-        return Response({'payment_status': instance.payment_status})
-
     @swagger_auto_schema(request_body=ChangeStatusSerializer, responses={200: "Status updated"})
     @action(detail=True, methods=['patch'], url_path='change-status')
     def change_status(self, request, pk=None):
@@ -118,27 +110,9 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
         serializer.is_valid(raise_exception=True)
         new_status = serializer.validated_data['status']
 
-        user = request.user
         instance.status = new_status
         instance.save(update_fields=['status'])
         return Response({'status': instance.status})
-
-    @swagger_auto_schema(
-        consumes=['multipart/form-data'],
-        manual_parameters=[
-            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=True, description="Files"),
-        ],
-        responses={200: "Files uploaded"}
-    )
-    @action(detail=True, methods=['post'], url_path='upload-files', parser_classes=[MultiPartParser, FormParser])
-    def upload_files(self, request, pk=None):
-        instance = self.get_object()
-        files = request.FILES.getlist('files')
-        if not files:
-            return Response({'error': 'No files provided'}, status=status.HTTP_400_BAD_REQUEST)
-        _save_files(files, instance.files)
-        return Response({'uploaded': len(files)})
-
 
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
@@ -161,13 +135,15 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         serializer = ChangeStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         new_status = serializer.validated_data['status']
+        timestamp = serializer.validated_data['timestamp']
 
         user = request.user
         instance.status_history = instance.status_history or []
+        
         instance.status_history.append({
             'old_status': instance.status,
             'new_status': new_status,
-            'changed_at': str(timezone.now()),
+            'changed_at': str(timestamp),
             'changed_by': str(user.id),
             'changed_by_name': getattr(user, 'name', str(user)),
         })
@@ -191,6 +167,8 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
         user = request.user
         sign = serializer.validated_data.get('sign')
+        timestamp = serializer.validated_data.get('timestamp')
+        
         if sign:
             instance.before_sign = File.objects.create(file=sign)
 
@@ -200,7 +178,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         instance.status_history.append({
             'old_status': instance.status,
             'new_status': ExcavatorSubOrder.Status.IN_PROGRESS,
-            'changed_at': str(timezone.now()),
+            'changed_at': str(timestamp),
             'changed_by': str(user.id),
             'changed_by_name': getattr(user, 'name', str(user)),
         })
@@ -221,6 +199,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         instance = self.get_object()
         serializer = FinishOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        timestamp = serializer.validated_data.get('timestamp')
 
         user = request.user
         sign = serializer.validated_data.get('sign')
@@ -233,7 +212,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         instance.status_history.append({
             'old_status': instance.status,
             'new_status': ExcavatorSubOrder.Status.COMPLETED,
-            'changed_at': str(timezone.now()),
+            'changed_at': str(timestamp),
             'changed_by': str(user.id),
             'changed_by_name': getattr(user, 'name', str(user)),
         })

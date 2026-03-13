@@ -1,8 +1,10 @@
 from django.urls import path
-from apps.drivers.views import DriverListCreateAPIView, DriverRetrieveUpdateDestroyAPIView, DriverPasswordChangeView
+from rest_framework.routers import DefaultRouter
+from apps.drivers.views import DriverViewSet, DriverPasswordChangeView
+
+router = DefaultRouter()
+router.register('', DriverViewSet, basename='driver')
 
 urlpatterns = [
     path("<uuid:driver_id>/change-password/", DriverPasswordChangeView.as_view(), name="driver-change-password"),
-    path("<uuid:pk>/", DriverRetrieveUpdateDestroyAPIView.as_view()),
-    path("", DriverListCreateAPIView.as_view()),
-]
+] + router.urls

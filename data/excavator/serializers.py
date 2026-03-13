@@ -78,14 +78,16 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
 
 class ChangeStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=ExcavatorOrder.Status.choices)
-
+    timestamp = serializers.DateTimeField()
 
 class StartOrderSerializer(serializers.Serializer):
     sign = serializers.FileField(required=False)
+    timestamp = serializers.DateTimeField()
 
 
 class FinishOrderSerializer(serializers.Serializer):
     sign = serializers.FileField(required=False)
+    timestamp = serializers.DateTimeField()
 
 class ExcavatorStatsSerializer(serializers.Serializer):
     total = serializers.IntegerField()
