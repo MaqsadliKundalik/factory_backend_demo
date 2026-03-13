@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from data.filedatas.models import File
+from data.filedatas.serializers import FileSerializer
 from app.settings import BASE_URL
 from data.supplier.serializers import SupplierSerializer
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
@@ -35,25 +36,27 @@ class ProductUnitSerializer(serializers.ModelSerializer):
 
 class WhouseProductsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WhouseProducts  
-        fields = ['id', 'whouse', 'product', "supplier", 'product_type', 'quantity', 'status', 'created_at']
+        model = WhouseProducts
+        fields = ['id', 'whouse', 'product', "supplier", 'product_type', 'quantity', 'status', 'files', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         if instance.product:
             repr['product'] = ProductSerializer(instance.product).data
-        
+
         if instance.product_type:
             repr['product_type'] = ProductTypeSerializer(instance.product_type).data
-        
+
         if instance.supplier:
             repr['supplier'] = SupplierSerializer(instance.supplier).data
-            
+
+        
         repr['whouse'] = {
             'id': instance.whouse.id,
             'name': instance.whouse.name
         }
+        repr['files'] = FileSerializer(instance.files.all(), many=True).data
         return repr
 
 class WhouseProductsSerializerV2(serializers.ModelSerializer):

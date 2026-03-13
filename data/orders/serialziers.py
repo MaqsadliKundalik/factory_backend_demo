@@ -23,7 +23,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
     status_history = serializers.ListField(child=serializers.JSONField(), required=False)
     class Meta:
         model = SubOrder
-        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'status', 'status_history']
+        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'status', 'status_history', 'files']
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
@@ -46,6 +46,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
         }
         repr['driver'] = DriverSerializer(instance.driver).data
         repr['transport'] = TransportSerializer(instance.transport).data
+        repr['files'] = FileSerializer(instance.files.all(), many=True).data
         return repr
 
 class OrderSerializer(serializers.ModelSerializer):

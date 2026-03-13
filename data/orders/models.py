@@ -74,6 +74,7 @@ class SubOrder(BaseModel):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     status_history = models.JSONField(default=list, encoder=DjangoJSONEncoder)
     sign: "File" = models.ForeignKey("filedatas.File", on_delete=models.PROTECT, related_name='sub_orders_sign', null=True, blank=True)
+    files = models.ManyToManyField("filedatas.File", blank=True, related_name='sub_orders_files')
 
     def __str__(self):
         display_name = f"Ord-{self.order.display_id:03}" if self.order.display_id else f"Ord-{self.order.id}"

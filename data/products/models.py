@@ -61,7 +61,8 @@ class WhouseProducts(BaseModel):
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    
+    files = models.ManyToManyField('filedatas.File', blank=True, related_name='whouse_product_files')
+
     def __str__(self):
         return self.product.name
 
