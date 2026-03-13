@@ -15,7 +15,6 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
             'status_history',
             'before_sign', 'before_files',
             'after_sign', 'after_files',
-            'files',
             'created_at',
         ]
         read_only_fields = ['id', 'status_history', 'created_at', 'before_sign', 'before_files', 'after_sign', 'after_files']
@@ -28,7 +27,6 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
         rep['before_files'] = FileSerializer(instance.before_files.all(), many=True).data
         rep['after_sign'] = FileSerializer(instance.after_sign).data if instance.after_sign else None
         rep['after_files'] = FileSerializer(instance.after_files.all(), many=True).data
-        rep['files'] = FileSerializer(instance.files.all(), many=True).data
         return rep
 
 

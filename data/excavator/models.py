@@ -110,11 +110,5 @@ class ExcavatorSubOrder(BaseModel):
         related_name='excavator_suborder_after_files'
     )
 
-    files = models.ManyToManyField(
-        'filedatas.File',
-        blank=True,
-        related_name='excavator_suborder_files'
-    )
-
     def __str__(self):
         return f"ExcSubOrd-{self.id} for {self.parent}"
