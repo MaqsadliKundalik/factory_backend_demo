@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from data.supplier.models import Supplier
+    from data.users.models import FactoryUser
 
 
 class HistoryStatus(models.TextChoices):
@@ -62,6 +63,7 @@ class WhouseProducts(BaseModel):
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     files = models.ManyToManyField('filedatas.File', blank=True, related_name='whouse_product_files')
+    creator : "FactoryUser | None" = models.ForeignKey("users.FactoryUser", on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.product.name

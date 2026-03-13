@@ -1,7 +1,6 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from django.db import transaction
-from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,6 +8,7 @@ from rest_framework.pagination import PageNumberPagination
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS, IS_READY_PRODUCT_PARAM
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import mixins, viewsets
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
@@ -25,8 +25,11 @@ from .serializers import (
     WhouseProductsSerializer, WhouseProductsSerializerV2, WhouseProductsHistorySerializer, SelectProductSerializer, ProductItemSerializer
 )
 
+
 WHOUSE_PRODUCTS_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"),
+    openapi.Parameter('supplier', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Supplier ID"),
+
 ]
 
 
@@ -38,7 +41,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class WhouseProductsFilter(BaseDateFilterSet):
     class Meta:
         model = WhouseProducts
-        fields = ['whouse', 'product', 'status', 'created_at', 'updated_at']
+        fields = ['whouse', 'product', 'status', 'supplier', 'created_at', 'updated_at']
 
 class WhouseProductsHistoryFilter(BaseDateFilterSet):
     class Meta:
@@ -247,10 +250,15 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
             return WhouseProducts.objects.none()
 
         whouses = user.whouses.all()
-        return WhouseProducts.objects.filter(whouse__in=whouses)
+        queryset = WhouseProducts.objects.filter(whouse__in=whouses)
+        if user.guard:
+            queryset = queryset.filter(creator=user)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(creator=self.request.user)
 
 
-from rest_framework import mixins, viewsets
 
 
 class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
@@ -268,11 +276,15 @@ class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelV
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return WhouseProducts.objects.none()
-        return WhouseProducts.objects.filter(whouse__in=user.whouses.all())
+
+        queryset = WhouseProducts.objects.filter(whouse__in=user.whouses.all())
+        if user.guard:
+            queryset = queryset.filter(creator=user)
+        return queryset
 
     def perform_create(self, serializer):
         whouse = self.request.user.whouses.first()
-        serializer.save(whouse=whouse)
+        serializer.save(whouse=whouse, creator=self.request.user)
 
     @swagger_auto_schema(manual_parameters=WHOUSE_PRODUCTS_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):

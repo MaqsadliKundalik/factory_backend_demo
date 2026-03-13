@@ -63,5 +63,11 @@ class FactoryUser(BaseModel, AbstractBaseUser):
         from apps.session.models import FactoryUserSession
         return FactoryUserSession.for_factory_user(self)
 
+    @property
+    def guard(self):
+        if self.role == 'guard':
+            return self
+        return None
+
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
