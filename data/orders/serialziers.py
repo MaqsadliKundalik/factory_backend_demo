@@ -6,37 +6,57 @@ from apps.drivers.serializers import DriverSerializer
 from data.transports.serializers import TransportSerializer
 from data.filedatas.serializers import FileSerializer
 
+
 class ExternalDriverSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     phone_number = serializers.CharField(max_length=20)
     car_number = serializers.CharField(max_length=20)
 
+
 class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
     timestamp = serializers.DateTimeField()
+
 
 class CompetedStatusSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
     sign = serializers.FileField(required=False)
 
-class SubOrderSerializer(serializers.ModelSerializer):
-    status_history = serializers.ListField(child=serializers.JSONField(), required=False)
+
+# --- SubOrder serializers ---
+
+class SubOrderInlineSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(required=False)
+
     class Meta:
         model = SubOrder
-        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'status', 'status_history', 'files']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'driver', 'transport', 'quantity', 'status', 'status_history', 'sign', 'files']
+        read_only_fields = ['status', 'status_history', 'sign']
 
     def to_representation(self, instance):
-        repr = super().to_representation(instance)
-        repr["order"] = {
+        rep = super().to_representation(instance)
+        rep['driver'] = DriverSerializer(instance.driver).data
+        rep['transport'] = TransportSerializer(instance.transport).data
+        rep['files'] = FileSerializer(instance.files.all(), many=True).data
+        return rep
+
+
+class SubOrderSerializer(serializers.ModelSerializer):
+    status_history = serializers.ListField(child=serializers.JSONField(), required=False)
+
+    class Meta:
+        model = SubOrder
+        fields = ['id', 'order', 'driver', 'transport', 'quantity', 'status', 'status_history', 'sign', 'files']
+        read_only_fields = ['id', 'status_history', 'sign', 'created_at']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['order'] = {
             'id': instance.order.id,
-            "display_id": instance.order.display_id,
+            'display_id': instance.order.display_id,
             'client': ClientSerializer(instance.order.client).data,
             'branch': ClientBranchesSerializer(instance.order.branch).data,
-            'whouse': {
-                'id': instance.order.whouse.id,
-                'name': instance.order.whouse.name
-            },
+            'whouse': {'id': instance.order.whouse.id, 'name': instance.order.whouse.name},
             'product': ProductSerializer(instance.order.product).data,
             'type': ProductTypeSerializer(instance.order.type).data,
             'unit': ProductUnitSerializer(instance.order.unit).data,
@@ -44,93 +64,74 @@ class SubOrderSerializer(serializers.ModelSerializer):
             'external_drivers': instance.order.external_drivers,
             'created_at': instance.order.created_at,
         }
-        repr['driver'] = DriverSerializer(instance.driver).data
-        repr['transport'] = TransportSerializer(instance.transport).data
-        repr['files'] = FileSerializer(instance.files.all(), many=True).data
-        return repr
+        rep['driver'] = DriverSerializer(instance.driver).data
+        rep['transport'] = TransportSerializer(instance.transport).data
+        rep['files'] = FileSerializer(instance.files.all(), many=True).data
+        return rep
 
-class SubOrderCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubOrder
-        fields = ['driver', 'transport', 'quantity']
-        read_only_fields = ['id', 'created_at']
 
-    def to_representation(self, instance):
-        repr = super().to_representation(instance)
-        repr["order"] = {
-            'id': instance.order.id,
-            "display_id": instance.order.display_id,
-            'client': ClientSerializer(instance.order.client).data,
-            'branch': ClientBranchesSerializer(instance.order.branch).data,
-            'whouse': {
-                'id': instance.order.whouse.id,
-                'name': instance.order.whouse.name
-            },
-            'product': ProductSerializer(instance.order.product).data,
-            'type': ProductTypeSerializer(instance.order.type).data,
-            'unit': ProductUnitSerializer(instance.order.unit).data,
-            'status': instance.order.status,
-            'created_at': instance.order.created_at,
-        }
-        repr['driver'] = DriverSerializer(instance.driver).data
-        repr['transport'] = TransportSerializer(instance.transport).data
-        repr['files'] = FileSerializer(instance.files.all(), many=True).data
-        return repr
+# --- Order serializers ---
 
 class OrderSerializer(serializers.ModelSerializer):
-    external_drivers = serializers.ListField(child=serializers.JSONField(), required=False)
-    sub_orders = SubOrderCreateSerializer(many=True, read_only=True)
+    external_drivers = ExternalDriverSerializer(many=True, required=False)
+    sub_orders = SubOrderInlineSerializer(many=True, read_only=True)
+
     class Meta:
         model = Order
-        fields = ['id', "display_id", 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders", "created_at"]
-        read_only_fields = ['id', "display_id", "created_at"]
-        
+        fields = [
+            'id', 'display_id', 'client', 'branch', 'whouse',
+            'product', 'type', 'unit', 'status',
+            'external_drivers', 'sub_orders', 'created_at',
+        ]
+        read_only_fields = ['id', 'display_id', 'created_at']
 
     def to_representation(self, instance):
-        repr = super().to_representation(instance)
-        repr['client'] = ClientSerializer(instance.client).data
-        repr['branch'] = ClientBranchesSerializer(instance.branch).data
-        repr['whouse'] = {
-            'id': instance.whouse.id,
-            'name': instance.whouse.name
-        }
-        repr['product'] = ProductSerializer(instance.product).data
-        repr['type'] = ProductTypeSerializer(instance.type).data
-        repr['unit'] = ProductUnitSerializer(instance.unit).data
-        repr['sub_orders'] = SubOrderCreateSerializer(instance.sub_orders, many=True).data
-        repr["external_drivers"] = ExternalDriverSerializer(instance.external_drivers, many=True).data
-        return repr
+        rep = super().to_representation(instance)
+        rep['client'] = ClientSerializer(instance.client).data
+        rep['branch'] = ClientBranchesSerializer(instance.branch).data
+        rep['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
+        rep['product'] = ProductSerializer(instance.product).data
+        rep['type'] = ProductTypeSerializer(instance.type).data
+        rep['unit'] = ProductUnitSerializer(instance.unit).data
+        rep['external_drivers'] = ExternalDriverSerializer(instance.external_drivers, many=True).data
+        return rep
 
 
-class OrderStatusHistorySerizalizer(serializers.Serializer):
-    status = serializers.CharField(max_length=50)
-    timestamp = serializers.DateTimeField()
+class OrderWriteSerializer(serializers.ModelSerializer):
+    external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
+    sub_orders = SubOrderInlineSerializer(many=True, required=False)
 
-class OrderAndSubOrderCreateSerializer(serializers.ModelSerializer):
-    external_drivers = serializers.ListField(child=serializers.JSONField(), required=False)
-    sub_orders = SubOrderSerializer(many=True, required=True)
     class Meta:
         model = Order
-        fields = ['id', "display_id", 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders"]
-        read_only_fields = ['id', "display_id"]
-
-    def to_representation(self, instance):
-        repr = super().to_representation(instance)
-        repr['client'] = ClientSerializer(instance.client).data
-        repr['branch'] = ClientBranchesSerializer(instance.branch).data
-        repr['whouse'] = {
-            'id': instance.whouse.id,
-            'name': instance.whouse.name
-        }
-        repr['product'] = ProductSerializer(instance.product).data
-        repr['type'] = ProductTypeSerializer(instance.type).data
-        repr['unit'] = ProductUnitSerializer(instance.unit).data
-        repr['sub_orders'] = SubOrderSerializer(instance.sub_orders, many=True).data
-        return repr
+        fields = [
+            'id', 'display_id', 'client', 'branch', 'whouse',
+            'product', 'type', 'unit', 'external_drivers', 'sub_orders',
+        ]
+        read_only_fields = ['id', 'display_id']
 
     def create(self, validated_data):
-        sub_orders = validated_data.pop('sub_orders')
+        sub_orders_data = validated_data.pop('sub_orders', [])
         order = Order.objects.create(**validated_data)
-        for sub_order in sub_orders:
-            SubOrder.objects.create(order=order, **sub_order)
+        for sub_data in sub_orders_data:
+            sub_data.pop('id', None)
+            SubOrder.objects.create(order=order, **sub_data)
         return order
+
+    def update(self, instance, validated_data):
+        sub_orders_data = validated_data.pop('sub_orders', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if sub_orders_data is not None:
+            incoming_ids = {sub['id'] for sub in sub_orders_data if 'id' in sub}
+            instance.sub_orders.exclude(id__in=incoming_ids).delete()
+            for sub_data in sub_orders_data:
+                sub_id = sub_data.pop('id', None)
+                if sub_id:
+                    SubOrder.objects.filter(id=sub_id, order=instance).update(**sub_data)
+                else:
+                    SubOrder.objects.create(order=instance, **sub_data)
+
+        return instance

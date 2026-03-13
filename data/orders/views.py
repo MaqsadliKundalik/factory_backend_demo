@@ -1,15 +1,15 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
-from rest_framework.views import APIView
-from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
@@ -17,9 +17,12 @@ from apps.common.mixins import PermissionMetaMixin
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
-from .serialziers import OrderSerializer, SubOrderSerializer, StatusHistorySerializer, OrderAndSubOrderCreateSerializer, CompetedStatusSerializer
-from rest_framework.parsers import MultiPartParser, FormParser
-from data.filedatas.models import File, Documents
+from .serialziers import (
+    OrderSerializer, OrderWriteSerializer,
+    SubOrderSerializer, StatusHistorySerializer, CompetedStatusSerializer,
+)
+from data.filedatas.models import File
+
 
 ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('client', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"),
@@ -45,10 +48,12 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+
 class OrderFilter(BaseDateFilterSet):
     class Meta:
         model = Order
         fields = ['client', 'branch', 'whouse', 'product', 'type', 'unit', 'status']
+
 
 class SubOrderFilter(BaseDateFilterSet):
     in_progress = filters.BooleanFilter(method='filter_in_progress', label="Filter: true for active, false for completed")
@@ -64,9 +69,8 @@ class SubOrderFilter(BaseDateFilterSet):
         model = SubOrder
         fields = ['order', 'driver', 'transport', 'status']
 
+
 class OrderViewSet(PermissionMetaMixin, ModelViewSet):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")]
     pagination_class = StandardResultsSetPagination
@@ -78,19 +82,39 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Order.objects.none()
-        
         if hasattr(user, 'whouses') and user.whouses.exists():
             return Order.objects.filter(whouse__in=user.whouses.all())
         return Order.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return OrderWriteSerializer
+        return OrderSerializer
 
     @swagger_auto_schema(manual_parameters=ORDER_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @swagger_auto_schema(request_body=OrderWriteSerializer, responses={201: OrderSerializer})
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(request_body=OrderWriteSerializer, responses={200: OrderSerializer})
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        return Response(OrderSerializer(order).data)
 
 
 class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
-    queryset = SubOrder.objects.all()
     serializer_class = SubOrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")]
@@ -103,13 +127,10 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return SubOrder.objects.none()
-            
         if hasattr(user, 'whouses') and user.whouses.exists():
             return SubOrder.objects.filter(order__whouse__in=user.whouses.all())
-
         if user.__class__.__name__ == 'Driver':
             return SubOrder.objects.filter(driver=user)
-            
         return SubOrder.objects.all()
 
     @swagger_auto_schema(manual_parameters=SUBORDER_FILTER_PARAMS)
@@ -145,45 +166,22 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     def update_completed_status(self, request, pk=None):
         instance = self.get_object()
         serializer = CompetedStatusSerializer(data=request.data)
-
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         instance.status = SubOrder.Status.COMPLETED
         instance.status_history = instance.status_history or []
-
-        completed_data = {
+        instance.status_history.append({
             "status": "completed",
             "timestamp": str(serializer.validated_data.get("timestamp")),
-        }
+        })
 
         if 'sign' in serializer.validated_data:
-            sign_file = File.objects.create(file=serializer.validated_data['sign'])
-            instance.sign = sign_file
+            instance.sign = File.objects.create(file=serializer.validated_data['sign'])
 
-        files = request.FILES.getlist('files')
-        for f in files:
+        for f in request.FILES.getlist('files'):
             file_obj = File.objects.create(file=f)
-            Documents.objects.create(file=file_obj, type='SUBORDER', object_id=instance.id)
+            instance.files.add(file_obj)
 
-        instance.status_history.append(completed_data)
         instance.save()
-        return Response({"status": "Success", "message": "Статус успешно обновлен"}, status=status.HTTP_200_OK)
-            
-    
-class OrderAndSubOrderCreateView(APIView):
-    authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")]
-
-    @swagger_auto_schema(
-        operation_summary="Create client and branches",
-        request_body=OrderAndSubOrderCreateSerializer,
-        responses={201: OrderSerializer}
-    )
-    @transaction.atomic
-    def post(self, request):
-        serializer = OrderAndSubOrderCreateSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        order = serializer.save()
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
-
+        return Response({"status": "Success"}, status=status.HTTP_200_OK)
