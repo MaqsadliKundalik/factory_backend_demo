@@ -15,10 +15,6 @@ class ExcavatorOrder(BaseModel):
         PENDING = 'PENDING', 'Pending'
         PAID = 'PAID', 'Paid'
 
-    class TransportType(models.TextChoices):
-        EXCAVATOR = 'EXCAVATOR', 'Excavator'
-        OTHER = 'OTHER', 'Other'
-
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
 
     client_name = models.CharField(max_length=255)
@@ -38,12 +34,6 @@ class ExcavatorOrder(BaseModel):
         null=True, blank=True,
         related_name='excavator_orders'
     )
-    transport_type = models.CharField(
-        max_length=20,
-        choices=TransportType.choices,
-        default=TransportType.EXCAVATOR
-    )
-
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
 

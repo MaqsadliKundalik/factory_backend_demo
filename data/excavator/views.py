@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as filters
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -31,13 +32,14 @@ from .serializers import (
 EXCAVATOR_ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
     openapi.Parameter('payment_status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Payment status"),
-    openapi.Parameter('transport_type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport type"),
+    openapi.Parameter('transport_type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport type (transport.type)"),
 ]
 
 EXCAVATOR_SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('parent', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Parent order ID"),
     openapi.Parameter('driver', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Driver ID"),
     openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
+    openapi.Parameter('transport_type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport type (transport.type)"),
 ]
 
 
@@ -54,12 +56,16 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class ExcavatorOrderFilter(BaseDateFilterSet):
+    transport_type = filters.CharFilter(field_name='transport__type', lookup_expr='iexact')
+
     class Meta:
         model = ExcavatorOrder
-        fields = ['status', 'payment_status', 'transport_type', 'transport']
+        fields = ['status', 'payment_status', 'transport']
 
 
 class ExcavatorSubOrderFilter(BaseDateFilterSet):
+    transport_type = filters.CharFilter(field_name='transport__type', lookup_expr='iexact')
+
     class Meta:
         model = ExcavatorSubOrder
         fields = ['parent', 'driver', 'status', 'transport']

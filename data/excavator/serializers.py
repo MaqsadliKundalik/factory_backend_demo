@@ -43,7 +43,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             'client_name', 'phone_number',
             'latitude', 'longitude',
             'start_date', 'end_date',
-            'comment', 'transport', 'transport_type',
+            'comment', 'transport',
             'status', 'payment_status',
             'status_history',
             'files',
@@ -69,7 +69,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
             'client_name', 'phone_number',
             'latitude', 'longitude',
             'start_date', 'end_date',
-            'comment', 'transport', 'transport_type',
+            'comment', 'transport',
             'sub_orders',
         ]
         read_only_fields = ['id', 'display_id']
