@@ -119,16 +119,8 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
         new_status = serializer.validated_data['status']
 
         user = request.user
-        instance.status_history = instance.status_history or []
-        instance.status_history.append({
-            'old_status': instance.status,
-            'new_status': new_status,
-            'changed_at': str(timezone.now()),
-            'changed_by': str(user.id),
-            'changed_by_name': getattr(user, 'name', str(user)),
-        })
         instance.status = new_status
-        instance.save(update_fields=['status', 'status_history'])
+        instance.save(update_fields=['status'])
         return Response({'status': instance.status})
 
     @swagger_auto_schema(
