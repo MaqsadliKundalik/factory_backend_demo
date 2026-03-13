@@ -47,7 +47,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             'sub_orders',
             'created_at',
         ]
-        read_only_fields = ['id', 'display_id', 'status_history', 'created_at']
+        read_only_fields = ['id', 'display_id', 'created_at']
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
