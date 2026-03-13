@@ -11,8 +11,7 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'parent', 'driver',
             'start_date', 'end_date',
-            'comment', 'transport',
-            'status',
+            'transport', 'status',
             'status_history',
             'before_sign', 'before_files',
             'after_sign', 'after_files',
@@ -41,12 +40,10 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'display_id',
             'client_name', 'phone_number',
-            'latitude', 'longitude',
+            'lat', 'lon',
             'start_date', 'end_date',
-            'comment', 'transport',
-            'status', 'payment_status',
-            'status_history',
-            'files',
+            'comment', 'status', 
+            'payment_status', 'files',
             'sub_orders',
             'created_at',
         ]
@@ -54,10 +51,8 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['transport'] = TransportSerializer(instance.transport).data if instance.transport else None
         rep['files'] = FileSerializer(instance.files.all(), many=True).data
         return rep
-
 
 class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
     sub_orders = ExcavatorSubOrderSerializer(many=True, required=False)
@@ -67,10 +62,9 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'display_id',
             'client_name', 'phone_number',
-            'latitude', 'longitude',
+            'lat', 'lon',
             'start_date', 'end_date',
-            'comment', 'transport',
-            'sub_orders',
+            'comment', 'sub_orders',
         ]
         read_only_fields = ['id', 'display_id']
 

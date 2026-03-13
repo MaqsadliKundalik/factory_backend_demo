@@ -20,24 +20,16 @@ class ExcavatorOrder(BaseModel):
     client_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
 
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    lat = models.FloatField()
+    lon = models.FloatField()
 
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
 
     comment = models.TextField(null=True, blank=True)
 
-    transport = models.ForeignKey(
-        'transports.Transport',
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='excavator_orders'
-    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
-
-    status_history = models.JSONField(default=list, encoder=DjangoJSONEncoder)
 
     files = models.ManyToManyField(
         'filedatas.File',

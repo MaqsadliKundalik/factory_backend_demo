@@ -49,9 +49,38 @@ class SubOrderSerializer(serializers.ModelSerializer):
         repr['files'] = FileSerializer(instance.files.all(), many=True).data
         return repr
 
+class SubOrderCreateSerializer(serializers.ModelSerializer):
+    status_history = serializers.ListField(child=serializers.JSONField(), required=False)
+    class Meta:
+        model = SubOrder
+        fields = ['driver', 'transport', 'quantity']
+        read_only_fields = ['id', 'created_at']
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        repr["order"] = {
+            'id': instance.order.id,
+            "display_id": instance.order.display_id,
+            'client': ClientSerializer(instance.order.client).data,
+            'branch': ClientBranchesSerializer(instance.order.branch).data,
+            'whouse': {
+                'id': instance.order.whouse.id,
+                'name': instance.order.whouse.name
+            },
+            'product': ProductSerializer(instance.order.product).data,
+            'type': ProductTypeSerializer(instance.order.type).data,
+            'unit': ProductUnitSerializer(instance.order.unit).data,
+            'status': instance.order.status,
+            'created_at': instance.order.created_at,
+        }
+        repr['driver'] = DriverSerializer(instance.driver).data
+        repr['transport'] = TransportSerializer(instance.transport).data
+        repr['files'] = FileSerializer(instance.files.all(), many=True).data
+        return repr
+
 class OrderSerializer(serializers.ModelSerializer):
     external_drivers = serializers.ListField(child=serializers.JSONField(), required=False)
-    sub_orders = SubOrderSerializer(many=True, read_only=True)
+    sub_orders = SubOrderCreateSerializer(many=True, read_only=True)
     class Meta:
         model = Order
         fields = ['id', "display_id", 'client', 'branch', 'whouse', 'product', 'type', 'unit', 'status', 'external_drivers', "sub_orders", "created_at"]
@@ -69,7 +98,8 @@ class OrderSerializer(serializers.ModelSerializer):
         repr['product'] = ProductSerializer(instance.product).data
         repr['type'] = ProductTypeSerializer(instance.type).data
         repr['unit'] = ProductUnitSerializer(instance.unit).data
-        repr['sub_orders'] = SubOrderSerializer(instance.sub_orders, many=True).data
+        repr['sub_orders'] = SubOrderCreateSerializer(instance.sub_orders, many=True).data
+        repr["external_drivers"] = ExternalDriverSerializer(instance.external_drivers, many=True).data
         return repr
 
 

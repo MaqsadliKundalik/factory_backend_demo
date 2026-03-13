@@ -33,14 +33,13 @@ class DriverProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="driver", read_only=True)
     class Meta:
         model = Driver
-        fields = ["id", "name", "phone_number", "whouse", "role", "photo", "files", "ORDERS_PAGE", "DRIVERS_PAGE"]
+        fields = ["id", "name", "phone_number", "whouse", "role", "photo", "ORDERS_PAGE", "DRIVERS_PAGE"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
         if instance.whouse:
             repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}   
         repr['photo'] = FileSerializer(instance.photo).data if instance.photo else None
-        repr['files'] = FileSerializer(instance.files, many=True).data if instance.files else None
         return repr
 
 class UnifiedLogoutSerializer(serializers.Serializer):
