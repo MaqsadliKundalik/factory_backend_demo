@@ -102,18 +102,6 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
         }
         return Response(data)
 
-    @swagger_auto_schema(request_body=ChangeStatusSerializer, responses={200: "Status updated"})
-    @action(detail=True, methods=['patch'], url_path='change-status')
-    def change_status(self, request, pk=None):
-        instance = self.get_object()
-        serializer = ChangeStatusSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        new_status = serializer.validated_data['status']
-
-        instance.status = new_status
-        instance.save(update_fields=['status'])
-        return Response({'status': instance.status})
-
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
     serializer_class = ExcavatorSubOrderSerializer
