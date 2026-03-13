@@ -1,4 +1,3 @@
-from django.utils.translation import Trans
 from rest_framework import serializers
 from .models import ExcavatorOrder, ExcavatorSubOrder
 from data.filedatas.serializers import FileSerializer
