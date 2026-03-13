@@ -93,3 +93,4 @@ class DriverPasswordChangeSerializer(serializers.Serializer):
 class SelectDriverSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
+    phone_number = serializers.CharField()
