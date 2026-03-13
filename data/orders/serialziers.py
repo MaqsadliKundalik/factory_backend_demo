@@ -83,7 +83,7 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'display_id', 'client', 'branch', 'whouse',
-            'product', 'type', 'unit', 'status',
+            'product', 'type', 'unit', 'status', "quantity",
             'external_drivers', 'sub_orders', 'created_at',
         ]
         read_only_fields = ['id', 'display_id', 'created_at']
@@ -108,7 +108,7 @@ class OrderWriteSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'display_id', 'client', 'branch', 'whouse',
-            'product', 'type', 'unit', 'external_drivers', 'sub_orders',
+            'product', 'type', 'unit', 'status', 'quantity', 'external_drivers', 'sub_orders',
         ]
         read_only_fields = ['id', 'display_id']
 
