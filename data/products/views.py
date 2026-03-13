@@ -249,10 +249,6 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
         whouses = user.whouses.all()
         return WhouseProducts.objects.filter(whouse__in=whouses)
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        whouse = user.whouses.first()
-        serializer.save(whouse=whouse)
 
 from rest_framework import mixins, viewsets
 

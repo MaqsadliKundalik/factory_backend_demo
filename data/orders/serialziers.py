@@ -10,8 +10,10 @@ from data.filedatas.serializers import FileSerializer
 class ExternalDriverSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     phone_number = serializers.CharField(max_length=20)
+    car_name = serializers.CharField(max_length=255)
+    car_type = serializers.CharField(max_length=255)
     car_number = serializers.CharField(max_length=20)
-
+    quantity = serializers.IntegerField()
 
 class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
