@@ -6,6 +6,7 @@ from data.filedatas.serializers import FileSerializer
 from data.orders.models import SubOrder
 from data.users.models import FactoryUser
 
+
 class DriverSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(
         validators=[

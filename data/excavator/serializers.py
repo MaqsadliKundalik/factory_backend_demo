@@ -1,7 +1,8 @@
+from django.utils.translation import Trans
 from rest_framework import serializers
 from .models import ExcavatorOrder, ExcavatorSubOrder
 from data.filedatas.serializers import FileSerializer
-from data.transports.serializers import SelectTransportSerializer
+from data.transports.serializers import TransportSerializer
 from apps.drivers.serializers import DriverSerializer
 
 
@@ -24,7 +25,7 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep['driver'] = DriverSerializer(instance.driver).data if instance.driver else None
-        rep['transport'] = SelectTransportSerializer(instance.transport).data if instance.transport else None
+        rep['transport'] = TransportSerializer(instance.transport).data if instance.transport else None
         rep['before_sign'] = FileSerializer(instance.before_sign).data if instance.before_sign else None
         rep['before_files'] = FileSerializer(instance.before_files.all(), many=True).data
         rep['after_sign'] = FileSerializer(instance.after_sign).data if instance.after_sign else None
@@ -54,7 +55,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['transport'] = SelectTransportSerializer(instance.transport).data if instance.transport else None
+        rep['transport'] = TransportSerializer(instance.transport).data if instance.transport else None
         rep['files'] = FileSerializer(instance.files.all(), many=True).data
         return rep
 
