@@ -65,7 +65,7 @@ urlpatterns = [
     path('clients/', include(clients_urls)),
     path('files/', include(filedatas_urls)),
     path('orders/', include(orders_urls)),
-    path('excavator/', include(excavator_urls)),
+    path('excavator-order/', include(excavator_urls)),
 
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
