@@ -1,10 +1,11 @@
 from django.urls import path
 from .views import (
-    CountStatsView, 
-    IncomeProductStatsView, 
+    CountStatsView,
+    IncomeProductStatsView,
     SupplierIncomeProductStatsView,
     OutcomingProductStatsView,
-    OrderStatusStatsView
+    OrderStatusStatsView,
+    OrderStatusDurationStatsView,
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('supplier-income-products/<uuid:whouse_id>/', SupplierIncomeProductStatsView.as_view(), name='supplier-income-product-stats'),
     path('outcome-products/<uuid:whouse_id>/', OutcomingProductStatsView.as_view(), name='outcome-product-stats'),
     path('orders/<uuid:whouse_id>/', OrderStatusStatsView.as_view(), name='orders-stats'),
+    path('orders/status/<uuid:whouse_id>/', OrderStatusDurationStatsView.as_view(), name='orders-status-duration-stats'),
 ]

@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from data.stats.serializers import (
-    SimpleCountStatsSerializer, 
-    IncomeProductStatsSerializer, 
-    SupplierIncomeProductStatsSerializer, 
+    SimpleCountStatsSerializer,
+    IncomeProductStatsSerializer,
+    SupplierIncomeProductStatsSerializer,
     OutcomingProductStatsSerializer,
     OrderStatusStatsSerializer,
+    StatusDurationSerializer,
 )
 from data.products.models import Product, WhouseProducts, WhouseProductsHistory
 from data.supplier.models import Supplier
@@ -118,4 +119,49 @@ class OrderStatusStatsView(APIView):
             'total': total_orders_count,
         }
         serializer = OrderStatusStatsSerializer(result)
+        return Response(serializer.data)
+
+class OrderStatusDurationStatsView(APIView):
+    def get(self, request, whouse_id):
+        whouse = Whouse.objects.filter(id=whouse_id).first()
+        if not whouse:
+            return Response({'error': 'Whouse not found'}, status=404)
+
+        from datetime import datetime
+        sub_orders = SubOrder.objects.filter(order__whouse=whouse).exclude(status_history=[])
+
+        duration_totals = {}
+        duration_counts = {}
+
+        for sub_order in sub_orders:
+            history = sub_order.status_history or []
+            for i, entry in enumerate(history):
+                status_key = entry.get('status', '').upper()
+                if not status_key or i + 1 >= len(history):
+                    continue
+                try:
+                    t1 = datetime.fromisoformat(str(entry['timestamp']))
+                    t2 = datetime.fromisoformat(str(history[i + 1]['timestamp']))
+                    minutes = (t2 - t1).total_seconds() / 60
+                    if minutes >= 0:
+                        duration_totals[status_key] = duration_totals.get(status_key, 0) + minutes
+                        duration_counts[status_key] = duration_counts.get(status_key, 0) + 1
+                except (KeyError, ValueError):
+                    continue
+
+        def avg(key):
+            if duration_counts.get(key):
+                return round(duration_totals[key] / duration_counts[key], 2)
+            return 0.0
+
+        result = {
+            'new': avg('NEW'),
+            'in_progress': avg('IN_PROGRESS'),
+            'on_way': avg('ON_WAY'),
+            'arrived': avg('ARRIVED'),
+            'unloading': avg('UNLOADING'),
+            'completed': avg('COMPLETED'),
+            'sub_orders_count': sub_orders.count(),
+        }
+        serializer = StatusDurationSerializer(result)
         return Response(serializer.data)

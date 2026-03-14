@@ -26,3 +26,12 @@ class OrderStatusStatsSerializer(serializers.Serializer):
     unloading = serializers.IntegerField()
     completed = serializers.IntegerField()
     total = serializers.IntegerField()
+
+class StatusDurationSerializer(serializers.Serializer):
+    new = serializers.FloatField()
+    in_progress = serializers.FloatField()
+    on_way = serializers.FloatField()
+    arrived = serializers.FloatField()
+    unloading = serializers.FloatField()
+    completed = serializers.FloatField()
+    sub_orders_count = serializers.IntegerField()
