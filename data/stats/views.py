@@ -1,6 +1,11 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from data.stats.serializers import SimpleCountStatsSerializer, IncomeProductStatsSerializer, SupplierIncomeProductStatsSerializer
+from data.stats.serializers import (
+    SimpleCountStatsSerializer, 
+    IncomeProductStatsSerializer, 
+    SupplierIncomeProductStatsSerializer, 
+    OutcomingProductStatsSerializer
+)
 from data.products.models import Product, WhouseProducts
 from data.supplier.models import Supplier
 from apps.drivers.models import Driver
@@ -46,6 +51,22 @@ class IncomeProductStatsView(APIView):
                 'income': total_income
             })
         serializer = IncomeProductStatsSerializer(result, many=True)
+        return Response(serializer.data)
+
+class OutcomingProductStatsView(APIView):
+    def get(self, request, whouse_id):
+        whouse = Whouse.objects.filter(id=whouse_id).first()
+        if not whouse:
+            return Response({'error': 'Whouse not found'}, status=404)
+        products = Product.objects.filter(whouse=whouse)
+        result = []
+        for product in products:
+            total_income = Order.objects.filter(product=product, whouse=whouse).aggregate(total=Sum('quantity'))['total'] or 0
+            result.append({
+                'product': product.name,
+                'outcome': total_income
+            })
+        serializer = OutcomingProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
 class SupplierIncomeProductStatsView(APIView):

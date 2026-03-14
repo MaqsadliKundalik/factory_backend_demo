@@ -14,3 +14,6 @@ class SupplierIncomeProductStatsSerializer(serializers.Serializer):
     supplier = serializers.CharField()
     products = IncomeProductStatsSerializer(many=True)
 
+class OutcomingProductStatsSerializer(serializers.Serializer):
+    product = serializers.CharField()
+    outcoming = serializers.IntegerField()
