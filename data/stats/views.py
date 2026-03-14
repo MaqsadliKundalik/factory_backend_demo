@@ -7,6 +7,8 @@ from data.stats.serializers import (
     OutcomingProductStatsSerializer,
     OrderStatusStatsSerializer,
     StatusDurationSerializer,
+    ExcavatorOrderStatusStatsSerializer,
+    ExcavatorStatusDurationSerializer,
 )
 from data.products.models import Product, WhouseProducts, WhouseProductsHistory
 from data.supplier.models import Supplier
@@ -14,6 +16,7 @@ from apps.drivers.models import Driver
 from data.clients.models import Client
 from data.transports.models import Transport
 from data.orders.models import Order, SubOrder
+from data.excavator.models import ExcavatorOrder, ExcavatorSubOrder
 from rest_framework.response import Response
 from django.db.models import Sum
 from data.whouse.models import Whouse
@@ -164,4 +167,59 @@ class OrderStatusDurationStatsView(APIView):
             'sub_orders_count': sub_orders.count(),
         }
         serializer = StatusDurationSerializer(result)
+        return Response(serializer.data)
+
+
+class ExcavatorOrderStatusStatsView(APIView):
+    def get(self, request):
+        result = {
+            'new': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.NEW).count(),
+            'in_progress': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
+            'paused': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.PAUSED).count(),
+            'completed': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
+            'expired': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.EXPIRED).count(),
+            'total': ExcavatorOrder.objects.count(),
+        }
+        serializer = ExcavatorOrderStatusStatsSerializer(result)
+        return Response(serializer.data)
+
+
+class ExcavatorStatusDurationStatsView(APIView):
+    def get(self, request):
+        from datetime import datetime
+        sub_orders = ExcavatorSubOrder.objects.exclude(status_history=[])
+
+        duration_totals = {}
+        duration_counts = {}
+
+        for sub_order in sub_orders:
+            history = sub_order.status_history or []
+            for i, entry in enumerate(history):
+                status_key = entry.get('status', '').upper()
+                if not status_key or i + 1 >= len(history):
+                    continue
+                try:
+                    t1 = datetime.fromisoformat(str(entry['timestamp']))
+                    t2 = datetime.fromisoformat(str(history[i + 1]['timestamp']))
+                    minutes = (t2 - t1).total_seconds() / 60
+                    if minutes >= 0:
+                        duration_totals[status_key] = duration_totals.get(status_key, 0) + minutes
+                        duration_counts[status_key] = duration_counts.get(status_key, 0) + 1
+                except (KeyError, ValueError):
+                    continue
+
+        def avg(key):
+            if duration_counts.get(key):
+                return round(duration_totals[key] / duration_counts[key], 2)
+            return 0.0
+
+        result = {
+            'new': avg('NEW'),
+            'in_progress': avg('IN_PROGRESS'),
+            'paused': avg('PAUSED'),
+            'completed': avg('COMPLETED'),
+            'expired': avg('EXPIRED'),
+            'sub_orders_count': sub_orders.count(),
+        }
+        serializer = ExcavatorStatusDurationSerializer(result)
         return Response(serializer.data)
