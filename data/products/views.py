@@ -364,6 +364,7 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
+        instance = self.get_object()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
