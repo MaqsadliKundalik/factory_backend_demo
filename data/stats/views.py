@@ -61,7 +61,7 @@ class SupplierIncomeProductStatsView(APIView):
                 })
             result.append({
                 'supplier': supplier.name,
-                'total': total
+                'total': total,
                 'products': product_result,
             })
         serializer = SupplierIncomeProductStatsSerializer(result, many=True)
