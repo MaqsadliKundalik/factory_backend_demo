@@ -260,7 +260,6 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
 
 
 
-
 class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = WhouseProducts.objects.all()
     serializer_class = WhouseProductsSerializerV2

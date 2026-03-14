@@ -32,8 +32,6 @@ router.register('items', ProductItemViewSet, basename='product-item')
 
 router.register('', ProductViewSet, basename='products')
 
-
-
 urlpatterns = [
 
     path('update-product-and-item/<uuid:pk>/', ProductAndItemUpdateView.as_view(), name='update-product-and-item'),
