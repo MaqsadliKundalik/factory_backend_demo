@@ -73,12 +73,11 @@ class WhouseProductsHistory(BaseModel):
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name='history', null=True, blank=True)
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    supplier = models.ForeignKey('supplier.Supplier', on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=20, choices=HistoryStatus.choices, default=HistoryStatus.IN)
 
     def __str__(self):
         return f"History of {self.product.name} at {self.created_at}"
-
-# Signals for history tracking
 
 @receiver(post_save, sender=WhouseProducts)
 def create_whouse_product_history(sender, instance, **kwargs):
@@ -95,6 +94,7 @@ def create_whouse_product_history(sender, instance, **kwargs):
         whouse=instance.whouse,
         product=instance.product,
         quantity=instance.quantity,
+        supplier=instance.supplier,
         status=HistoryStatus.IN
     )
 
@@ -105,6 +105,7 @@ def update_whouse_product_history_extra(sender, instance, **kwargs):
             whouse=instance.whouse,
             product=instance.product,
             quantity=instance.quantity,
+            supplier=instance.supplier,
             status=HistoryStatus.OUT
         )
 

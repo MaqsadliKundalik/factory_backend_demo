@@ -6,7 +6,7 @@ from data.stats.serializers import (
     SupplierIncomeProductStatsSerializer, 
     OutcomingProductStatsSerializer
 )
-from data.products.models import Product, WhouseProducts
+from data.products.models import Product, WhouseProducts, WhouseProductsHistory
 from data.supplier.models import Supplier
 from apps.drivers.models import Driver
 from data.clients.models import Client
@@ -42,10 +42,10 @@ class IncomeProductStatsView(APIView):
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
-        products = Product.objects.filter(whouse=whouse)
+        products = Product.objects.filter(whouse=whouse, items__isnull=True)
         result = []
         for product in products:
-            total_income = WhouseProducts.objects.filter(product=product, whouse=whouse).aggregate(total=Sum('quantity'))['total'] or 0
+            total_income = WhouseProducts.objects.filter(product=product, whouse=whouse, status=WhouseProducts.Status.IN).aggregate(total=Sum('quantity'))['total'] or 0
             result.append({
                 'product': product.name,
                 'income': total_income
@@ -61,7 +61,7 @@ class OutcomingProductStatsView(APIView):
         products = Product.objects.filter(whouse=whouse)
         result = []
         for product in products:
-            total_income = Order.objects.filter(product=product, whouse=whouse).aggregate(total=Sum('quantity'))['total'] or 0
+            total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, status=WhouseProductsHistory.Status.OUT).aggregate(total=Sum('quantity'))['total'] or 0
             result.append({
                 'product': product.name,
                 'outcome': total_income
@@ -78,10 +78,10 @@ class SupplierIncomeProductStatsView(APIView):
         result = []
         for supplier in suppliers:
             total = 0
-            products = Product.objects.filter(whouse=whouse)
+            products = Product.objects.filter(whouse=whouse, items__isnull=True)
             product_result = []
             for product in products:
-                total_income = WhouseProducts.objects.filter(product=product, whouse=whouse, supplier=supplier).aggregate(total=Sum('quantity'))['total'] or 0
+                total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, supplier=supplier, status=WhouseProductsHistory.Status.IN).aggregate(total=Sum('quantity'))['total'] or 0
                 total += total_income
                 product_result.append({
                     'product': product.name,
