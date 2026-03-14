@@ -82,7 +82,8 @@ class WhouseProductsSerializerV2(serializers.ModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        if self.instance is None:
+        request = self.context.get('request')
+        if request is not None and self.instance is None:
             fields.pop('existing_files', None)
         return fields
 
