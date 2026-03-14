@@ -1,5 +1,8 @@
+from datetime import date as date_type
 from django.shortcuts import render
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from data.stats.serializers import (
     SimpleCountStatsSerializer,
     IncomeProductStatsSerializer,
@@ -21,18 +24,59 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from data.whouse.models import Whouse
 
-class CountStatsView(APIView):
+DATE_RANGE_PARAMS = [
+    openapi.Parameter(
+        'start_date',
+        openapi.IN_QUERY,
+        description='Filter from date (YYYY-MM-DD)',
+        type=openapi.TYPE_STRING,
+        format=openapi.FORMAT_DATE,
+        required=False,
+    ),
+    openapi.Parameter(
+        'end_date',
+        openapi.IN_QUERY,
+        description='Filter to date (YYYY-MM-DD)',
+        type=openapi.TYPE_STRING,
+        format=openapi.FORMAT_DATE,
+        required=False,
+    ),
+]
+
+
+class DateRangeFilterMixin:
+    def get_date_filters(self, request, prefix=''):
+        filters = {}
+        start = request.query_params.get('start_date')
+        end = request.query_params.get('end_date')
+        field = f'{prefix}created_at__date'
+        if start:
+            try:
+                filters[f'{field}__gte'] = date_type.fromisoformat(start)
+            except ValueError:
+                pass
+        if end:
+            try:
+                filters[f'{field}__lte'] = date_type.fromisoformat(end)
+            except ValueError:
+                pass
+        return filters
+
+
+class CountStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
-        drivers_count = Driver.objects.filter(whouse=whouse).count()
-        suppliers_count = Supplier.objects.filter(whouse=whouse).count()
-        clients_count = Client.objects.filter(whouse=whouse).count()
-        transports_count = Transport.objects.filter(whouse=whouse).count()
-        products_count = WhouseProducts.objects.filter(whouse=whouse).count()
-        orders_count = Order.objects.filter(whouse=whouse).count()
-        
+        df = self.get_date_filters(request)
+        drivers_count = Driver.objects.filter(whouse=whouse, **df).count()
+        suppliers_count = Supplier.objects.filter(whouse=whouse, **df).count()
+        clients_count = Client.objects.filter(whouse=whouse, **df).count()
+        transports_count = Transport.objects.filter(whouse=whouse, **df).count()
+        products_count = WhouseProducts.objects.filter(whouse=whouse, **df).count()
+        orders_count = Order.objects.filter(whouse=whouse, **df).count()
+
         return Response({
             'drivers': drivers_count,
             'suppliers': suppliers_count,
@@ -42,15 +86,18 @@ class CountStatsView(APIView):
             'orders': orders_count,
         })
 
-class IncomeProductStatsView(APIView):
+
+class IncomeProductStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
+        df = self.get_date_filters(request)
         products = Product.objects.filter(whouse=whouse, items__isnull=True)
         result = []
         for product in products:
-            total_income = WhouseProducts.objects.filter(product=product, whouse=whouse, status=WhouseProducts.Status.IN).aggregate(total=Sum('quantity'))['total'] or 0
+            total_income = WhouseProducts.objects.filter(product=product, whouse=whouse, status=WhouseProducts.Status.IN, **df).aggregate(total=Sum('quantity'))['total'] or 0
             result.append({
                 'product': product.name,
                 'income': total_income
@@ -58,15 +105,18 @@ class IncomeProductStatsView(APIView):
         serializer = IncomeProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
-class OutcomingProductStatsView(APIView):
+
+class OutcomingProductStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
+        df = self.get_date_filters(request)
         products = Product.objects.filter(whouse=whouse)
         result = []
         for product in products:
-            total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, status=HistoryStatus.OUT).aggregate(total=Sum('quantity'))['total'] or 0
+            total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, status=HistoryStatus.OUT, **df).aggregate(total=Sum('quantity'))['total'] or 0
             result.append({
                 'product': product.name,
                 'outcome': total_income
@@ -74,11 +124,14 @@ class OutcomingProductStatsView(APIView):
         serializer = OutcomingProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
-class SupplierIncomeProductStatsView(APIView):
+
+class SupplierIncomeProductStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
+        df = self.get_date_filters(request)
         suppliers = Supplier.objects.filter(whouse=whouse)
         result = []
         for supplier in suppliers:
@@ -86,7 +139,7 @@ class SupplierIncomeProductStatsView(APIView):
             products = Product.objects.filter(whouse=whouse, items__isnull=True)
             product_result = []
             for product in products:
-                total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, supplier=supplier, status=HistoryStatus.IN).aggregate(total=Sum('quantity'))['total'] or 0
+                total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, supplier=supplier, status=HistoryStatus.IN, **df).aggregate(total=Sum('quantity'))['total'] or 0
                 total += total_income
                 product_result.append({
                     'product': product.name,
@@ -100,18 +153,21 @@ class SupplierIncomeProductStatsView(APIView):
         serializer = SupplierIncomeProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
-class OrderStatusStatsView(APIView):
+
+class OrderStatusStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
-        new_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.NEW).count()
-        in_progress_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.IN_PROGRESS).count()
-        on_way_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.ON_WAY).count()
-        arrived_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.ARRIVED).count()
-        unloading_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.UNLOADING).count()
-        completed_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.COMPLETED).count()
-        total_orders_count = Order.objects.filter(whouse=whouse).count()
+        df = self.get_date_filters(request)
+        new_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.NEW, **df).count()
+        in_progress_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.IN_PROGRESS, **df).count()
+        on_way_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.ON_WAY, **df).count()
+        arrived_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.ARRIVED, **df).count()
+        unloading_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.UNLOADING, **df).count()
+        completed_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.COMPLETED, **df).count()
+        total_orders_count = Order.objects.filter(whouse=whouse, **df).count()
         result = {
             'new': new_orders_count,
             'in_progress': in_progress_orders_count,
@@ -124,14 +180,17 @@ class OrderStatusStatsView(APIView):
         serializer = OrderStatusStatsSerializer(result)
         return Response(serializer.data)
 
-class OrderStatusDurationStatsView(APIView):
+
+class OrderStatusDurationStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
 
         from datetime import datetime
-        sub_orders = SubOrder.objects.filter(order__whouse=whouse).exclude(status_history=[])
+        df = self.get_date_filters(request, prefix='order__')
+        sub_orders = SubOrder.objects.filter(order__whouse=whouse, **df).exclude(status_history=[])
 
         duration_totals = {}
         duration_counts = {}
@@ -175,30 +234,34 @@ class OrderStatusDurationStatsView(APIView):
         return Response(serializer.data)
 
 
-class ExcavatorOrderStatusStatsView(APIView):
+class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.get(id=whouse_id)
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
+        df = self.get_date_filters(request)
         result = {
-            'new': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.NEW).count(),
-            'in_progress': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
-            'paused': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.PAUSED).count(),
-            'completed': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
-            'expired': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.EXPIRED).count(),
-            'total': ExcavatorOrder.objects.count(),
+            'new': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.NEW, **df).count(),
+            'in_progress': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.IN_PROGRESS, **df).count(),
+            'paused': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.PAUSED, **df).count(),
+            'completed': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.COMPLETED, **df).count(),
+            'expired': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.EXPIRED, **df).count(),
+            'total': ExcavatorOrder.objects.filter(**df).count(),
         }
         serializer = ExcavatorOrderStatusStatsSerializer(result)
         return Response(serializer.data)
 
 
-class ExcavatorStatusDurationStatsView(APIView):
+class ExcavatorStatusDurationStatsView(DateRangeFilterMixin, APIView):
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request, whouse_id):
         whouse = Whouse.objects.get(id=whouse_id)
         if not whouse:
             return Response({'error': 'Whouse not found'}, status=404)
         from datetime import datetime
-        sub_orders = ExcavatorSubOrder.objects.exclude(status_history=[])
+        df = self.get_date_filters(request)
+        sub_orders = ExcavatorSubOrder.objects.filter(**df).exclude(status_history=[])
 
         duration_totals = {}
         duration_counts = {}
