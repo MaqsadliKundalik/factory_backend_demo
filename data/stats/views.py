@@ -12,13 +12,13 @@ from django.db.models import Sum
 
 class CountStatsView(APIView):
     def get(self, request):
-        whouses = request.user.whouses
+        whouses = request.user.whouses.all()
         drivers_count = Driver.objects.filter(whouse__in=whouses).count()
         suppliers_count = Supplier.objects.filter(whouse__in=whouses).count()
         clients_count = Client.objects.filter(whouse__in=whouses).count()
         transports_count = Transport.objects.filter(whouse__in=whouses).count()
         products_count = WhouseProducts.objects.filter(whouse__in=whouses).count()
-        orders_count = Order.objects.filter(whouse=whouse).count()
+        orders_count = Order.objects.filter(whouse__in=whouses).count()
         
         return Response({
             'drivers': drivers_count,
@@ -31,7 +31,7 @@ class CountStatsView(APIView):
 
 class IncomeProductStatsView(APIView):
     def get(self, request):
-        whouses = request.user.whouses
+        whouses = request.user.whouses.all()
         products = Product.objects.filter(whouse__in=whouses)
         result = []
         for product in products:
@@ -45,14 +45,14 @@ class IncomeProductStatsView(APIView):
 
 class SupplierIncomeProductStatsView(APIView):
     def get(self, request):
-        whouses = request.user.whouses
+        whouses = request.user.whouses.all()
         suppliers = Supplier.objects.filter(whouse__in=whouses)
         result = []
         for supplier in suppliers:
             products = Product.objects.filter(whouse__in=whouses)
             product_result = []
             for product in products:
-                total_income = WhouseProducts.objects.filter(product=product, whouse=whouse, supplier=supplier).aggregate(total=Sum('quantity'))['total'] or 0
+                total_income = WhouseProducts.objects.filter(product=product, whouse__in=whouses, supplier=supplier).aggregate(total=Sum('quantity'))['total'] or 0
                 product_result.append({
                     'product': product.name,
                     'income': total_income
