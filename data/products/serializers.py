@@ -68,8 +68,6 @@ class WhouseProductsSerializerV2(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
-        from data.filedatas.models import Documents
-        from data.filedatas.serializers import DocumentsSerializer
         repr = super().to_representation(instance)
         if instance.product:
             repr['product'] = ProductSerializer(instance.product).data
@@ -78,15 +76,13 @@ class WhouseProductsSerializerV2(serializers.ModelSerializer):
         if instance.supplier:
             repr['supplier'] = SupplierSerializer(instance.supplier).data
         repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
-        files = instance.files.all()
-        repr['files'] = FileSerializer(files, many=True).data
+        repr['files'] = FileSerializer(instance.files.all(), many=True).data
         return repr
 
     def _save_files(self, instance, files):
-        from data.filedatas.models import File, Documents
         for f in files:
             file_obj = File.objects.create(file=f)
-            Documents.objects.create(file=file_obj, type='PRODUCT', object_id=instance.id)
+            instance.files.add(file_obj)
 
     def create(self, validated_data):
         files = validated_data.pop('files', [])
@@ -98,13 +94,12 @@ class WhouseProductsSerializerV2(serializers.ModelSerializer):
         files = validated_data.pop('files', None)
         instance = super().update(instance, validated_data)
         if files is not None:
-            from data.filedatas.models import File, Documents
-            existing_docs = Documents.objects.filter(type='PRODUCT', object_id=instance.id)
-            file_ids = list(existing_docs.values_list('file_id', flat=True))
-            existing_docs.delete()
-            File.objects.filter(id__in=file_ids).delete()
+            old_files = list(instance.files.all())
+            instance.files.clear()
+            File.objects.filter(id__in=[f.id for f in old_files]).delete()
             self._save_files(instance, files)
         return instance
+
 
 class SelectProductSerializer(serializers.ModelSerializer):
     class Meta:
