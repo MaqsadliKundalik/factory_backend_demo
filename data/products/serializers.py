@@ -126,6 +126,8 @@ class ProductSerializer(serializers.ModelSerializer):
             repr['unit'] = ProductUnitSerializer(instance.unit).data
         if instance.items:
             repr['items'] = ProductItemSerializer(instance.items, many=True).data
+        if instance.whouse:
+            repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
         return repr
 
     def create(self, validated_data):
