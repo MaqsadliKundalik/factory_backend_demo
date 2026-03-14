@@ -10,7 +10,7 @@ from data.stats.serializers import (
     ExcavatorOrderStatusStatsSerializer,
     ExcavatorStatusDurationSerializer,
 )
-from data.products.models import Product, WhouseProducts, WhouseProductsHistory
+from data.products.models import Product, WhouseProducts, WhouseProductsHistory, HistoryStatus
 from data.supplier.models import Supplier
 from apps.drivers.models import Driver
 from data.clients.models import Client
@@ -66,7 +66,7 @@ class OutcomingProductStatsView(APIView):
         products = Product.objects.filter(whouse=whouse)
         result = []
         for product in products:
-            total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, status=WhouseProductsHistory.Status.OUT).aggregate(total=Sum('quantity'))['total'] or 0
+            total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, status=HistoryStatus.OUT).aggregate(total=Sum('quantity'))['total'] or 0
             result.append({
                 'product': product.name,
                 'outcome': total_income
@@ -86,7 +86,7 @@ class SupplierIncomeProductStatsView(APIView):
             products = Product.objects.filter(whouse=whouse, items__isnull=True)
             product_result = []
             for product in products:
-                total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, supplier=supplier, status=WhouseProductsHistory.Status.IN).aggregate(total=Sum('quantity'))['total'] or 0
+                total_income = WhouseProductsHistory.objects.filter(product=product, whouse=whouse, supplier=supplier, status=HistoryStatus.IN).aggregate(total=Sum('quantity'))['total'] or 0
                 total += total_income
                 product_result.append({
                     'product': product.name,
@@ -139,12 +139,17 @@ class OrderStatusDurationStatsView(APIView):
         for sub_order in sub_orders:
             history = sub_order.status_history or []
             for i, entry in enumerate(history):
+                if not isinstance(entry, dict):
+                    continue
                 status_key = entry.get('status', '').upper()
                 if not status_key or i + 1 >= len(history):
                     continue
+                next_entry = history[i + 1]
+                if not isinstance(next_entry, dict):
+                    continue
                 try:
                     t1 = datetime.fromisoformat(str(entry['timestamp']))
-                    t2 = datetime.fromisoformat(str(history[i + 1]['timestamp']))
+                    t2 = datetime.fromisoformat(str(next_entry['timestamp']))
                     minutes = (t2 - t1).total_seconds() / 60
                     if minutes >= 0:
                         duration_totals[status_key] = duration_totals.get(status_key, 0) + minutes
@@ -171,7 +176,10 @@ class OrderStatusDurationStatsView(APIView):
 
 
 class ExcavatorOrderStatusStatsView(APIView):
-    def get(self, request):
+    def get(self, request, whouse_id):
+        whouse = Whouse.objects.get(id=whouse_id)
+        if not whouse:
+            return Response({'error': 'Whouse not found'}, status=404)
         result = {
             'new': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.NEW).count(),
             'in_progress': ExcavatorOrder.objects.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
@@ -185,7 +193,10 @@ class ExcavatorOrderStatusStatsView(APIView):
 
 
 class ExcavatorStatusDurationStatsView(APIView):
-    def get(self, request):
+    def get(self, request, whouse_id):
+        whouse = Whouse.objects.get(id=whouse_id)
+        if not whouse:
+            return Response({'error': 'Whouse not found'}, status=404)
         from datetime import datetime
         sub_orders = ExcavatorSubOrder.objects.exclude(status_history=[])
 
@@ -195,12 +206,17 @@ class ExcavatorStatusDurationStatsView(APIView):
         for sub_order in sub_orders:
             history = sub_order.status_history or []
             for i, entry in enumerate(history):
+                if not isinstance(entry, dict):
+                    continue
                 status_key = entry.get('status', '').upper()
                 if not status_key or i + 1 >= len(history):
                     continue
+                next_entry = history[i + 1]
+                if not isinstance(next_entry, dict):
+                    continue
                 try:
                     t1 = datetime.fromisoformat(str(entry['timestamp']))
-                    t2 = datetime.fromisoformat(str(history[i + 1]['timestamp']))
+                    t2 = datetime.fromisoformat(str(next_entry['timestamp']))
                     minutes = (t2 - t1).total_seconds() / 60
                     if minutes >= 0:
                         duration_totals[status_key] = duration_totals.get(status_key, 0) + minutes

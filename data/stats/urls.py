@@ -17,6 +17,6 @@ urlpatterns = [
     path('outcome-products/<uuid:whouse_id>/', OutcomingProductStatsView.as_view(), name='outcome-product-stats'),
     path('orders/<uuid:whouse_id>/', OrderStatusStatsView.as_view(), name='orders-stats'),
     path('orders/status/<uuid:whouse_id>/', OrderStatusDurationStatsView.as_view(), name='orders-status-duration-stats'),
-    path('excavator/orders/', ExcavatorOrderStatusStatsView.as_view(), name='excavator-orders-stats'),
-    path('excavator/orders/status/', ExcavatorStatusDurationStatsView.as_view(), name='excavator-orders-status-duration-stats'),
+    path('excavator/orders/<uuid:whouse_id>/', ExcavatorOrderStatusStatsView.as_view(), name='excavator-orders-stats'),
+    path('excavator/orders/status/<uuid:whouse_id>/', ExcavatorStatusDurationStatsView.as_view(), name='excavator-orders-status-duration-stats'),
 ]
