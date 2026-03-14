@@ -373,8 +373,8 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
         if supplier_id is not None:
             instance.supplier_id = supplier_id
         instance.save()
-        
-        new_supplier_id = supplier_id if supplier_id is not None else old_supplier_id        
+        instance.refresh_from_db()
+        new_supplier_id = instance.supplier_id if instance.supplier_id is not None else old_supplier_id        
         Notification.objects.create(
             to_role='guard',
             from_role='whouse_manager',
