@@ -137,6 +137,13 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         })
         instance.status = new_status
         instance.save(update_fields=['status', 'status_history'])
+
+        parent = instance.parent
+        sibling_statuses = list(parent.sub_orders.values_list('status', flat=True))
+        if sibling_statuses and all(s == new_status for s in sibling_statuses):
+            parent.status = new_status
+            parent.save(update_fields=['status'])
+        
         return Response({'status': instance.status})
 
     @swagger_auto_schema(
@@ -172,6 +179,13 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         })
         instance.status = ExcavatorSubOrder.Status.IN_PROGRESS
         instance.save()
+
+        parent = instance.parent
+        sibling_statuses = list(parent.sub_orders.values_list('status', flat=True))
+        if sibling_statuses and all(s == ExcavatorSubOrder.Status.IN_PROGRESS for s in sibling_statuses):
+            parent.status = ExcavatorSubOrder.Status.IN_PROGRESS
+            parent.save(update_fields=['status'])
+
         return Response({'status': instance.status})
 
     @swagger_auto_schema(
@@ -206,4 +220,11 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         })
         instance.status = ExcavatorSubOrder.Status.COMPLETED
         instance.save()
+
+        parent = instance.parent
+        sibling_statuses = list(parent.sub_orders.values_list('status', flat=True))
+        if sibling_statuses and all(s == ExcavatorSubOrder.Status.COMPLETED for s in sibling_statuses):
+            parent.status = ExcavatorSubOrder.Status.COMPLETED
+            parent.save(update_fields=['status'])
+
         return Response({'status': instance.status})
