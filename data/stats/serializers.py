@@ -18,3 +18,11 @@ class OutcomingProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
     outcoming = serializers.IntegerField()
 
+class OrderStatusStatsSerializer(serializers.Serializer):
+    new = serializers.IntegerField()
+    in_progress = serializers.IntegerField()
+    on_way = serializers.IntegerField()
+    arrived = serializers.IntegerField()
+    unloading = serializers.IntegerField()
+    completed = serializers.IntegerField()
+    total = serializers.IntegerField()

@@ -4,7 +4,8 @@ from data.stats.serializers import (
     SimpleCountStatsSerializer, 
     IncomeProductStatsSerializer, 
     SupplierIncomeProductStatsSerializer, 
-    OutcomingProductStatsSerializer
+    OutcomingProductStatsSerializer,
+    OrderStatusStatsSerializer,
 )
 from data.products.models import Product, WhouseProducts, WhouseProductsHistory
 from data.supplier.models import Supplier
@@ -95,3 +96,26 @@ class SupplierIncomeProductStatsView(APIView):
         serializer = SupplierIncomeProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
+class OrderStatusStatsView(APIView):
+    def get(self, request, whouse_id):
+        whouse = Whouse.objects.filter(id=whouse_id).first()
+        if not whouse:
+            return Response({'error': 'Whouse not found'}, status=404)
+        new_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.NEW).count()
+        in_progress_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.IN_PROGRESS).count()
+        on_way_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.ON_WAY).count()
+        arrived_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.ARRIVED).count()
+        unloading_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.UNLOADING).count()
+        completed_orders_count = Order.objects.filter(whouse=whouse, status=Order.Status.COMPLETED).count()
+        total_orders_count = Order.objects.filter(whouse=whouse).count()
+        result = {
+            'new': new_orders_count,
+            'in_progress': in_progress_orders_count,
+            'on_way': on_way_orders_count,
+            'arrived': arrived_orders_count,
+            'unloading': unloading_orders_count,
+            'completed': completed_orders_count,
+            'total': total_orders_count,
+        }
+        serializer = OrderStatusStatsSerializer(result)
+        return Response(serializer.data)
