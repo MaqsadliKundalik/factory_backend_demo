@@ -49,17 +49,20 @@ class SupplierIncomeProductStatsView(APIView):
         suppliers = Supplier.objects.filter(whouse__in=whouses)
         result = []
         for supplier in suppliers:
+            total = 0
             products = Product.objects.filter(whouse__in=whouses)
             product_result = []
             for product in products:
                 total_income = WhouseProducts.objects.filter(product=product, whouse__in=whouses, supplier=supplier).aggregate(total=Sum('quantity'))['total'] or 0
+                total += total_income
                 product_result.append({
                     'product': product.name,
                     'income': total_income
                 })
             result.append({
                 'supplier': supplier.name,
-                'products': product_result
+                'total': total
+                'products': product_result,
             })
         serializer = SupplierIncomeProductStatsSerializer(result, many=True)
         return Response(serializer.data)
