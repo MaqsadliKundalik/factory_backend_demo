@@ -12,12 +12,12 @@ from django.db.models import Sum
 
 class CountStatsView(APIView):
     def get(self, request):
-        whouse = request.user.whouse
-        drivers_count = Driver.objects.filter(whouse=whouse).count()
-        suppliers_count = Supplier.objects.filter(whouse=whouse).count()
-        clients_count = Client.objects.filter(whouse=whouse).count()
-        transports_count = Transport.objects.filter(whouse=whouse).count()
-        products_count = WhouseProducts.objects.filter(whouse=whouse).count()
+        whouses = request.user.whouses
+        drivers_count = Driver.objects.filter(whouse__in=whouses).count()
+        suppliers_count = Supplier.objects.filter(whouse__in=whouses).count()
+        clients_count = Client.objects.filter(whouse__in=whouses).count()
+        transports_count = Transport.objects.filter(whouse__in=whouses).count()
+        products_count = WhouseProducts.objects.filter(whouse__in=whouses).count()
         orders_count = Order.objects.filter(whouse=whouse).count()
         
         return Response({
@@ -31,11 +31,11 @@ class CountStatsView(APIView):
 
 class IncomeProductStatsView(APIView):
     def get(self, request):
-        whouse = request.user.whouse
-        products = Product.objects.filter(whouse=whouse)
+        whouses = request.user.whouses
+        products = Product.objects.filter(whouse__in=whouses)
         result = []
         for product in products:
-            total_income = WhouseProducts.objects.filter(product=product, whouse=whouse).aggregate(total=Sum('quantity'))['total'] or 0
+            total_income = WhouseProducts.objects.filter(product=product, whouse__in=whouses).aggregate(total=Sum('quantity'))['total'] or 0
             result.append({
                 'product': product.name,
                 'income': total_income
@@ -45,11 +45,11 @@ class IncomeProductStatsView(APIView):
 
 class SupplierIncomeProductStatsView(APIView):
     def get(self, request):
-        whouse = request.user.whouse
-        suppliers = Supplier.objects.filter(whouse=whouse)
+        whouses = request.user.whouses
+        suppliers = Supplier.objects.filter(whouse__in=whouses)
         result = []
         for supplier in suppliers:
-            products = Product.objects.filter(whouse=whouse)
+            products = Product.objects.filter(whouse__in=whouses)
             product_result = []
             for product in products:
                 total_income = WhouseProducts.objects.filter(product=product, whouse=whouse, supplier=supplier).aggregate(total=Sum('quantity'))['total'] or 0
