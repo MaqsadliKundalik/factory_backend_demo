@@ -144,13 +144,22 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @action(detail=True, methods=['post'], url_path='update-status-history')
     def update_status_history(self, request, pk=None):
         instance = self.get_object()
+
         serializer = StatusHistorySerializer(data=request.data, many=True)
         if serializer.is_valid():
             history = instance.status_history or []
             history.extend(serializer.data)
             instance.status_history = history
-            instance.status = serializer.data[-1]['status']
+            new_status = serializer.data[-1]['status']
+            instance.status = new_status
             instance.save()
+
+            order = instance.order
+            sibling_statuses = list(order.sub_orders.values_list('status', flat=True))
+            if sibling_statuses and all(s == new_status for s in sibling_statuses):
+                order.status = new_status
+                order.save(update_fields=['status'])
+
             return Response({"status": "Success"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -169,10 +178,11 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        instance.status = SubOrder.Status.COMPLETED
+        new_status = serializer.data[-1]['status']
+        instance.status = new_status
         instance.status_history = instance.status_history or []
         instance.status_history.append({
-            "status": "completed",
+            "status": new_status,
             "timestamp": str(serializer.validated_data.get("timestamp")),
         })
 
@@ -182,6 +192,12 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         for f in request.FILES.getlist('files'):
             file_obj = File.objects.create(file=f)
             instance.files.add(file_obj)
+
+        order = instance.order
+        sibling_statuses = list(order.sub_orders.values_list('status', flat=True))
+        if sibling_statuses and all(s == new_status for s in sibling_statuses):
+            order.status = new_status
+            order.save(update_fields=['status'])
 
         instance.save()
         return Response({"status": "Success"}, status=status.HTTP_200_OK)
