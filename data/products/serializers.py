@@ -78,8 +78,8 @@ class WhouseProductsSerializerV2(serializers.ModelSerializer):
         if instance.supplier:
             repr['supplier'] = SupplierSerializer(instance.supplier).data
         repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
-        docs = Documents.objects.filter(type='PRODUCT', object_id=instance.id)
-        repr['documents'] = DocumentsSerializer(docs, many=True).data
+        files = instance.files.all()
+        repr['files'] = FileSerializer(files, many=True).data
         return repr
 
     def _save_files(self, instance, files):
@@ -105,7 +105,6 @@ class WhouseProductsSerializerV2(serializers.ModelSerializer):
             File.objects.filter(id__in=file_ids).delete()
             self._save_files(instance, files)
         return instance
-
 
 class SelectProductSerializer(serializers.ModelSerializer):
     class Meta:
