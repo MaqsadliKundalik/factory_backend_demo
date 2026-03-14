@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'data.orders.apps.OrdersConfig',
     "data.supplier.apps.SupplierConfig",
     "data.excavator.apps.ExcavatorConfig",
+    "data.stats.apps.StatsConfig",
 ]
 
 MIDDLEWARE = [
