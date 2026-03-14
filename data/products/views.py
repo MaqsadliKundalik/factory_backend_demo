@@ -21,6 +21,7 @@ from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (
+    WhouseProductActionSerializer,
     ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, ProductAndItemCreateSerializer,
     WhouseProductsSerializer, WhouseProductsSerializerV2, WhouseProductsHistorySerializer, SelectProductSerializer, ProductItemSerializer
 )
@@ -304,6 +305,7 @@ class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelV
         request_body=WhouseProductsSerializer(),
         manual_parameters=[
             openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
+            openapi.Parameter('existing_files', openapi.IN_FORM, type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_INTEGER), required=False, description="IDs of existing files to keep"),
         ],
     )
     def update(self, request, *args, **kwargs):
@@ -314,6 +316,7 @@ class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelV
         request_body=WhouseProductsSerializer(),
         manual_parameters=[
             openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
+            openapi.Parameter('existing_files', openapi.IN_FORM, type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_INTEGER), required=False, description="IDs of existing files to keep"),
         ],
     )
     def partial_update(self, request, *args, **kwargs):
@@ -322,7 +325,7 @@ class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelV
 
 class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     queryset = WhouseProducts.objects.all()
-    serializer_class = WhouseProductsSerializer
+    serializer_class = WhouseProductActionSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
     pagination_class = StandardResultsSetPagination
@@ -342,9 +345,15 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     @action(detail=True, methods=['post'])
     def confirm(self, request, pk=None):
         instance = self.get_object()
-        instance.status = 'confirmed'
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        instance.status = WhouseProducts.Status.CONFIRMED
+        supplier_id = serializer.validated_data.get('supplier')
+        if supplier_id is not None:
+            instance.supplier_id = supplier_id
         instance.save()
-        
+
         Notification.objects.create(
             to_role='guard',
             from_role='whouse_manager',
@@ -355,9 +364,15 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
-        instance = self.get_object()
-        instance.status = 'rejected'
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        instance.status = WhouseProducts.Status.REJECTED
+        supplier_id = serializer.validated_data.get('supplier')
+        if supplier_id is not None:
+            instance.supplier_id = supplier_id
         instance.save()
+
         
         Notification.objects.create(
             to_role='guard',
@@ -365,7 +380,7 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
             title='Product rejected',
             message=f'Product {instance.product.name} has been rejected by manager',
         )
-        return Response({'status': 'rejected'})
+        return Response({'status': ''})
 
 
 class ProductAndItemCreateView(APIView):

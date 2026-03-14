@@ -59,6 +59,9 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
         repr['files'] = FileSerializer(instance.files.all(), many=True).data
         return repr
 
+class WhouseProductActionSerializer(serializers.Serializer):
+    supplier = serializers.UUIDField(required=False)
+
 class WhouseProductsSerializerV2(serializers.ModelSerializer):
     files = serializers.ListField(child=serializers.FileField(), required=False, write_only=True)
     existing_files = serializers.ListField(child=serializers.IntegerField(), required=False, write_only=True)

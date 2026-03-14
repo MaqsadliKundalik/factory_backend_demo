@@ -24,8 +24,6 @@ router.register("history", WhouseProductsHistoryViewSet, basename='whouse-produc
 
 router.register('whouse', WhouseProductsViewSet, basename='whouse-products')
 
-router.register('whouse-v2', WhouseProductsV2ViewSet, basename='whouse-products-v2')
-
 router.register('actions', WhouseProductsActionViewSet, basename='whouse-products-actions')
 
 router.register('items', ProductItemViewSet, basename='product-item')
