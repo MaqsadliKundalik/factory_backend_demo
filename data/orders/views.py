@@ -113,6 +113,31 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         order = serializer.save()
         return Response(OrderSerializer(order).data)
 
+    @swagger_auto_schema(
+        consumes=['multipart/form-data'],
+        manual_parameters=[
+            openapi.Parameter('quantity', openapi.IN_FORM, type=openapi.TYPE_NUMBER, required=False, description="Reject quantity"),
+        ],
+        responses={200: OrderSerializer}
+    )
+    @action(detail=True, methods=['post'], url_path='reject', parser_classes=[MultiPartParser, FormParser])
+    def reject(self, request, *args, **kwargs):
+        order = self.get_object()
+        quantity = request.data.get('quantity')
+        order.status = OrderStatus.REJECTED
+        order.save()        
+
+        all_sub_orders = SubOrder.objects.filter(order=order).order_by('quantity')
+        for sub_order in all_sub_orders:
+            if quantity:
+                quantity, sub_order.quantity = max(0, quantity - sub_order.quantity), max(0, sub_order.quantity - quantity)
+                if sub_order.quantity == 0:
+                    sub_order.status = SubOrder.Status.REJECTED
+                sub_order.save()
+            else:
+                break
+
+        return Response(OrderSerializer(order).data)
 
 class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     serializer_class = SubOrderSerializer
@@ -201,3 +226,4 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
         instance.save()
         return Response({"status": "Success"}, status=status.HTTP_200_OK)
+

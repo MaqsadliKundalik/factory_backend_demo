@@ -71,7 +71,7 @@ class ExcavatorSubOrderFilter(BaseDateFilterSet):
 class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorOrder.objects.all()
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")]
+    permission_classes = [HasDynamicPermission(crud_perm="EXCUATOR_ORDERS_PAGE", read_perm="EXCUATOR_ORDERS_PAGE")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ExcavatorOrderFilter
@@ -106,7 +106,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
     serializer_class = ExcavatorSubOrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")]
+    permission_classes = [HasDynamicPermission(crud_perm="EXCUATOR_ORDERS_PAGE", read_perm="EXCUATOR_ORDERS_PAGE")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ExcavatorSubOrderFilter
