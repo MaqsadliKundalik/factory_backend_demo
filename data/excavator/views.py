@@ -26,7 +26,6 @@ from .serializers import (
     ChangeStatusSerializer,
     StartOrderSerializer,
     FinishOrderSerializer,
-    ExcavatorStatsSerializer,
 )
 
 EXCAVATOR_ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
@@ -86,7 +85,7 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @swagger_auto_schema(manual_parameters=EXCAVATOR_ORDER_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-        
+
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
     serializer_class = ExcavatorSubOrderSerializer

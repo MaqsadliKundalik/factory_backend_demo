@@ -38,7 +38,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'display_id',
             'client_name', 'phone_number',
-            'lat', 'lon',
+            'lat', 'lon', 'address',
             'start_date', 'end_date',
             'comment', 'status', 
             'payment_status', 'files',
@@ -60,7 +60,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'display_id',
             'client_name', 'phone_number',
-            'lat', 'lon',
+            'lat', 'lon', 'address',
             'start_date', 'end_date',
             'comment', 'sub_orders',
         ]
@@ -87,12 +87,3 @@ class FinishOrderSerializer(serializers.Serializer):
     sign = serializers.FileField(required=False)
     timestamp = serializers.DateTimeField()
 
-class ExcavatorStatsSerializer(serializers.Serializer):
-    total = serializers.IntegerField()
-    new = serializers.IntegerField()
-    in_progress = serializers.IntegerField()
-    paused = serializers.IntegerField()
-    completed = serializers.IntegerField()
-    expired = serializers.IntegerField()
-    paid = serializers.IntegerField()
-    pending_payment = serializers.IntegerField()
