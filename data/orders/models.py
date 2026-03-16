@@ -68,7 +68,8 @@ class SubOrder(BaseModel):
         ARRIVED = 'ARRIVED', 'Arrived'
         UNLOADING = 'UNLOADING', 'Unloading'
         COMPLETED = 'COMPLETED', 'Completed'
-        
+        REJECTED = 'REJECTED', 'Rejected'
+
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='sub_orders')
     driver = models.ForeignKey("factory_drivers.Driver", on_delete=models.PROTECT, related_name='sub_orders')
     transport = models.ForeignKey("transports.Transport", on_delete=models.PROTECT, related_name='sub_orders')
