@@ -21,6 +21,7 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        # repr["parent"]
         rep['driver'] = DriverSerializer(instance.driver).data if instance.driver else None
         rep['transport'] = TransportSerializer(instance.transport).data if instance.transport else None
         rep['before_sign'] = FileSerializer(instance.before_sign).data if instance.before_sign else None

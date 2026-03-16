@@ -29,6 +29,7 @@ from data.filedatas.urls import urlpatterns as filedatas_urls
 from data.orders.urls import urlpatterns as orders_urls
 from data.excavator.urls import urlpatterns as excavator_urls
 from data.stats.urls import urlpatterns as stats_urls
+from data.reports.urls import urlpatterns as reports_urls
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -68,6 +69,7 @@ urlpatterns = [
     path('orders/', include(orders_urls)),
     path('excavator-order/', include(excavator_urls)),
     path('stats/', include(stats_urls)),
+    path('reports/', include(reports_urls)),
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
 
