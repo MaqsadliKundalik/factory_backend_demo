@@ -122,7 +122,7 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         ),
         responses={200: OrderSerializer}
     )
-    @action(detail=True, methods=['post'], url_path='reject', parser_classes=[MultiPartParser, FormParser])
+    @action(detail=True, methods=['post'], url_path='reject')
     def reject(self, request, *args, **kwargs):
         order = self.get_object()
         quantity = request.data.get('quantity')
