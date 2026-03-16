@@ -236,4 +236,7 @@ SWAGGER_SETTINGS = {
     },
     'USE_SESSION_AUTH': False,
     'JSON_EDITOR': True,
+    'DEFAULT_FILTER_INSPECTORS': [
+        'drf_yasg.inspectors.CoreAPICompatInspector',
+    ],
 }

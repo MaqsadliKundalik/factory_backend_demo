@@ -30,7 +30,7 @@ from .serializers import (
 WHOUSE_PRODUCTS_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"),
     openapi.Parameter('supplier', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Supplier ID"),
-
+    openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
 ]
 
 

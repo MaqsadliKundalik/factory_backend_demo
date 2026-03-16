@@ -60,21 +60,6 @@ class FactoryUserViewSet(DateFilterSchemaMixin, ModelViewSet):
     search_fields = ['name', 'phone_number']
     ordering_fields = ['created_at', 'updated_at']
 
-    @action(detail=False, methods=['delete'])
-    def delete_by_phone(self, request):
-        phone = request.data.get('phone')
-        if not phone:
-            return Response({"error": "Необходим номер телефона"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            user = FactoryUser.objects.get(phone_number=phone)
-            user.delete()
-            return Response({"message": f"Пользователь с номером {phone} удалён"}, status=status.HTTP_204_NO_CONTENT)
-        except FactoryUser.DoesNotExist:
-            return Response({"message": "Пользователь не найден"}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     def get_queryset(self):
         user = self.request.user
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
