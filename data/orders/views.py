@@ -118,6 +118,7 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
             type=openapi.TYPE_OBJECT,
             properties={
                 'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description="Reject quantity"),
+                'rejector': openapi.Schema(type=openapi.TYPE_STRING, description="Rejector role"),
             }
         ),
         responses={200: OrderSerializer}
@@ -126,9 +127,11 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     def reject(self, request, *args, **kwargs):
         order = self.get_object()
         quantity = request.data.get('quantity')
+        rejector = request.data.get('rejector')
         order.quantity = max(0, order.quantity - quantity)
         if order.quantity == 0:
             order.status = Order.Status.REJECTED
+        order.rejector = rejector
         order.save()        
 
         all_sub_orders = SubOrder.objects.filter(order=order).order_by('quantity')

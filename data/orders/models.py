@@ -39,6 +39,10 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
         UNLOADING = 'UNLOADING', 'Unloading'
         COMPLETED = 'COMPLETED', 'Completed'
 
+    class Rejector(models.TextChoices):
+        CLIENT = 'CLIENT', 'Client'
+        FACTORY = 'FACTORY', 'Factory'
+
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
     client:"Client" = models.ForeignKey("clients.Client", on_delete=models.PROTECT, related_name='orders')
     branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.PROTECT, related_name='orders')
@@ -50,6 +54,8 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    rejector = models.CharField(max_length=20, choices=Rejector.choices, default=Rejector.CLIENT, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.display_id:

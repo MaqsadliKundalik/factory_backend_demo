@@ -99,6 +99,8 @@ class OrderSerializer(serializers.ModelSerializer):
         rep['type'] = ProductTypeSerializer(instance.type).data
         rep['unit'] = ProductUnitSerializer(instance.unit).data
         rep['external_drivers'] = ExternalDriverSerializer(instance.external_drivers, many=True).data
+        if instance.rejector:
+            rep['rejector'] = instance.rejector
         return rep
 
 

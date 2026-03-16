@@ -20,7 +20,7 @@ class FactoryUserProfileSerializer(serializers.ModelSerializer):
     role = serializers.CharField(default="user", read_only=True)
     class Meta:
         model = FactoryUser
-        fields = ["id", "name", "phone_number", "role", "whouses", "MAIN_PAGE", "PRODUCTS_PAGE", "ORDERS_PAGE", "TRANSPORTS_PAGE", "WHEREHOUSES_PAGE", "CLIENTS_PAGE", "USERS_PAGE", "READY_PRODUCTS_PAGE", "DRIVERS_PAGE", "SUPPLIERS_PAGE", "EXCUATOR_ORDERS_PAGE", "photo"]
+        fields = ["id", "name", "phone_number", "role", "whouses", "MAIN_PAGE", "PRODUCTS_PAGE", "ORDERS_PAGE", "TRANSPORTS_PAGE", "WHEREHOUSES_PAGE", "CLIENTS_PAGE", "USERS_PAGE", "READY_PRODUCTS_PAGE", "DRIVERS_PAGE", "SUPPLIERS_PAGE", "EXCAVATORS_PAGE", "photo"]
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
