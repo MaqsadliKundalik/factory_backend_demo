@@ -37,6 +37,8 @@ class ExcavatorOrder(BaseModel):
         related_name='excavator_order_files'
     )
 
+    whouse:"Whouse" = models.ForeignKey("factory_whouse.Whouse", on_delete=models.PROTECT, related_name='excavator_orders', null=True, blank=True)
+
     def save(self, *args, **kwargs):
         if not self.display_id:
             last = ExcavatorOrder.objects.order_by('display_id').last()

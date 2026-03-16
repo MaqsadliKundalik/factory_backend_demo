@@ -86,23 +86,7 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @swagger_auto_schema(manual_parameters=EXCAVATOR_ORDER_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
-    @swagger_auto_schema(responses={200: ExcavatorStatsSerializer()})
-    @action(detail=False, methods=['get'], url_path='stats')
-    def stats(self, request):
-        qs = ExcavatorOrder.objects.all()
-        data = {
-            'total': qs.count(),
-            'new': qs.filter(status=ExcavatorOrder.Status.NEW).count(),
-            'in_progress': qs.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
-            'paused': qs.filter(status=ExcavatorOrder.Status.PAUSED).count(),
-            'completed': qs.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
-            'expired': qs.filter(status=ExcavatorOrder.Status.EXPIRED).count(),
-            'paid': qs.filter(payment_status=ExcavatorOrder.PaymentStatus.PAID).count(),
-            'pending_payment': qs.filter(payment_status=ExcavatorOrder.PaymentStatus.PENDING).count(),
-        }
-        return Response(data)
-
+        
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
     serializer_class = ExcavatorSubOrderSerializer
