@@ -32,6 +32,7 @@ from .serializers import (
 EXCAVATOR_ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
     openapi.Parameter('payment_status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Payment status"),
+    openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Whouse ID"),
 ]
 
 EXCAVATOR_SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
@@ -57,7 +58,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class ExcavatorOrderFilter(BaseDateFilterSet):
     class Meta:
         model = ExcavatorOrder
-        fields = ['status', 'payment_status']
+        fields = ['status', 'payment_status', 'whouse']
 
 
 class ExcavatorSubOrderFilter(BaseDateFilterSet):
