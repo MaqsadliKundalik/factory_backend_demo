@@ -39,7 +39,7 @@ class Product(BaseModel):
         return self.name
 class ProductItem(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='items')
-    # raw_material = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='used_in', null=True, blank=True)
+    raw_material = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='used_in', null=True, blank=True)
     type = models.ForeignKey(ProductType, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -70,7 +70,7 @@ class WhouseProducts(BaseModel):
         return self.product.name
 
 class WhouseProductsHistory(BaseModel):
-
+    wproduct = models.ForeignKey("products.WhouseProducts", on_delete=models.CASCADE, null=True, blank=True)
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name='history', null=True, blank=True)
     whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -90,8 +90,8 @@ def create_whouse_product_history(sender, instance, **kwargs):
             message=f'New product {instance.product.name} added to whouse {instance.whouse.name}',
         )   
 
-
     WhouseProductsHistory.objects.create(
+        wproduct=instance,
         whouse=instance.whouse,
         product=instance.product,
         quantity=instance.quantity,
@@ -103,11 +103,22 @@ def create_whouse_product_history(sender, instance, **kwargs):
 def update_whouse_product_history_extra(sender, instance, **kwargs):
     if instance.status == WhouseProducts.Status.CREATED:
         WhouseProductsHistory.objects.create(
+            wproduct=instance,
             whouse=instance.whouse,
             product=instance.product,
             quantity=instance.quantity,
             supplier=instance.supplier,
-            status=HistoryStatus.OUT
+            status=HistoryStatus.IN
         )
 
 
+product = Product.objects.get(id=1)
+
+
+product.history.objects.create(
+    product=product,
+    whouse=product.whouse,
+    quantity=10,
+    supplier=product.supplier,
+    status=HistoryStatus.IN
+)

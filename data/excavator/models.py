@@ -24,7 +24,7 @@ class ExcavatorOrder(BaseModel):
     lon = models.FloatField()
     address = models.CharField(max_length=512, null=True, blank=True)
 
-    start_date = models.DateField()
+    start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 
     comment = models.TextField(null=True, blank=True)
