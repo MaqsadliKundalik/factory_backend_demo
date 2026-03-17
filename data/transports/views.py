@@ -12,6 +12,21 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
+TRANSPORT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
+    openapi.Parameter(
+        'hasOrder',
+        openapi.IN_QUERY,
+        type=openapi.TYPE_BOOLEAN,
+        description="Filter by order presence",
+    ),
+    openapi.Parameter(
+        'type',
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Filter by type",
+    ),
+]
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
@@ -56,9 +71,12 @@ class TransportSelectView(APIView):
 
     @swagger_auto_schema(
         operation_summary="Select transports (id and name only)",
-        responses={200: SelectTransportSerializer(many=True)},
+        responses={200: SelectTransportSerializer(many=True)}, 
+        manual_parameters=TRANSPORT_FILTER_PARAMS,
     )
     def get(self, request):
+        has_order = request.query_params.get('hasOrder')
+        transport_type = request.query_params.get('type')
         user = self.request.user
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
@@ -67,8 +85,17 @@ class TransportSelectView(APIView):
         queryset = Transport.objects.filter(whouse__in=whouses)
 
         search = request.query_params.get('search')
-        if search:
-            queryset = queryset.filter(name__icontains=search)
+
+        if has_order:
+            queryset = queryset.exclude(sub_orders__status__in=[
+                SubOrder.Status.NEW, 
+                SubOrder.Status.IN_PROGRESS, 
+                SubOrder.Status.ARRIVED,
+                SubOrder.Status.ON_WAY,
+                SubOrder.Status.UNLOADING
+            ])        
+        if transport_type:
+            queryset = queryset.filter(type=transport_type)
             
         data = queryset.values('id', 'name', "number")
         return Response(list(data))

@@ -50,6 +50,7 @@ class SubOrderInlineSerializer(serializers.ModelSerializer):
         rep['driver'] = DriverSerializer(instance.driver).data
         rep['transport'] = TransportSerializer(instance.transport).data
         rep['files'] = FileSerializer(instance.files.all(), many=True).data
+        rep['sign'] = FileSerializer(instance.sign).data if instance.sign else None
         return rep
 
 
