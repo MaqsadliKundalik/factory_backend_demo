@@ -30,7 +30,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class SupplierFilter(BaseDateFilterSet):
     class Meta:
         model = Supplier
-        fields = ['whouse', 'name', 'inn_number']
+        fields = ['whouse', 'name', 'inn_number', "type"]
 
 class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = Supplier.objects.all()

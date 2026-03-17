@@ -35,6 +35,15 @@ class SupplierSerializer(serializers.ModelSerializer):
         }
         return representation
 
+    def validate(self, attrs):
+        if attrs.get('type') == 'internal':
+            if not attrs.get('inn_number'):
+                raise serializers.ValidationError({'inn_number': 'Internal uchun majburiy.'})
+            if not attrs.get('whouse'):
+                raise serializers.ValidationError({'whouse': 'Internal uchun majburiy.'})
+        return attrs
+
+
     def update(self, instance, validated_data):
         phone_numbers_data = validated_data.pop('phone_numbers', None)
         
@@ -62,6 +71,16 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
             'whouse': {'required': False}
         }
         read_only_fields = ['id']
+
+
+    def validate(self, attrs):
+        if attrs.get('type') == 'internal':
+            if not attrs.get('inn_number'):
+                raise serializers.ValidationError({'inn_number': 'Internal uchun majburiy.'})
+            if not attrs.get('whouse'):
+                raise serializers.ValidationError({'whouse': 'Internal uchun majburiy.'})
+        return attrs
+
 
     def create(self, validated_data):
         phone_numbers_data = validated_data.pop('phone_numbers', [])

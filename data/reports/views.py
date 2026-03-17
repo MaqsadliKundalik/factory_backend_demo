@@ -239,9 +239,11 @@ def fill_yuk_xati(ws, order):
     # Bottom
     bottom_row = qb_data_start + len(sub_orders)
     branch_addr = order.branch.address if order.branch else ''
+    ws.merge_cells(f'B{bottom_row}:G{bottom_row}')
     addr_cell = ws.cell(row=bottom_row, column=2, value=f'Manzil: {branch_addr}')
     addr_cell.font = _font()
-    addr_cell.alignment = _align('left')
+    addr_cell.alignment = _align('left', wrap=True)
+    ws.merge_cells(f'B{bottom_row + 1}:G{bottom_row + 1}')
     phone_cell = ws.cell(row=bottom_row + 1, column=2, value=PHONES)
     phone_cell.font = _font()
     phone_cell.alignment = _align('left')

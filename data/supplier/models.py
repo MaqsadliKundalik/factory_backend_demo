@@ -1,13 +1,30 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from apps.common.models import BaseModel
 from data.filedatas.models import File
 
 
 class Supplier(BaseModel):
+    class Type(models.TextChoices):
+        INTERNAL = 'internal', 'Internal'
+        EXTERNAL = 'external', 'External'
+
+    type = models.CharField(max_length=20, choices=Type.choices)
     name = models.CharField(max_length=255)
-    inn_number = models.CharField(max_length=9)
+    inn_number = models.CharField(max_length=9, null=True, blank=True)
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
-    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE)
+
+    whouse = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE, null=True, blank=True)
+
+    def clean(self):
+        if self.type == self.Type.INTERNAL:
+            errors = {}
+            if not self.inn_number:
+                errors['inn_number'] = 'Internal supplier uchun inn_number majburiy.'
+            if not self.whouse_id:
+                errors['whouse'] = 'Internal supplier uchun whouse majburiy.'
+            if errors:
+                raise ValidationError(errors)
 
     list_display = ["name", "inn_number", "whouse", "files"]
 
