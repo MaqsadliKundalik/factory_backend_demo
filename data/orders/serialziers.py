@@ -30,12 +30,12 @@ class CompetedStatusSerializer(serializers.Serializer):
 
 class SubOrderInlineSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(required=False)
-    status_history = StatusHistorySerializer(many=True, required=False)
+    status_history = StatusHistorySerializer(many=True, read_only=True)
 
     class Meta:
         model = SubOrder
         fields = ['id', 'driver', 'transport', 'quantity', 'status', 'status_history', 'sign', 'files']
-        read_only_fields = ['status', 'status_history', 'sign']
+        read_only_fields = ['status', 'sign']
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -46,12 +46,12 @@ class SubOrderInlineSerializer(serializers.ModelSerializer):
 
 
 class SubOrderSerializer(serializers.ModelSerializer):
-    status_history = StatusHistorySerializer(many=True, required=False)
+    status_history = StatusHistorySerializer(many=True, read_only=True)
 
     class Meta:
         model = SubOrder
         fields = ['id', 'order', 'driver', 'transport', 'quantity', 'status', 'status_history', 'sign', 'files']
-        read_only_fields = ['id', 'status_history', 'sign', 'created_at']
+        read_only_fields = ['id', 'sign', 'created_at']
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
