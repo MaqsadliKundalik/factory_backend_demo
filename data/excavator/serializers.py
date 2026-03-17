@@ -23,7 +23,6 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
         model = ExcavatorSubOrder
         fields = [
             'id', 'parent', 'driver',
-            'start_date', 'end_date',
             'transport', 'status',
             'status_history',
             'before_sign', 'before_files',
