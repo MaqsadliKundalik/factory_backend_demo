@@ -7,8 +7,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path('yuk-xati/<int:display_id>/', YukXatiExcelView.as_view(), name='yuk-xati-excel'),
-    path('ishonch-qogozi/<int:display_id>/', IshonchQogoziExcelView.as_view(), name='ishonch-qogozi-excel'),
-    path('buyurtmalar-hisoboti/', BuyurtmalarHisobotiExcelView.as_view(), name='buyurtmalar-hisoboti-excel'),
-    path('yetkazib-beruvchilar-hisoboti/', YetkazibBeruvchilarHisobotiExcelView.as_view(), name='yetkazib-beruvchilar-hisoboti-excel'),
+    path('waybill/<uuid:pk>/', YukXatiExcelView.as_view(), name='waybill-excel'),
+    path('proxy/<uuid:pk>/', IshonchQogoziExcelView.as_view(), name='proxy-excel'),
+    path('orders-report/', BuyurtmalarHisobotiExcelView.as_view(), name='orders-report-excel'),
+    path('suppliers-report/', YetkazibBeruvchilarHisobotiExcelView.as_view(), name='suppliers-report-excel'),
 ]

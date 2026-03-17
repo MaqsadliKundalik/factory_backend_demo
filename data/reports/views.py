@@ -134,75 +134,77 @@ def make_excel_response(wb, filename):
 def fill_yuk_xati(ws, order):
     ws.title = 'Yuk xati'
 
-    for i, w in enumerate([32, 29, 98, 46, 90, 109, 85, 85], 1):
+    for i, w in enumerate([20, 72, 46, 90, 72, 85], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
+
+    ws.row_dimensions[7].height = 36
 
     sub_orders = list(order.sub_orders.all())
 
-    merge_val(ws, 'B2:H2', 'ЮК ХАТИ', bold=True, bottom=False)
-    merge_val(ws, 'B3:H3', f'Кимдан:  {COMPANY}', top=False, bottom=False)
-    merge_val(ws, 'B4:H4', f'Кимга: {order.client.name}  INN: {order.client.inn_number}',
+    merge_val(ws, 'A1:G1', 'ЮК ХАТИ', bold=True, bottom=False)
+    merge_val(ws, 'A2:G2', f'Кимдан:  {COMPANY}', top=False, bottom=False)
+    merge_val(ws, 'A3:G3', f'Кимга: {order.client.name}  INN: {order.client.inn_number}',
               top=False)
 
-    # Row 5 headers
-    ws.merge_cells('C5:D5')
-    for col, val in [(2, '№'), (3, 'Махсулот номи'), (5, 'Улчов бирлиги'),
-                     (6, 'Микдори'), (7, 'Нархи'), (8, 'Суммаси')]:
-        ws.cell(row=5, column=col, value=val)
-    style_range(ws, 5, 2, 5, 8, border=True)
+    # Row 4 headers
+    ws.merge_cells('B4:C4')
+    for col, val in [(1, '№'), (2, 'Махсулот номи'), (4, 'Улчов бирлиги'),
+                     (5, 'Микдори'), (6, 'Нархи'), (7, 'Суммаси')]:
+        ws.cell(row=4, column=col, value=val)
+    style_range(ws, 4, 1, 4, 7, border=True)
 
-    # Row 6 product data
-    ws.merge_cells('C6:D6')
-    ws.cell(row=6, column=2, value=1)
-    ws.cell(row=6, column=3, value=f"{order.product.name} {order.type.name}")
-    ws.cell(row=6, column=5, value=order.unit.name)
-    ws.cell(row=6, column=6, value=float(order.quantity))
-    price_cell = ws.cell(row=6, column=7, value=float(order.price))
+    # Row 5 product data
+    ws.merge_cells('B5:C5')
+    ws.cell(row=5, column=1, value=1)
+    ws.cell(row=5, column=2, value=f"{order.product.name} {order.type.name}")
+    ws.cell(row=5, column=4, value=order.unit.name)
+    ws.cell(row=5, column=5, value=float(order.quantity))
+    price_cell = ws.cell(row=5, column=6, value=float(order.price))
     price_cell.number_format = '#,##0'
-    total_cell = ws.cell(row=6, column=8, value=float(order.quantity) * float(order.price))
+    total_cell = ws.cell(row=5, column=7, value=float(order.quantity) * float(order.price))
     total_cell.number_format = '#,##0'
-    style_range(ws, 6, 2, 6, 8, border=True)
+    style_range(ws, 5, 1, 5, 7, border=True)
 
-    # Row 8: Yetkazib beruvchilar title
-    merge_val(ws, 'B8:H8', 'Yetkazib beruvchilar', bold=True, top=False, bottom=False)
+    # Row 6: Yetkazib beruvchilar title
+    merge_val(ws, 'A6:G6', 'Yetkazib beruvchilar', bold=True, top=False, bottom=False)
 
-    # Row 9: sub_orders table headers
+    # Row 7: sub_orders table headers
     yb_headers = [
         '№', 'avtomobil raqami', 'shafyor', 'yuk miqdori (kub)',
         'заводдан \nчикарилган вакти', 'Махсулот етказиб \nберилган вакти', 'Yuk tushirib \nolingan vaqti',
     ]
-    for ci, val in enumerate(yb_headers, 2):
-        c = ws.cell(row=9, column=ci, value=val)
+    for ci, val in enumerate(yb_headers, 1):
+        c = ws.cell(row=7, column=ci, value=val)
         c.font = _font()
         c.alignment = _align(wrap=True)
         c.border = ALL_BORDER
 
-    # Rows 10+: sub_order data
+    # Rows 8+: sub_order data
     for i, so in enumerate(sub_orders):
-        row = 10 + i
+        row = 8 + i
         history = so.status_history or []
-        ws.cell(row=row, column=2, value=i + 1)
-        ws.cell(row=row, column=3, value=so.transport.number if so.transport else '')
-        ws.cell(row=row, column=4, value=so.driver.name if so.driver else '')
-        ws.cell(row=row, column=5, value=float(so.quantity))
-        ws.cell(row=row, column=6, value=get_history_time(history, 'ON_WAY'))
-        ws.cell(row=row, column=7, value=get_history_time(history, 'ARRIVED'))
-        ws.cell(row=row, column=8, value=get_history_time(history, 'COMPLETED'))
-        style_range(ws, row, 2, row, 8, border=True)
+        ws.cell(row=row, column=1, value=i + 1)
+        ws.cell(row=row, column=2, value=so.transport.number if so.transport else '')
+        ws.cell(row=row, column=3, value=so.driver.name if so.driver else '')
+        ws.cell(row=row, column=4, value=float(so.quantity))
+        ws.cell(row=row, column=5, value=get_history_time(history, 'ON_WAY'))
+        ws.cell(row=row, column=6, value=get_history_time(history, 'ARRIVED'))
+        ws.cell(row=row, column=7, value=get_history_time(history, 'COMPLETED'))
+        style_range(ws, row, 1, row, 7, border=True)
 
     # Qabul qiluvchilar section
-    qb_title_row = 10 + len(sub_orders) + 1
+    qb_title_row = 8 + len(sub_orders)
     qb_head_row = qb_title_row + 1
     qb_data_start = qb_head_row + 1
 
-    merge_val(ws, f'B{qb_title_row}:G{qb_title_row}', 'Qabul qiluvchilar',
+    merge_val(ws, f'A{qb_title_row}:F{qb_title_row}', 'Qabul qiluvchilar',
               bold=True, top=False, bottom=False)
 
     qb_headers = [
         '№', 'avtomobil', 'shafyor',
         'Qabul qiluvchi (ism)', 'Qabul qiluvchi (lavozimi)', 'holati',
     ]
-    for ci, val in enumerate(qb_headers, 2):
+    for ci, val in enumerate(qb_headers, 1):
         c = ws.cell(row=qb_head_row, column=ci, value=val)
         c.font = _font()
         c.alignment = _align()
@@ -210,20 +212,26 @@ def fill_yuk_xati(ws, order):
 
     for i, so in enumerate(sub_orders):
         row = qb_data_start + i
-        ws.cell(row=row, column=2, value=i + 1)
-        ws.cell(row=row, column=3, value=so.transport.number if so.transport else '')
-        ws.cell(row=row, column=4, value=so.driver.name if so.driver else '')
-        ws.cell(row=row, column=5, value=order.client.name)
-        ws.cell(row=row, column=6, value='mijoz')
-        ws.cell(row=row, column=7, value='Qabul qildim' if so.status == 'COMPLETED' else status_uz(so.status))
-        style_range(ws, row, 2, row, 7, border=True)
+        ws.cell(row=row, column=1, value=i + 1)
+        ws.cell(row=row, column=2, value=so.transport.number if so.transport else '')
+        ws.cell(row=row, column=3, value=so.driver.name if so.driver else '')
+        ws.cell(row=row, column=4, value=order.client.name)
+        ws.cell(row=row, column=5, value='mijoz')
+        ws.cell(row=row, column=6, value='Qabul qildim' if so.status == 'COMPLETED' else status_uz(so.status))
+        style_range(ws, row, 1, row, 6, border=True)
 
     # Bottom
-    bottom_row = qb_data_start + len(sub_orders) + 1
+    bottom_row = qb_data_start + len(sub_orders)
     branch_addr = order.branch.address if order.branch else ''
-    ws.cell(row=bottom_row, column=3, value=f'Manzil: {branch_addr}')
-    phone_cell = ws.cell(row=bottom_row + 1, column=3, value=PHONES)
+    addr_cell = ws.cell(row=bottom_row, column=2, value=f'Manzil: {branch_addr}')
+    addr_cell.font = _font()
+    addr_cell.alignment = _align('left')
+    phone_cell = ws.cell(row=bottom_row + 1, column=2, value=PHONES)
+    phone_cell.font = _font()
     phone_cell.alignment = _align('left')
+    imzo_cell = ws.cell(row=bottom_row + 2, column=5, value='Imzo:')
+    imzo_cell.font = _font()
+    imzo_cell.alignment = _align()
 
 
 # ─── Sheet 2: Ishonch qog'ozi ────────────────────────────────────────────────
@@ -377,31 +385,31 @@ class YukXatiExcelView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(read_perm="ORDERS_PAGE")]
 
-    def get(self, request, display_id):
+    def get(self, request, pk):
         order = (
             Order.objects
             .select_related('client', 'branch', 'product', 'type', 'unit')
             .prefetch_related('sub_orders__driver', 'sub_orders__transport')
-            .filter(display_id=display_id)
+            .filter(id=pk)
             .first()
         )
         if not order:
             return HttpResponse(status=404)
         wb = Workbook()
         fill_yuk_xati(wb.active, order)
-        return make_excel_response(wb, f'yuk_xati_{display_id}.xlsx')
+        return make_excel_response(wb, f'yuk_xati_{order.display_id}.xlsx')
 
 
 class IshonchQogoziExcelView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(read_perm="ORDERS_PAGE")]
 
-    def get(self, request, display_id):
+    def get(self, request, pk):
         order = (
             Order.objects
             .select_related('client', 'branch', 'product', 'type', 'unit')
             .prefetch_related('sub_orders__driver', 'sub_orders__transport')
-            .filter(display_id=display_id)
+            .filter(id=pk)
             .first()
         )
         if not order:
@@ -412,7 +420,7 @@ class IshonchQogoziExcelView(APIView):
             ws = wb.active if i == 0 else wb.create_sheet()
             idx = None if len(sub_orders) == 1 else i + 1
             fill_ishonch_qogozi(ws, order, so, idx)
-        return make_excel_response(wb, f'ishonch_qogozi_{display_id}.xlsx')
+        return make_excel_response(wb, f'ishonch_qogozi_{order.display_id}.xlsx')
 
 
 class BuyurtmalarHisobotiExcelView(APIView):

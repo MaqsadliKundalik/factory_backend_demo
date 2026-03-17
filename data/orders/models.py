@@ -38,6 +38,7 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
         ARRIVED = 'ARRIVED', 'Arrived'
         UNLOADING = 'UNLOADING', 'Unloading'
         COMPLETED = 'COMPLETED', 'Completed'
+        REJECTED = 'REJECTED', 'Rejected'
 
     class Rejector(models.TextChoices):
         CLIENT = 'CLIENT', 'Client'
