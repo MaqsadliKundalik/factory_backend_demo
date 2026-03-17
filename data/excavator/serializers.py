@@ -13,6 +13,9 @@ class ExternalDriverSerializer(serializers.Serializer):
     transport_id = serializers.UUIDField(required=False, allow_null=True, default=None)
     quantity = serializers.IntegerField(required=False, allow_null=True, default=None)
 
+    class Meta:
+        ref_name = 'ExcavatorExternalDriver'
+
 
 class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
     class Meta:
