@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import WhouseProducts, WhouseProductsHistory, HistoryStatus
+from .models import WhouseProducts, WhouseProductsHistory, HistoryStatus, ProductItem
 from data.notifications.models import Notification
 
 @receiver(post_save, sender=WhouseProducts)
@@ -44,3 +44,14 @@ def update_whouse_product_history(sender, instance, **kwargs):
         wproduct = instance.wproduct
         wproduct.quantity += instance.quantity
         wproduct.save()
+
+@receiver(post_save, sender=ProductItem)
+def create_product_item_history(sender, instance, **kwargs):
+
+    WhouseProductsHistory.objects.create(
+        wproduct=instance.raw_material,
+        whouse=instance.raw_material.whouse,
+        product=instance.product,
+        quantity=instance.quantity,
+        status=HistoryStatus.OUT
+    )
