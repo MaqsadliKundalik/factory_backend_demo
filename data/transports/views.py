@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
-TRANSPORT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
+TRANSPORT_FILTER_PARAMS = [
     openapi.Parameter(
         'hasOrder',
         openapi.IN_QUERY,
