@@ -105,6 +105,22 @@ def outer_border(ws, min_row, min_col, max_row, max_col, top=True, left=True, bo
             cell.border = Border(top=t, bottom=b, left=l, right=r)
 
 
+def apply_outer_frame(ws, min_row, min_col, max_row, max_col):
+    """Mavjud borderlarga tegmasdan faqat tashqi ramkani qo'shadi."""
+    rows = list(ws.iter_rows(min_row=min_row, min_col=min_col, max_row=max_row, max_col=max_col))
+    n_rows = len(rows)
+    for ri, row in enumerate(rows):
+        n_cols = len(row)
+        for ci, cell in enumerate(row):
+            e = cell.border
+            cell.border = Border(
+                top=_thin if ri == 0 else e.top,
+                bottom=_thin if ri == n_rows - 1 else e.bottom,
+                left=_thin if ci == 0 else e.left,
+                right=_thin if ci == n_cols - 1 else e.right,
+            )
+
+
 def merge_val(ws, range_str, val, bold=False, h='center', wrap=False,
               top=True, left=True, bottom=True, right=True):
     ws.merge_cells(range_str)
@@ -232,6 +248,8 @@ def fill_yuk_xati(ws, order):
     imzo_cell = ws.cell(row=bottom_row + 2, column=5, value='Imzo:')
     imzo_cell.font = _font()
     imzo_cell.alignment = _align()
+
+    apply_outer_frame(ws, 1, 1, bottom_row + 2, 7)
 
 
 # ─── Sheet 2: Ishonch qog'ozi ────────────────────────────────────────────────
