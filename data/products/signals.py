@@ -34,4 +34,13 @@ def update_whouse_product_history_extra(sender, instance, **kwargs):
             status=HistoryStatus.IN
         )
 
-
+@receiver(post_save, sender=WhouseProductsHistory)
+def update_whouse_product_history(sender, instance, **kwargs):
+    if instance.status == HistoryStatus.OUT:
+        wproduct = instance.wproduct
+        wproduct.quantity -= instance.quantity
+        wproduct.save()
+    else:
+        wproduct = instance.wproduct
+        wproduct.quantity += instance.quantity
+        wproduct.save()

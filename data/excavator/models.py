@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.core.serializers.json import DjangoJSONEncoder
 from apps.common.models import BaseModel
 
@@ -43,9 +43,12 @@ class ExcavatorOrder(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.display_id:
-            last = ExcavatorOrder.objects.order_by('display_id').last()
-            self.display_id = (last.display_id + 1) if last and last.display_id else 1
-        super().save(*args, **kwargs)
+            with transaction.atomic():
+                last = ExcavatorOrder.objects.select_for_update().order_by('display_id').last()
+                self.display_id = (last.display_id + 1) if last and last.display_id else 1
+                super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"ExcOrd-{self.display_id:03}" if self.display_id else f"ExcOrd-{self.id}"
