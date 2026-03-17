@@ -31,7 +31,8 @@ class StatusHistorySerializer(serializers.Serializer):
 
 class CompetedStatusSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
-    sign = serializers.FileField(required=False)
+    sign = serializers.UUIDField(required=False)
+    files = serializers.ListField(child=serializers.UUIDField(), required=False, default=list)
 
 
 # --- SubOrder serializers ---

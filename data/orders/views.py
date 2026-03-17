@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.parsers import MultiPartParser, FormParser
+
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
@@ -182,7 +182,7 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             history = instance.status_history or []
             history.extend(serializer.data)
             instance.status_history = history
-            new_status = serializer.data['status']
+            new_status = serializer.data[-1]['status']
             instance.status = new_status
             instance.save()
 
@@ -196,21 +196,17 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
-        consumes=['multipart/form-data'],
         request_body=CompetedStatusSerializer(),
-        manual_parameters=[
-            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Files (repeat for multiple)"),
-        ],
         responses={200: "Successfully updated completed status"}
     )
-    @action(detail=True, methods=['post'], url_path='update-completed-status', parser_classes=[MultiPartParser, FormParser])
+    @action(detail=True, methods=['post'], url_path='update-completed-status')
     def update_completed_status(self, request, pk=None):
         instance = self.get_object()
         serializer = CompetedStatusSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        new_status = serializer.data['status']
+        new_status = SubOrder.Status.COMPLETED
         instance.status = new_status
         instance.status_history = instance.status_history or []
         instance.status_history.append({
@@ -219,11 +215,11 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         })
 
         if 'sign' in serializer.validated_data:
-            instance.sign = File.objects.create(file=serializer.validated_data['sign'])
+            instance.sign_id = serializer.validated_data['sign']
 
-        for f in request.FILES.getlist('files'):
-            file_obj = File.objects.create(file=f)
-            instance.files.add(file_obj)
+        file_ids = serializer.validated_data.get('files', [])
+        if file_ids:
+            instance.files.set(file_ids)
 
         order = instance.order
         sibling_statuses = list(order.sub_orders.values_list('status', flat=True))
