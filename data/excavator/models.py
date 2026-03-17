@@ -1,4 +1,5 @@
 from django.db import models, transaction
+from django.db.models import Max
 from django.core.serializers.json import DjangoJSONEncoder
 from apps.common.models import BaseModel
 
@@ -44,8 +45,8 @@ class ExcavatorOrder(BaseModel):
     def save(self, *args, **kwargs):
         if not self.display_id:
             with transaction.atomic():
-                last = ExcavatorOrder.objects.select_for_update().order_by('display_id').last()
-                self.display_id = (last.display_id + 1) if last and last.display_id else 1
+                max_id = ExcavatorOrder.objects.select_for_update().aggregate(Max('display_id'))['display_id__max']
+                self.display_id = (max_id + 1) if max_id else 1
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
