@@ -60,7 +60,7 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
 
     def save(self, *args, **kwargs):
         if not self.display_id:
-            last_order = Order.objects.all().order_by('display_id').last()
+            last_order = Order.all_objects.all().order_by('display_id').last()
             self.display_id = (last_order.display_id + 1) if last_order and last_order.display_id else 1
         super().save(*args, **kwargs)
 
