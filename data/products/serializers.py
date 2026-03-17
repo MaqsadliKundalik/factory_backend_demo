@@ -8,7 +8,7 @@ from .models import ProductType, ProductUnit, Product, WhouseProducts, WhousePro
 class ProductItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductItem
-        fields = ['id', "product", 'type', 'unit', 'quantity']
+        fields = ['id', 'raw_material', "product", 'type', 'unit', 'quantity']
         read_only_fields = ['id']
 
     def to_representation(self, instance):
@@ -178,7 +178,7 @@ class ProductItemWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductItem
-        fields = ['id', 'product', 'type', 'unit', 'quantity']
+        fields = ['id', 'raw_material', 'product', 'type', 'unit', 'quantity']
         read_only_fields = ['id']
 
 
