@@ -2,7 +2,9 @@ from rest_framework import serializers
 from .models import ExcavatorOrder, ExcavatorSubOrder
 from data.filedatas.serializers import FileSerializer
 from data.transports.serializers import TransportSerializer
+from data.transports.models import Transport
 from apps.drivers.serializers import DriverSerializer
+from apps.drivers.models import Driver
 
 class ExternalDriverSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
@@ -11,7 +13,6 @@ class ExternalDriverSerializer(serializers.Serializer):
     car_type = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
     car_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
     transport_id = serializers.UUIDField(required=False, allow_null=True, default=None)
-    quantity = serializers.IntegerField(required=False, allow_null=True, default=None)
 
     class Meta:
         ref_name = 'ExcavatorExternalDriver'
@@ -66,8 +67,13 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
         rep['files'] = FileSerializer(instance.files.all(), many=True).data
         return rep
 
+
+class ExcavatorSubOrderCreateSerializer(serializers.Serializer):
+    driver = serializers.PrimaryKeyRelatedField(queryset=Driver.objects.all(), required=True)
+    transport = serializers.PrimaryKeyRelatedField(queryset=Transport.objects.all(), required=True)
+
 class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
-    sub_orders = ExcavatorSubOrderSerializer(many=True, required=False)
+    sub_orders = ExcavatorSubOrderCreateSerializer(many=True, required=False)
     external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
 
     class Meta:
@@ -79,7 +85,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
             'start_date', 'end_date',
             'comment', 'sub_orders', 'external_drivers',
         ]
-        read_only_fields = ['id', 'display_id']
+        read_only_fields = ['id', 'display_id', "start_date", "end_date"]
 
     def create(self, validated_data):
         sub_orders_data = validated_data.pop('sub_orders', [])

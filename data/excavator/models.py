@@ -75,11 +75,6 @@ class ExcavatorSubOrder(BaseModel):
         related_name='excavator_sub_orders'
     )
 
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-
-    comment = models.TextField(null=True, blank=True)
-
     transport = models.ForeignKey(
         'transports.Transport',
         on_delete=models.SET_NULL,
