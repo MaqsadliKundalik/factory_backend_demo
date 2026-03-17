@@ -9,7 +9,7 @@ class Supplier(BaseModel):
         INTERNAL = 'internal', 'Internal'
         EXTERNAL = 'external', 'External'
 
-    type = models.CharField(max_length=20, choices=Type.choices)
+    type = models.CharField(max_length=20, choices=Type.choices, default=Type.INTERNAL)
     name = models.CharField(max_length=255)
     inn_number = models.CharField(max_length=9, null=True, blank=True)
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
@@ -44,4 +44,3 @@ class SupplierPhone(BaseModel):
     
     def __str__(self):
         return f"{self.phone_number} - {self.name} - {self.role}"
-

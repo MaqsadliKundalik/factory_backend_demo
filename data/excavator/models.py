@@ -28,6 +28,7 @@ class ExcavatorOrder(BaseModel):
     end_date = models.DateField(null=True, blank=True)
 
     comment = models.TextField(null=True, blank=True)
+    external_drivers = models.JSONField(default=list)
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)

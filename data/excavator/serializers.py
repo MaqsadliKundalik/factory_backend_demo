@@ -4,6 +4,15 @@ from data.filedatas.serializers import FileSerializer
 from data.transports.serializers import TransportSerializer
 from apps.drivers.serializers import DriverSerializer
 
+class ExternalDriverSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
+    phone_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
+    car_name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
+    car_type = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
+    car_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
+    transport_id = serializers.UUIDField(required=False, allow_null=True, default=None)
+    quantity = serializers.IntegerField(required=False, allow_null=True, default=None)
+
 
 class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,6 +42,7 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
 
 class ExcavatorOrderSerializer(serializers.ModelSerializer):
     sub_orders = ExcavatorSubOrderSerializer(many=True, read_only=True)
+    external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
 
     class Meta:
         model = ExcavatorOrder
@@ -43,7 +53,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             'start_date', 'end_date',
             'comment', 'status', 
             'payment_status', 'files',
-            'sub_orders',
+            'sub_orders', "external_drivers",
             'created_at',
         ]
         read_only_fields = ['id', 'display_id', 'created_at']
@@ -55,6 +65,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
 
 class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
     sub_orders = ExcavatorSubOrderSerializer(many=True, required=False)
+    external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
 
     class Meta:
         model = ExcavatorOrder
