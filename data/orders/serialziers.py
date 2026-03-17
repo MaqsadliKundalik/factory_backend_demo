@@ -20,6 +20,14 @@ class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
     timestamp = serializers.DateTimeField()
 
+    def to_representation(self, instance):
+        if isinstance(instance, dict):
+            return {
+                'status': instance.get('status', ''),
+                'timestamp': instance.get('timestamp'),
+            }
+        return super().to_representation(instance)
+
 
 class CompetedStatusSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
