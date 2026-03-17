@@ -5,7 +5,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
+
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 from drf_yasg.utils import swagger_auto_schema
@@ -124,14 +124,10 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         return Response({'status': instance.status})
 
     @swagger_auto_schema(
-        consumes=['multipart/form-data'],
         request_body=StartOrderSerializer,
-        manual_parameters=[
-            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Before photos"),
-        ],
         responses={200: "Sub-order started"}
     )
-    @action(detail=True, methods=['post'], url_path='start', parser_classes=[MultiPartParser, FormParser])
+    @action(detail=True, methods=['post'], url_path='start')
     def start(self, request, pk=None):
         instance = self.get_object()
         serializer = StartOrderSerializer(data=request.data)
@@ -140,12 +136,13 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         user = request.user
         sign = serializer.validated_data.get('sign')
         timestamp = serializer.validated_data.get('timestamp')
-        
-        if sign:
-            instance.before_sign = sign
 
-        for file in serializer.validated_data.get('files', []):
-            instance.before_files.add(file)
+        if sign:
+            instance.before_sign_id = sign
+
+        file_ids = serializer.validated_data.get('files', [])
+        if file_ids:
+            instance.before_files.set(file_ids)
 
         instance.status_history = instance.status_history or []
         instance.status_history.append({
@@ -167,14 +164,10 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         return Response({'status': instance.status})
 
     @swagger_auto_schema(
-        consumes=['multipart/form-data'],
         request_body=FinishOrderSerializer,
-        manual_parameters=[
-            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="After photos"),
-        ],
         responses={200: "Sub-order completed"}
     )
-    @action(detail=True, methods=['post'], url_path='finish', parser_classes=[MultiPartParser, FormParser])
+    @action(detail=True, methods=['post'], url_path='finish')
     def finish(self, request, pk=None):
         instance = self.get_object()
         serializer = FinishOrderSerializer(data=request.data)
@@ -184,10 +177,11 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         user = request.user
         sign = serializer.validated_data.get('sign')
         if sign:
-            instance.after_sign = sign
+            instance.after_sign_id = sign
 
-        for f in request.validated_data.get('files', []):
-            instance.after_files.add(f)
+        file_ids = serializer.validated_data.get('files', [])
+        if file_ids:
+            instance.after_files.set(file_ids)
 
 
         instance.status_history = instance.status_history or []
