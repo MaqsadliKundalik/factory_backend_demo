@@ -182,7 +182,7 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             history = instance.status_history or []
             history.extend(serializer.data)
             instance.status_history = history
-            new_status = serializer.data[-1]['status']
+            new_status = serializer.data['status']
             instance.status = new_status
             instance.save()
 
@@ -210,7 +210,7 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        new_status = serializer.data[-1]['status']
+        new_status = serializer.data['status']
         instance.status = new_status
         instance.status_history = instance.status_history or []
         instance.status_history.append({

@@ -41,13 +41,6 @@ EXCAVATOR_SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('transport_type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport type (transport.type)"),
 ]
 
-
-def _save_files(file_list, m2m_field):
-    for f in file_list:
-        file_obj = File.objects.create(file=f)
-        m2m_field.add(file_obj)
-
-
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
@@ -149,9 +142,10 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         timestamp = serializer.validated_data.get('timestamp')
         
         if sign:
-            instance.before_sign = File.objects.create(file=sign)
+            instance.before_sign = sign
 
-        _save_files(request.FILES.getlist('files'), instance.before_files)
+        for file in serializer.validated_data.get('files', []):
+            instance.before_files.add(file)
 
         instance.status_history = instance.status_history or []
         instance.status_history.append({
@@ -190,9 +184,11 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         user = request.user
         sign = serializer.validated_data.get('sign')
         if sign:
-            instance.after_sign = File.objects.create(file=sign)
+            instance.after_sign = sign
 
-        _save_files(request.FILES.getlist('files'), instance.after_files)
+        for f in request.validated_data.get('files', []):
+            instance.after_files.add(f)
+
 
         instance.status_history = instance.status_history or []
         instance.status_history.append({

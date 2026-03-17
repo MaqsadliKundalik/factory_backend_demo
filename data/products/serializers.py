@@ -92,8 +92,7 @@ class WhouseProductsSerializerV2(serializers.ModelSerializer):
 
     def _save_files(self, instance, files):
         for f in files:
-            file_obj = File.objects.create(file=f)
-            instance.files.add(file_obj)
+            instance.files.add(f)
 
     def create(self, validated_data):
         files = validated_data.pop('files', [])
