@@ -30,6 +30,7 @@ class CompetedStatusSerializer(serializers.Serializer):
 
 class SubOrderInlineSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(required=False)
+    status_history = StatusHistorySerializer(many=True, required=False)
 
     class Meta:
         model = SubOrder
@@ -45,7 +46,7 @@ class SubOrderInlineSerializer(serializers.ModelSerializer):
 
 
 class SubOrderSerializer(serializers.ModelSerializer):
-    status_history = serializers.ListField(child=serializers.JSONField(), required=False)
+    status_history = StatusHistorySerializer(many=True, required=False)
 
     class Meta:
         model = SubOrder
@@ -102,7 +103,6 @@ class OrderSerializer(serializers.ModelSerializer):
         if instance.rejector:
             rep['rejector'] = instance.rejector
         return rep
-
 
 class OrderWriteSerializer(serializers.ModelSerializer):
     external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
