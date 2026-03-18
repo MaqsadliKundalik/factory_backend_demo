@@ -89,6 +89,19 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @swagger_auto_schema(request_body=ChangeStatusSerializer, responses={200: "Reject order"})
+    @action(detail=True, methods=['post'], url_path='reject ')
+    def reject(self, request, pk=None):
+        order = self.get_object()
+        sub_orders = order.sub_orders.all()
+        for sub_order in sub_orders:
+            sub_order.status = ExcavatorSubOrder.Status.REJECTED
+            sub_order.save()
+        order.status = ExcavatorOrder.Status.REJECTED
+        order.save()
+        return Response({"detail": "Order rejected"}, status=status.HTTP_200_OK)
+    
+
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
     serializer_class = ExcavatorSubOrderSerializer
