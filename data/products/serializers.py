@@ -185,9 +185,10 @@ class ProductItemWriteSerializer(serializers.ModelSerializer):
 
 class ProductAndItemCreateSerializer(serializers.ModelSerializer):
     items = ProductItemWriteSerializer(many=True, required=True)
+    quantity = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
     class Meta:
         model = Product
-        fields = ['id', 'name', 'types', 'unit', 'whouse', 'items']
+        fields = ['id', 'name', 'types', 'unit', 'whouse', 'items', 'quantity']
         read_only_fields = ['id']
 
     def to_representation(self, instance):
@@ -203,6 +204,7 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         types = validated_data.pop('types', [])
         items = validated_data.pop('items', [])
+        quantity = validated_data.pop('quantity', 0)
         
         # Determine warehouse
         whouse = validated_data.get('whouse')
@@ -226,6 +228,7 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         types = validated_data.pop('types', None)
         items = validated_data.pop('items', None)
+        quantity = validated_data.pop('quantity', None)
 
         # Determine warehouse
         whouse = validated_data.get('whouse')
