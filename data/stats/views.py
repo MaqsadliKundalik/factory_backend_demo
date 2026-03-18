@@ -179,7 +179,7 @@ class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
         result = []
         for product in products:
             total_income = WhouseProductsHistory.objects.filter(product=product, status=HistoryStatus.OUT, **whouse_filter, **df).aggregate(total=Sum('quantity'))['total'] or 0
-            result.append({'product': product.name, 'outcome': total_income})
+            result.append({'product': product.name, 'outcoming': total_income})
         serializer = OutcomingProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
