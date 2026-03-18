@@ -44,7 +44,7 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
             "start_date": instance.parent.start_date,
             "end_date": instance.parent.end_date,
             "comment": instance.parent.comment,
-            "whouse": instance.parent.whouse,
+            "whouse": {'id': instance.parent.whouse.id, 'name': instance.parent.whouse.name} if instance.parent.whouse else None,
             "payment_status": instance.parent.payment_status,
             'status': instance.parent.status,
             'external_drivers': instance.parent.external_drivers,
