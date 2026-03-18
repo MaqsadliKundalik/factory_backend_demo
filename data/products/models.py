@@ -37,6 +37,7 @@ class Product(BaseModel):
 
     def __str__(self):
         return self.name
+        
 class ProductItem(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='items')
     raw_material = models.ForeignKey('products.WhouseProducts', on_delete=models.CASCADE, related_name='used_in', null=True, blank=True)
