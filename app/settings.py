@@ -211,19 +211,23 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 
 
-# # Celery
-# CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-# CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
-# CELERY_TIMEZONE = TIME_ZONE
+# Celery
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_TIMEZONE = TIME_ZONE
 
-# from celery.schedules import crontab
+from celery.schedules import crontab
 
-# CELERY_BEAT_SCHEDULE = {
-#     'expire-excavator-orders-daily': {
-#         'task': 'data.excavator.tasks.expire_excavator_orders',
-#         'schedule': crontab(hour=0, minute=0),  # har kecha yarim tunda
-#     },
-# }
+CELERY_BEAT_SCHEDULE = {
+    'expire-excavator-orders-daily': {
+        'task': 'data.excavator.tasks.expire_excavator_orders',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
+
+# Firebase
+# .env da FIREBASE_CREDENTIALS=<service_account_json_string>
+# yoki FIREBASE_CREDENTIALS_PATH=firebase-credentials.json
 
 
 SWAGGER_SETTINGS = {

@@ -5,7 +5,8 @@ from .views import (
     UnifiedLogoutAPIView,
     UnifiedChangePasswordAPIView,
     UnifiedTokenRefreshView,
-    
+    UpdateFCMTokenView,
+
     # Mobile
     UnifiedMobileLoginAPIView,
     UnifiedMobileProfileAPIView,
@@ -28,4 +29,5 @@ urlpatterns = [
 
     # Common
     path("refresh/", UnifiedTokenRefreshView.as_view(), name="token_refresh"),
+    path("fcm-token/", UpdateFCMTokenView.as_view(), name="update_fcm_token"),
 ]

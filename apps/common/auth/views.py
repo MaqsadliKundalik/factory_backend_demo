@@ -134,6 +134,44 @@ class UnifiedChangePasswordAPIView(APIView):
             "refresh_token": str(refresh),
         })
 
+class UpdateFCMTokenView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=["Auth"],
+        operation_summary="Update FCM token",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['fcm_token'],
+            properties={
+                'fcm_token': openapi.Schema(type=openapi.TYPE_STRING, description='Firebase Cloud Messaging token'),
+            }
+        ),
+        responses={200: openapi.Schema(type=openapi.TYPE_OBJECT, properties={'detail': openapi.Schema(type=openapi.TYPE_STRING)})}
+    )
+    def post(self, request):
+        fcm_token = request.data.get('fcm_token', '').strip()
+        if not fcm_token:
+            return Response({'detail': 'fcm_token is required'}, status=400)
+
+        session_id = request.auth.get('session') if isinstance(request.auth, dict) else None
+        role = request.auth.get('role') if isinstance(request.auth, dict) else None
+        if not session_id:
+            return Response({'detail': 'Session not found'}, status=400)
+
+        if role == 'driver':
+            # Remove this token from other driver sessions
+            DriverSession.objects.filter(fcm_token=fcm_token).exclude(id=session_id).update(fcm_token=None, fcm_invalid=False)
+            DriverSession.objects.filter(id=session_id).update(fcm_token=fcm_token, fcm_invalid=False)
+        else:
+            # Remove this token from other factory user sessions
+            FactoryUserSession.objects.filter(fcm_token=fcm_token).exclude(id=session_id).update(fcm_token=None, fcm_invalid=False)
+            FactoryUserSession.objects.filter(id=session_id).update(fcm_token=fcm_token, fcm_invalid=False)
+
+        return Response({'detail': 'FCM token updated'})
+
+
 class UnifiedTokenRefreshView(APIView):
     permission_classes = [AllowAny]
     @swagger_auto_schema(

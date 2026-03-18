@@ -62,7 +62,14 @@ class NotificationViewSet(
         if not role:
             return Notification.objects.none()
 
-        return Notification.objects.filter(to_role=role)
+        user_id = str(self.request.user.id)
+        # Faqat menga yuborilgan (to_user_id=mening_id) yoki hammaga yuborilgan (to_user_id=None)
+        from django.db.models import Q
+        return Notification.objects.filter(
+            to_role=role
+        ).filter(
+            Q(to_user_id__isnull=True) | Q(to_user_id=user_id)
+        )
 
     @swagger_auto_schema(
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
@@ -82,7 +89,13 @@ class NotificationViewSet(
         if not role:
             return Response({"error": "Роль не определена"}, status=status.HTTP_400_BAD_REQUEST)
 
-        updated = Notification.objects.filter(to_role=role, is_read=False).update(is_read=True)
+        from django.db.models import Q
+        user_id = str(request.user.id)
+        updated = Notification.objects.filter(
+            to_role=role, is_read=False
+        ).filter(
+            Q(to_user_id__isnull=True) | Q(to_user_id=user_id)
+        ).update(is_read=True)
         return Response(
             {"message": "Все уведомления отмечены как прочитанные", "count": updated},
             status=status.HTTP_200_OK,
@@ -113,5 +126,11 @@ class NotificationViewSet(
         role = _get_role(request)
         if not role:
             return Response({"unread_count": 0})
-        count = Notification.objects.filter(to_role=role, is_read=False).count()
+        from django.db.models import Q
+        user_id = str(request.user.id)
+        count = Notification.objects.filter(
+            to_role=role, is_read=False
+        ).filter(
+            Q(to_user_id__isnull=True) | Q(to_user_id=user_id)
+        ).count()
         return Response({"unread_count": count})

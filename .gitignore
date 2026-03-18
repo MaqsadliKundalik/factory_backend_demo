@@ -3,3 +3,4 @@ myenv
 tmp
 __pycache__/
 *.pyc
+*firebase-adminsdk*.json

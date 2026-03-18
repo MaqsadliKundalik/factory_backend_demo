@@ -18,6 +18,16 @@ services:
       retries: 10
       start_period: 10s
 
+  redis:
+    image: redis:alpine
+    container_name: factory_redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   factory_django:
     build: .
     container_name: factory_django
@@ -30,9 +40,12 @@ services:
     depends_on:
       factory_db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     command: >
       sh -c "
+        python manage.py migrate &&
         gunicorn app.wsgi:application
           --bind 0.0.0.0:8000
           --workers 3
@@ -41,39 +54,20 @@ services:
           --error-logfile -
       "
 
-#   redis:
-#     image: redis:alpine
-#     container_name: redis
-#     # ports:
-#     #   - "6380:6379"
-#     restart: unless-stopped
-
-#   celery:
-#     build: .
-#     container_name: celery
-#     env_file:
-#       - .env
-#     volumes: *shared_volumes
-#     depends_on:
-#       - redis
-#       - db
-#     restart: unless-stopped
-#     working_dir: /usr/src/app
-#     command: celery -A config worker --loglevel=info -c 3
-
-#   celery_beat:
-#     build: .
-#     container_name: celery_beat
-#     env_file:
-#       - .env
-#     volumes: *shared_volumes
-#     depends_on:
-#       - redis
-#       - db
-#     restart: unless-stopped
-#     working_dir: /usr/src/app
-#     command: celery -A config beat --loglevel=info
-#    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+  celery:
+    build: .
+    container_name: factory_celery
+    env_file:
+      - .env
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+    depends_on:
+      factory_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery -A app worker --loglevel=info -c 3
 
 volumes:
   db_oktell:

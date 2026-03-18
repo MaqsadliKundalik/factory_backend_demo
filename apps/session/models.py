@@ -10,6 +10,9 @@ class DriverSession(models.Model):
     driver = models.ForeignKey(
         Driver, on_delete=models.CASCADE, related_name="sessions"
     )
+    fcm_token = models.CharField(max_length=512, null=True, blank=True)
+    fcm_invalid = models.BooleanField(default=False)
+    last_active = models.DateTimeField(auto_now=True)
 
     @classmethod
     def for_driver(cls, driver: "Driver"):
@@ -43,6 +46,9 @@ class FactoryUserSession(models.Model):
         "users.FactoryUser", on_delete=models.CASCADE, related_name="sessions",
         null=True, blank=True
     )
+    fcm_token = models.CharField(max_length=512, null=True, blank=True)
+    fcm_invalid = models.BooleanField(default=False)
+    last_active = models.DateTimeField(auto_now=True)
 
     @classmethod
     def for_factory_user(cls, factory_user):
