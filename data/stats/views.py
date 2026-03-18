@@ -266,7 +266,7 @@ class ExcavatorStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
         result = {
             'new': avg('NEW'),
             'in_progress': avg('IN_PROGRESS'),
-            'paused': avg('PAUSED'),
+            'paused': avg('PAUSED'), 
             'completed': avg('COMPLETED'),
             'expired': avg('EXPIRED'),
             'sub_orders_count': sub_orders.count(),

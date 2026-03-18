@@ -3,6 +3,7 @@ from .models import Order, SubOrder
 from data.products.serializers import ProductSerializer, ProductTypeSerializer, ProductUnitSerializer
 from data.clients.serializers import ClientSerializer, ClientBranchesSerializer
 from apps.drivers.serializers import DriverSerializer
+from data.transports.models import Transport
 from data.transports.serializers import TransportSerializer
 from data.filedatas.serializers import FileSerializer
 
@@ -15,6 +16,16 @@ class ExternalDriverSerializer(serializers.Serializer):
     car_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
     transport_id = serializers.UUIDField(required=False, allow_null=True, default=None)
     quantity = serializers.IntegerField(required=False, allow_null=True, default=None)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if data.get('transport_id'):
+            try:
+                transport = Transport.objects.get(id=data['transport_id'])
+                data['transport'] = TransportSerializer(transport).data
+            except Transport.DoesNotExist:
+                data['transport'] = None
+        return data
 
     class Meta:
         ref_name = 'OrderExternalDriver'
