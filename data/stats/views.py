@@ -200,13 +200,13 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         df = self.get_date_filters(request)
         qs = Order.objects.filter(whouse=whouse, **df)
         result = {
+            'total': qs.count(),
             'new': qs.filter(status=Order.Status.NEW).count(),
             'in_progress': qs.filter(status=Order.Status.IN_PROGRESS).count(),
             'on_way': qs.filter(status=Order.Status.ON_WAY).count(),
             'arrived': qs.filter(status=Order.Status.ARRIVED).count(),
             'unloading': qs.filter(status=Order.Status.UNLOADING).count(),
-            'completed': qs.filter(status=Order.Status.COMPLETED).count(),
-            'total': qs.count(),
+            'completed': qs.filter(status=Order.Status.COMPLETED).count()
         }
         serializer = OrderStatusStatsSerializer(result)
         return Response(serializer.data)
@@ -222,13 +222,13 @@ class OrderStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
         sub_orders = SubOrder.objects.filter(order__whouse=whouse, **df).exclude(status_history=[])
         avg = calculate_status_durations(sub_orders)
         result = {
+            'total': sub_orders.count(),
             'new': avg('NEW'),
             'in_progress': avg('IN_PROGRESS'),
             'on_way': avg('ON_WAY'),
             'arrived': avg('ARRIVED'),
             'unloading': avg('UNLOADING'),
-            'completed': avg('COMPLETED'),
-            'sub_orders_count': sub_orders.count(),
+            'completed': avg('COMPLETED')
         }
         serializer = StatusDurationSerializer(result)
         return Response(serializer.data)
@@ -243,12 +243,12 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         df = self.get_date_filters(request)
         qs = ExcavatorOrder.objects.filter(**df)
         result = {
+            'total': qs.count(),
             'new': qs.filter(status=ExcavatorOrder.Status.NEW).count(),
             'in_progress': qs.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
             'paused': qs.filter(status=ExcavatorOrder.Status.PAUSED).count(),
             'completed': qs.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
-            'expired': qs.filter(status=ExcavatorOrder.Status.EXPIRED).count(),
-            'total': qs.count(),
+            'expired': qs.filter(status=ExcavatorOrder.Status.EXPIRED).count()
         }
         serializer = ExcavatorOrderStatusStatsSerializer(result)
         return Response(serializer.data)
@@ -264,12 +264,12 @@ class ExcavatorStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
         sub_orders = ExcavatorSubOrder.objects.filter(**df).exclude(status_history=[])
         avg = calculate_status_durations(sub_orders)
         result = {
+            'total': sub_orders.count(),
             'new': avg('NEW'),
             'in_progress': avg('IN_PROGRESS'),
             'paused': avg('PAUSED'), 
             'completed': avg('COMPLETED'),
-            'expired': avg('EXPIRED'),
-            'sub_orders_count': sub_orders.count(),
+            'expired': avg('EXPIRED')
         }
         serializer = ExcavatorStatusDurationSerializer(result)
         return Response(serializer.data)
