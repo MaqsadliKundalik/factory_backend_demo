@@ -39,7 +39,9 @@ EXCAVATOR_SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('driver', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Driver ID"),
     openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
     openapi.Parameter('transport_type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport type (transport.type)"),
+    openapi.Parameter('in_progress', openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description="Filter: true for active, false for completed"),
 ]
+
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -55,6 +57,14 @@ class ExcavatorOrderFilter(BaseDateFilterSet):
 
 class ExcavatorSubOrderFilter(BaseDateFilterSet):
     transport_type = filters.CharFilter(field_name='transport__type', lookup_expr='iexact')
+    in_progress = filters.BooleanFilter(method='filter_in_progress', label="Filter: true for active, false for completed")
+
+    def filter_in_progress(self, queryset, name, value):
+        if value is True:
+            return queryset.exclude(status=ExcavatorSubOrder.Status.COMPLETED)
+        elif value is False:
+            return queryset.filter(status=ExcavatorSubOrder.Status.COMPLETED)
+        return queryset
 
     class Meta:
         model = ExcavatorSubOrder
@@ -88,6 +98,16 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ExcavatorSubOrderFilter
     search_fields = ['driver__name', 'transport__number']
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+            return ExcavatorSubOrder.objects.none()
+        if hasattr(user, 'whouses') and user.whouses.exists():
+            return ExcavatorSubOrder.objects.filter(parent__whouse__in=user.whouses.all())
+        if user.__class__.__name__ == 'Driver':
+            return ExcavatorSubOrder.objects.filter(driver=user)
+        return ExcavatorSubOrder.objects.all()
 
     @swagger_auto_schema(manual_parameters=EXCAVATOR_SUBORDER_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
