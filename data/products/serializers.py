@@ -255,7 +255,9 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         return instance
 
 class SelectWhouseProductSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+
     class Meta:
         model = WhouseProducts
-        fields = ['id', 'product__name']
-        read_only_fields = ['id', 'product__name']
+        fields = ['id', 'product_name']
+        read_only_fields = ['id']
