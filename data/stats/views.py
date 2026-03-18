@@ -162,7 +162,7 @@ class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
         products = Product.objects.filter(**whouse_filter, items__isnull=True)
         result = []
         for product in products:
-            total_income = WhouseProducts.objects.filter(product=product, status=WhouseProducts.Status.IN, **whouse_filter, **df).aggregate(total=Sum('quantity'))['total'] or 0
+            total_income = WhouseProductsHistory.objects.filter(product=product, status=HistoryStatus.IN, **whouse_filter, **df).aggregate(total=Sum('quantity'))['total'] or 0
             result.append({'product': product.name, 'income': total_income})
         serializer = IncomeProductStatsSerializer(result, many=True)
         return Response(serializer.data)
