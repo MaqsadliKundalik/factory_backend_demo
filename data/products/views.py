@@ -21,7 +21,7 @@ from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (
-    WhouseProductActionSerializer,
+    WhouseProductActionSerializer, SelectWhouseProductSerializer,
     ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, ProductAndItemCreateSerializer,
     WhouseProductsSerializer, WhouseProductsSerializerV2, WhouseProductsHistorySerializer, SelectProductSerializer, ProductItemSerializer
 )
@@ -259,6 +259,33 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
 
+    @swagger_auto_schema(
+        operation_summary="Select whouse products (id and name only)",
+        responses={200: SelectWhouseProductSerializer(many=True)},
+        manual_parameters=[IS_READY_PRODUCT_PARAM]
+    )
+    @action(detail=False, methods=['get'], pagination_class=None)
+    def select(self, request):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"}, status=401)
+        
+        whouses = user.whouses.all()
+        queryset = WhouseProducts.objects.filter(whouse__in=whouses)
+        is_ready = self.request.query_params.get('is_ready_product')
+        if is_ready is not None:
+            if is_ready.lower() == 'true':
+                queryset = queryset.filter(items__isnull=False).distinct()
+            elif is_ready.lower() == 'false':
+                queryset = queryset.filter(items__isnull=True)
+
+        # Apply search if provided
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+            
+        data = queryset.values('id', 'name')
+        return Response(list(data))
 
 
 class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):

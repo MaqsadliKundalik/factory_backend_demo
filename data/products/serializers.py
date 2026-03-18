@@ -253,3 +253,9 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
                 ProductItem.objects.create(product=product_obj, **item)
 
         return instance
+
+class SelectWhouseProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WhouseProducts
+        fields = ['id', 'name']
+        read_only_fields = ['id', 'name']
