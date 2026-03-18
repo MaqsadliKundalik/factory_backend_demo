@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from data.filedatas.models import File
 from data.filedatas.serializers import FileSerializer
@@ -216,8 +217,8 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         instance.types.set(types)
         
         for item in items:
-            product_obj = item.pop('product')
-            ProductItem.objects.create(product=product_obj, **item)
+            item.pop('product', None)
+            ProductItem.objects.create(product=instance, **item)
 
         return instance
 
@@ -225,7 +226,7 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         types = validated_data.pop('types', None)
         items = validated_data.pop('items', None)
-        
+
         # Determine warehouse
         whouse = validated_data.get('whouse')
         if whouse:
@@ -245,12 +246,11 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
 
         # Update items if provided
         if items is not None:
-            # Remove existing items
-            instance.items.all().delete()
-            # Create new items
-            for item in items:
-                product_obj = item.pop('product')
-                ProductItem.objects.create(product=product_obj, **item)
+            with transaction.atomic():
+                instance.items.all().delete()
+                for item in items:
+                    item.pop('product', None)
+                    ProductItem.objects.create(product=instance, **item)
 
         return instance
 

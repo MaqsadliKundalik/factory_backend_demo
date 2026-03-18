@@ -46,7 +46,9 @@ def update_whouse_product_history(sender, instance, **kwargs):
         wproduct.save()
 
 @receiver(post_save, sender=ProductItem)
-def create_product_item_history(sender, instance, **kwargs):
+def create_product_item_history(sender, instance, created, **kwargs):
+    if not created:
+        return
 
     WhouseProductsHistory.objects.create(
         wproduct=instance.raw_material,
