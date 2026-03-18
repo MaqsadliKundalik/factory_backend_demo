@@ -23,7 +23,16 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from data.whouse.models import Whouse
 
+WHOUSE_PARAM = openapi.Parameter(
+    'whouse',
+    openapi.IN_QUERY,
+    description='Whouse ID (optional, filters by warehouse)',
+    type=openapi.TYPE_STRING,
+    format=openapi.FORMAT_UUID,
+    required=False,
+)
 DATE_RANGE_PARAMS = [
+    WHOUSE_PARAM,
     openapi.Parameter(
         'start_date',
         openapi.IN_QUERY,
@@ -85,8 +94,14 @@ def calculate_status_durations(sub_orders):
 
 
 class WhouseViewMixin(APIView):
-    def get_whouse(self, whouse_id):
-        return Whouse.objects.filter(id=whouse_id).first()
+    def get_whouse_filter(self, request):
+        whouse_id = request.query_params.get('whouse')
+        if not whouse_id:
+            return {}
+        whouse = Whouse.objects.filter(id=whouse_id).first()
+        if not whouse:
+            return None
+        return {'whouse': whouse}
 
     def whouse_not_found(self):
         return Response({'error': 'Whouse not found'}, status=404)
@@ -122,13 +137,10 @@ class OutcomingProductFilterMixin(DateRangeFilterMixin):
 
 class CountStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request, whouse_id=None):
-        whouse_filter = {}
-        if whouse_id:
-            whouse = self.get_whouse(whouse_id)
-            if not whouse:
-                return self.whouse_not_found()
-            whouse_filter = {'whouse': whouse}
+    def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
         df = self.get_date_filters(request)
         return Response({
             'drivers': Driver.objects.filter(**whouse_filter, **df).count(),
@@ -142,13 +154,10 @@ class CountStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request, whouse_id=None):
-        whouse_filter = {}
-        if whouse_id:
-            whouse = self.get_whouse(whouse_id)
-            if not whouse:
-                return self.whouse_not_found()
-            whouse_filter = {'whouse': whouse}
+    def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
         df = self.get_date_filters(request)
         products = Product.objects.filter(**whouse_filter, items__isnull=True)
         result = []
@@ -161,13 +170,10 @@ class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=OUTCOMING_PRODUCT_FILTER_PARAMS)
-    def get(self, request, whouse_id=None):
-        whouse_filter = {}
-        if whouse_id:
-            whouse = self.get_whouse(whouse_id)
-            if not whouse:
-                return self.whouse_not_found()
-            whouse_filter = {'whouse': whouse}
+    def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
         df = self.get_outcoming_product_filters(request)
         products = Product.objects.filter(**whouse_filter)
         result = []
@@ -180,13 +186,10 @@ class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
 
 class SupplierIncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request, whouse_id=None):
-        whouse_filter = {}
-        if whouse_id:
-            whouse = self.get_whouse(whouse_id)
-            if not whouse:
-                return self.whouse_not_found()
-            whouse_filter = {'whouse': whouse}
+    def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
         df = self.get_date_filters(request)
         suppliers = Supplier.objects.filter(**whouse_filter)
         products = Product.objects.filter(**whouse_filter, items__isnull=True)
@@ -205,13 +208,10 @@ class SupplierIncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request, whouse_id=None):
-        whouse_filter = {}
-        if whouse_id:
-            whouse = self.get_whouse(whouse_id)
-            if not whouse:
-                return self.whouse_not_found()
-            whouse_filter = {'whouse': whouse}
+    def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
         df = self.get_date_filters(request)
         qs = Order.objects.filter(**whouse_filter, **df)
         result = {
@@ -229,13 +229,12 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 class OrderStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request, whouse_id=None):
-        whouse_filter = {}
-        if whouse_id:
-            whouse = self.get_whouse(whouse_id)
-            if not whouse:
-                return self.whouse_not_found()
-            whouse_filter = {'order__whouse': whouse}
+    def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
+        if whouse_filter:
+            whouse_filter = {'order__whouse': whouse_filter['whouse']}
         df = self.get_date_filters(request, prefix='order__')
         sub_orders = SubOrder.objects.filter(**whouse_filter, **df).exclude(status_history=[])
         avg = calculate_status_durations(sub_orders)
@@ -254,7 +253,7 @@ class OrderStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request, whouse_id=None):
+    def get(self, request):
         df = self.get_date_filters(request)
         qs = ExcavatorOrder.objects.filter(**df)
         result = {
@@ -271,7 +270,7 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 class ExcavatorStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request, whouse_id=None):
+    def get(self, request):
         df = self.get_date_filters(request)
         sub_orders = ExcavatorSubOrder.objects.filter(**df).exclude(status_history=[])
         avg = calculate_status_durations(sub_orders)

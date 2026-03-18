@@ -11,12 +11,12 @@ from .views import (
 )
 
 urlpatterns = [
-    path('<uuid:whouse_id>/', CountStatsView.as_view(), name='count-stats'),
-    path('income-products/<uuid:whouse_id>/', IncomeProductStatsView.as_view(), name='income-product-stats'),
-    path('supplier-income-products/<uuid:whouse_id>/', SupplierIncomeProductStatsView.as_view(), name='supplier-income-product-stats'),
-    path('outcome-products/<uuid:whouse_id>/', OutcomingProductStatsView.as_view(), name='outcome-product-stats'),
-    path('orders/<uuid:whouse_id>/', OrderStatusStatsView.as_view(), name='orders-stats'),
-    path('orders/status/<uuid:whouse_id>/', OrderStatusDurationStatsView.as_view(), name='orders-status-duration-stats'),
-    path('excavator/orders/<uuid:whouse_id>/', ExcavatorOrderStatusStatsView.as_view(), name='excavator-orders-stats'),
-    path('excavator/orders/status/<uuid:whouse_id>/', ExcavatorStatusDurationStatsView.as_view(), name='excavator-orders-status-duration-stats'),
+    path('', CountStatsView.as_view(), name='count-stats'),
+    path('income-products/', IncomeProductStatsView.as_view(), name='income-product-stats'),
+    path('supplier-income-products/', SupplierIncomeProductStatsView.as_view(), name='supplier-income-product-stats'),
+    path('outcome-products/', OutcomingProductStatsView.as_view(), name='outcome-product-stats'),
+    path('orders/', OrderStatusStatsView.as_view(), name='orders-stats'),
+    path('orders/status/', OrderStatusDurationStatsView.as_view(), name='orders-status-duration-stats'),
+    path('excavator/orders/', ExcavatorOrderStatusStatsView.as_view(), name='excavator-orders-stats'),
+    path('excavator/orders/status/', ExcavatorStatusDurationStatsView.as_view(), name='excavator-orders-status-duration-stats'),
 ]
