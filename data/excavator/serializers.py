@@ -74,13 +74,14 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             'comment', 'status', 
             'payment_status', 'files',
             'sub_orders', "external_drivers",
-            'created_at',
+            'created_at', "whouse"
         ]
         read_only_fields = ['id', 'display_id', 'created_at']
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['files'] = FileSerializer(instance.files.all(), many=True).data
+        rep['files'] = FileSerializer(instance.files.all(), many=True).data,
+        rep["whouse"] = {"id": instance.whouse.id, "name": instance.whouse.name} if instance.whouse else None
         return rep
 
 
@@ -97,7 +98,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'display_id',
             'client_name', 'phone_number',
-            'lat', 'lon', 'address',
+            'lat', 'lon', 'address', "whouse",
             'start_date', 'end_date',
             'comment', 'sub_orders', 'external_drivers',
         ]
