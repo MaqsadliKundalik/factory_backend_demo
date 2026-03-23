@@ -149,7 +149,7 @@ class Command(BaseCommand):
         from data.supplier.models import Supplier
         from data.drivers.models import Driver
         from data.transports.models import Transport
-        from data.orders.models import Order, SubOrder
+        from data.orders.models import Order, SubOrder, OrderItem, SubOrderItem
         from data.excavator.models import ExcavatorOrder, ExcavatorSubOrder
 
         whouses = list(Whouse.objects.all())
@@ -186,7 +186,7 @@ class Command(BaseCommand):
         # ── 3. Orders ────────────────────────────────────────────────────────
         self.stdout.write(f"{options['orders']} ta Order yaratilmoqda...")
         orders_created = self._create_orders(
-            Order, SubOrder, WhouseProductsHistory, HistoryStatus,
+            Order, SubOrder, OrderItem, SubOrderItem, WhouseProductsHistory, HistoryStatus,
             clients, products, product_types, product_units, whouses, drivers, transports,
             options["orders"], start_dt, end_dt
         )
@@ -378,7 +378,8 @@ class Command(BaseCommand):
 
     # ── Helper: create orders ─────────────────────────────────────────────────
 
-    def _create_orders(self, Order, SubOrder, WhouseProductsHistory, HistoryStatus,
+    def _create_orders(self, Order, SubOrder, OrderItem, SubOrderItem,
+                       WhouseProductsHistory, HistoryStatus,
                        clients, products, product_types, product_units,
                        whouses, drivers, transports,
                        count, start_dt, end_dt):
@@ -400,19 +401,13 @@ class Command(BaseCommand):
 
         for _ in range(count):
             whouse = random.choice(whouses)
-            # Pick client belonging to this whouse if possible
             whouse_clients = [c for c in clients if c.whouse_id == whouse.pk]
             client = random.choice(whouse_clients) if whouse_clients else random.choice(clients)
             branches = list(client.branches.all())
             if not branches:
                 continue
             branch = random.choice(branches)
-            product = random.choice(products)
-            ptype = random.choice(product_types)
-            punit = random.choice(product_units)
-            qty = Decimal(str(round(random.uniform(5, 500), 2)))
-            price = Decimal(str(round(random.uniform(50000, 500000), 2)))
-            status = random.choice(statuses)
+            order_status = random.choice(statuses)
 
             fake_dt = _rand_date_in_range(start_dt.date(), end_dt.date())
             fake_aware = timezone.make_aware(
@@ -420,23 +415,43 @@ class Command(BaseCommand):
                                   random.randint(6, 20), random.randint(0, 59))
             )
 
+            rejector_role = None
+            if order_status == Order.Status.REJECTED:
+                rejector_role = random.choice(list(Order.Rejector.values))
+
             order = Order.objects.create(
                 client=client,
                 branch=branch,
                 whouse=whouse,
-                product=product,
-                type=ptype,
-                unit=punit,
-                status=status,
-                quantity=qty,
-                price=price,
+                status=order_status,
+                rejector_role=rejector_role,
             )
             Order.objects.filter(pk=order.pk).update(created_at=fake_aware)
             orders_created += 1
 
+            # Create 1-3 OrderItems
+            item_count = random.randint(1, 3)
+            order_items = []
+            for _ in range(item_count):
+                product = random.choice(products)
+                ptype = random.choice(product_types)
+                punit = random.choice(product_units)
+                qty = Decimal(str(round(random.uniform(5, 500), 2)))
+                price = Decimal(str(round(random.uniform(50000, 500000), 2)))
+                order_items.append(OrderItem(
+                    order=order,
+                    product=product,
+                    type=ptype,
+                    unit=punit,
+                    quantity=qty,
+                    price=price,
+                ))
+            OrderItem.objects.bulk_create(order_items)
+
             # Create 1-3 SubOrders
             sub_count = random.randint(1, 3)
-            remaining_qty = qty
+            total_qty = sum(item.quantity for item in order_items)
+            remaining_qty = total_qty
             for s in range(sub_count):
                 driver = random.choice(drivers)
                 transport = random.choice(transports)
@@ -454,21 +469,39 @@ class Command(BaseCommand):
                     status=sub_status,
                     status_history=status_history,
                 )
-                sub_orders_batch.append((sub, fake_aware, order, sub_qty))
+                sub_orders_batch.append((sub, fake_aware, order, order_items, sub_qty))
 
-        # Save SubOrders without triggering signal (bulk create), then manually add history
+        # Bulk create SubOrders
         sub_objs = [item[0] for item in sub_orders_batch]
         created_subs = SubOrder.objects.bulk_create(sub_objs)
 
+        sub_order_items_batch = []
         for i, sub in enumerate(created_subs):
-            _, fake_aware, order, sub_qty = sub_orders_batch[i]
+            _, fake_aware, order, order_items, sub_qty = sub_orders_batch[i]
             SubOrder.objects.filter(pk=sub.pk).update(created_at=fake_aware)
+
+            # Create SubOrderItems mirroring OrderItems with proportional quantities
+            total_order_qty = sum(item.quantity for item in order_items)
+            ratio = (sub_qty / total_order_qty) if total_order_qty else Decimal("1")
+            for oi in order_items:
+                sub_item_qty = Decimal(str(round(float(oi.quantity * ratio), 2)))
+                sub_order_items_batch.append(SubOrderItem(
+                    sub_order=sub,
+                    product=oi.product,
+                    type=oi.type,
+                    unit=oi.unit,
+                    quantity=sub_item_qty,
+                ))
+
             hist_batch.append(WhouseProductsHistory(
                 whouse=order.whouse,
-                product=order.product,
+                product=order_items[0].product if order_items else None,
                 quantity=sub_qty,
                 status=HistoryStatus.OUT,
             ))
+
+        if sub_order_items_batch:
+            SubOrderItem.objects.bulk_create(sub_order_items_batch)
 
         if hist_batch:
             WhouseProductsHistory.objects.bulk_create(hist_batch)
