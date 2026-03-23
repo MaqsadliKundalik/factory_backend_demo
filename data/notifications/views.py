@@ -18,7 +18,7 @@ from .serializers import NotificationSerializer
 
 def _get_role(request):
     """Auth qilingan userning rolini oladi (FactoryUser yoki Driver)."""
-    return getattr(request.user, 'role', None) or (
+    return getattr(request.driver or request.guard or request.operator or request.manager, 'role', None) or (
         request.auth.get('role') if isinstance(request.auth, dict) else None
     )
 
@@ -62,7 +62,8 @@ class NotificationViewSet(
         if not role:
             return Notification.objects.none()
 
-        user_id = str(self.request.user.id)
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
+        user_id = str(user.id)
         # Faqat menga yuborilgan (to_user_id=mening_id) yoki hammaga yuborilgan (to_user_id=None)
         from django.db.models import Q
         return Notification.objects.filter(
@@ -90,7 +91,8 @@ class NotificationViewSet(
             return Response({"error": "Роль не определена"}, status=status.HTTP_400_BAD_REQUEST)
 
         from django.db.models import Q
-        user_id = str(request.user.id)
+        user = request.driver or request.guard or request.operator or request.manager
+        user_id = str(user.id)
         updated = Notification.objects.filter(
             to_role=role, is_read=False
         ).filter(
@@ -127,7 +129,8 @@ class NotificationViewSet(
         if not role:
             return Response({"unread_count": 0})
         from django.db.models import Q
-        user_id = str(request.user.id)
+        user = request.driver or request.guard or request.operator or request.manager
+        user_id = str(user.id)
         count = Notification.objects.filter(
             to_role=role, is_read=False
         ).filter(

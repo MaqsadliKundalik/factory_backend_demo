@@ -61,7 +61,7 @@ class FactoryUserViewSet(DateFilterSchemaMixin, ModelViewSet):
     ordering_fields = ['created_at', 'updated_at']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return FactoryUser.objects.none()
             

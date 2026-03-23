@@ -72,10 +72,11 @@ class UnifiedProfileAPIView(APIView):
         responses={200: FactoryUserProfileSerializer()}
     )
     def get(self, request: HttpRequest | Request):
-        if isinstance(request.user, FactoryUser):
-            serializer = FactoryUserProfileSerializer(request.user)
-        elif isinstance(request.user, Driver):
-            serializer = DriverProfileSerializer(request.user)
+        user = request.driver or request.guard or request.operator or request.manager
+        if isinstance(user, FactoryUser):
+            serializer = FactoryUserProfileSerializer(user)
+        elif isinstance(user, Driver):
+            serializer = DriverProfileSerializer(user)
         else:
             raise NotFound("Foydalanuvchi topilmadi.")
         return Response(serializer.data)
@@ -115,9 +116,10 @@ class UnifiedChangePasswordAPIView(APIView):
         request_body=UnifiedChangePasswordSerializer,
     )
     def post(self, request: HttpRequest | Request):
+        user = request.driver or request.guard or request.operator or request.manager
         serializer = UnifiedChangePasswordSerializer(
             data=request.data,
-            context={"user": request.user}
+            context={"user": user}
         )
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -252,10 +254,11 @@ class UnifiedMobileProfileAPIView(APIView):
         responses={200: FactoryUserProfileSerializer()}
     )
     def get(self, request: HttpRequest | Request):
-        if isinstance(request.user, Driver):
-            serializer = DriverProfileSerializer(request.user)
+        user = request.driver or request.guard or request.operator or request.manager
+        if isinstance(user, Driver):
+            serializer = DriverProfileSerializer(user)
         else:
-            serializer = FactoryUserProfileSerializer(request.user)
+            serializer = FactoryUserProfileSerializer(user)
         return Response(serializer.data)
 
 class UnifiedMobileLogoutAPIView(APIView):
@@ -298,9 +301,10 @@ class UnifiedMobileChangePasswordAPIView(APIView):
         request_body=UnifiedChangePasswordSerializer,
     )
     def post(self, request: HttpRequest | Request):
+        user = request.driver or request.guard or request.operator or request.manager
         serializer = UnifiedChangePasswordSerializer(
             data=request.data,
-            context={"user": request.user}
+            context={"user": user}
         )
         serializer.is_valid(raise_exception=True)
         user = serializer.save()

@@ -37,7 +37,7 @@ class PermissionMetaMixin:
         meta = {
             "can_access": True # Foydalanuvchi bu yerda bo'lsa, demak ruxsat bor
         }
-        
+        user = request.driver or request.guard or request.operator or request.manager
         permission_classes = getattr(self, 'permission_classes', [])
         for perm_class in permission_classes:
             perm_instance = perm_class() if callable(perm_class) else perm_class
@@ -47,8 +47,8 @@ class PermissionMetaMixin:
                 read_perm = perm_instance.read_perm
                 
                 if crud_perm:
-                    meta['can_edit'] = request.user.has_perm(crud_perm)
+                    meta['can_edit'] = user.has_perm(crud_perm)
                 if read_perm:
-                    meta['can_read'] = request.user.has_perm(read_perm)
+                    meta['can_read'] = user.has_perm(read_perm)
         
         return meta

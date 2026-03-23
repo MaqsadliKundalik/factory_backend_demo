@@ -79,7 +79,7 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     search_fields = ['display_id', 'client__name']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Order.objects.none()
         if hasattr(user, 'whouses') and user.whouses.exists():
@@ -156,7 +156,7 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     search_fields = ['order__display_id', 'driver__name', 'transport__model']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return SubOrder.objects.none()
         if hasattr(user, 'whouses') and user.whouses.exists():

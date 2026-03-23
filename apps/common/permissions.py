@@ -9,7 +9,8 @@ class HasDynamicPermission(BasePermission):
         return self
 
     def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
+        user = request.driver or request.guard or request.operator or request.manager
+        if not user or not user.is_authenticated:
             return False
         
         # Determine if this is a read or write operation
@@ -22,4 +23,4 @@ class HasDynamicPermission(BasePermission):
             return True # If no permission specified, allow
 
         # Check the boolean field on FactoryUser directly
-        return getattr(request.user, perm_to_check, False)
+        return getattr(user, perm_to_check, False)

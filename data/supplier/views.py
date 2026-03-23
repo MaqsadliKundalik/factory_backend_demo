@@ -44,7 +44,7 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
     search_fields = ['name', 'inn_number']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Supplier.objects.none()
         
@@ -53,7 +53,7 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
         return Supplier.objects.all()
 
     def perform_create(self, serializer):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         whouse_id = self.request.data.get('whouse')
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
@@ -87,7 +87,7 @@ class SupplierSelectView(APIView):
         manual_parameters=SUPPLIER_FILTER_PARAMS
     )
     def get(self, request):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
         

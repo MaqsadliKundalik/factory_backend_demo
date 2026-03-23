@@ -57,7 +57,7 @@ class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet)
     ordering_fields = ['created_at', 'updated_at']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Transport.objects.none()
 
@@ -65,7 +65,7 @@ class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet)
         return Transport.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         whouse_id = self.request.data.get('whouse')
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
@@ -87,7 +87,7 @@ class TransportSelectView(APIView):
         transport_type = request.query_params.get('type')
         car_type = request.query_params.get('car_type')
 
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
         

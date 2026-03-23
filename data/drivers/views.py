@@ -39,13 +39,13 @@ class DriverViewSet(PermissionMetaMixin, ModelViewSet):
     ordering_fields = ['created_at', 'updated_at']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Driver.objects.none()
         return Driver.objects.filter(whouse__in=user.whouses.all())
 
     def perform_create(self, serializer):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         whouse_id = self.request.data.get('whouse')
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
@@ -80,7 +80,7 @@ class DriverPasswordChangeView(APIView):
     )
     def post(self, request, driver_id):
         try:
-            user = request.user
+            user = request.driver or request.guard or request.operator or request.manager
             if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
                 return Response({"error": "Требуется аутентификация"}, status=status.HTTP_401_UNAUTHORIZED)
 

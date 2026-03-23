@@ -113,7 +113,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     search_fields = ['driver__name', 'transport__number']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return ExcavatorSubOrder.objects.none()
         if hasattr(user, 'whouses') and user.whouses.exists():
@@ -135,7 +135,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         new_status = serializer.validated_data['status']
         timestamp = serializer.validated_data['timestamp']
 
-        user = request.user
+        user = request.driver or request.guard or request.operator or request.manager
         instance.status_history = instance.status_history or []
         
         instance.status_history.append({
@@ -166,7 +166,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         serializer = StartOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = request.user
+        user = request.driver or request.guard or request.operator or request.manager
         sign = serializer.validated_data.get('sign')
         timestamp = serializer.validated_data.get('timestamp')
 
@@ -207,7 +207,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         serializer.is_valid(raise_exception=True)
         timestamp = serializer.validated_data.get('timestamp')
 
-        user = request.user
+        user = request.driver or request.guard or request.operator or request.manager
         sign = serializer.validated_data.get('sign')
         if sign:
             instance.after_sign_id = sign

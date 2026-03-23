@@ -133,7 +133,7 @@ class ProfileAPIView(APIView):
     )
     def get(self, request: HttpRequest | Request):
         from .serializers import ProfileSerializer
-        serializer = ProfileSerializer(request.user)
+        serializer = ProfileSerializer(request.driver or request.guard or request.operator or request.manager)
         return Response(serializer.data)
 
 class LogoutAPIView(APIView):
@@ -214,7 +214,7 @@ class ChangePasswordAPIView(APIView):
 
         serializer = ChangePasswordSerializer(
             data=request.data,
-            context={"driver": request.user}
+            context={"driver": request.driver or request.guard or request.operator or request.manager}
         )
         serializer.is_valid(raise_exception=True)
 

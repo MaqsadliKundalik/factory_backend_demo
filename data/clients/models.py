@@ -43,6 +43,9 @@ class ClientBranches(BaseModel):
     def __str__(self):
         return f"{self.name} - {self.client}"
 
+    class Meta:
+        unique_together = ["client", "longitude", "latitude"]
+
 class ClientPhone(BaseModel):
     client: "Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name="phones")
     phone_number = models.CharField(max_length=255)
@@ -53,3 +56,6 @@ class ClientPhone(BaseModel):
     
     def __str__(self):
         return f"{self.phone_number} - {self.name} - {self.role}"
+
+    class Meta:
+        unique_together = ["client", "phone_number"]

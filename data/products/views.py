@@ -80,7 +80,7 @@ class WhouseProductsHistoryViewSet(DateFilterSchemaMixin, PermissionMetaMixin, R
     search_fields = ['product__name']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return WhouseProductsHistory.objects.none()
 
@@ -111,7 +111,7 @@ class ProductTypeViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSe
     search_fields = ['name']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return ProductType.objects.none()
 
@@ -119,7 +119,7 @@ class ProductTypeViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSe
         return ProductType.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         whouse_id = self.request.data.get('whouse')
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
@@ -137,7 +137,7 @@ class ProductUnitViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSe
     search_fields = ['name']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return ProductUnit.objects.none()
 
@@ -145,7 +145,7 @@ class ProductUnitViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSe
         return ProductUnit.objects.filter(whouse__in=whouses)
 
     def perform_create(self, serializer):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         whouse_id = self.request.data.get('whouse')
         if whouse_id:
             serializer.save(whouse_id=whouse_id)
@@ -171,7 +171,7 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return Product.objects.none()
 
@@ -188,7 +188,7 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         whouse_id = self.request.data.get('whouse')
         # Warehouse handling is also in Serializer.create for Product
 
@@ -209,7 +209,7 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     )
     @action(detail=False, methods=['get'], pagination_class=None)
     def select(self, request):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
         
@@ -246,7 +246,7 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return WhouseProducts.objects.none()
 
@@ -257,7 +257,7 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(creator=self.request.user)
+        serializer.save(creator=self.request.driver or self.request.guard or self.request.operator or self.request.manager)
 
     @swagger_auto_schema(
         operation_summary="Select whouse products (id and name only)",
@@ -266,7 +266,7 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
     )
     @action(detail=False, methods=['get'], pagination_class=None)
     def select(self, request):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
         
@@ -299,7 +299,7 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     search_fields = ['product__name']
 
     def get_queryset(self):
-        user = self.request.user
+        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
         if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
             return WhouseProducts.objects.none()
 
@@ -377,7 +377,7 @@ class ProductAndItemUpdateView(APIView):
     @transaction.atomic
     def put(self, request, pk):
         try:
-            user = request.user
+            user = request.driver or request.guard or request.operator or request.manager
             if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
                 return Response({"error": "Требуется аутентификация"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -410,7 +410,7 @@ class ProductAndItemUpdateView(APIView):
     @transaction.atomic
     def patch(self, request, pk):
         try:
-            user = request.user
+            user = request.driver or request.guard or request.operator or request.manager
             if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
                 return Response({"error": "Требуется аутентификация"}, status=status.HTTP_401_UNAUTHORIZED)
 
