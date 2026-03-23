@@ -269,7 +269,7 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             return self.whouse_not_found()
 
         df = self.get_date_filters(request)
-        qs = Order.objects.filter(**whouse_filter, **df)
+        qs = ExcavatorOrder.objects.filter(**whouse_filter, **df)
         status_counts = {
             'total': qs.count(),
             'new': qs.filter(status=ExcavatorOrder.Status.NEW).count(),
@@ -279,7 +279,7 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             'expired': qs.filter(status=ExcavatorOrder.Status.EXPIRED).count()
         }
         if whouse_filter:
-            whouse_filter = {'order__whouse': whouse_filter['whouse']}
+            whouse_filter = {'parent__whouse': whouse_filter['whouse']}
 
         sub_orders = ExcavatorSubOrder.objects.filter(**df, **whouse_filter).exclude(status_history=[])
         avg = calculate_status_durations(sub_orders)

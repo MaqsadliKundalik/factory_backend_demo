@@ -5,6 +5,8 @@ class SimpleCountStatsSerializer(serializers.Serializer):
     clients = serializers.IntegerField()
     suppliers = serializers.IntegerField()
     transports = serializers.IntegerField()
+    products = serializers.IntegerField()
+    orders = serializers.IntegerField()
 
 class IncomeProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
@@ -12,6 +14,7 @@ class IncomeProductStatsSerializer(serializers.Serializer):
     
 class SupplierIncomeProductStatsSerializer(serializers.Serializer):
     supplier = serializers.CharField()
+    total = serializers.FloatField()
     products = IncomeProductStatsSerializer(many=True)
 
 class OutcomingProductStatsSerializer(serializers.Serializer):
@@ -36,7 +39,7 @@ class StatusDurationSerializer(serializers.Serializer):
     completed = serializers.FloatField()
     total = serializers.IntegerField()
 
-class OrderStatsSerializer(OrderStatusStatsSerializer):
+class OrderStatsSerializer(serializers.Serializer):
     status_counts = OrderStatusStatsSerializer()
     status_durations = StatusDurationSerializer()
 
@@ -56,7 +59,7 @@ class ExcavatorStatusDurationSerializer(serializers.Serializer):
     expired = serializers.FloatField()
     total = serializers.IntegerField()
 
-class ExcavatorOrderStatsSerializer(ExcavatorOrderStatusStatsSerializer):
+class ExcavatorOrderStatsSerializer(serializers.Serializer):
     status_counts = ExcavatorOrderStatusStatsSerializer()
     status_durations = ExcavatorStatusDurationSerializer()
 
