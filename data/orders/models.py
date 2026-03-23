@@ -44,7 +44,8 @@ class Order(BaseModel):
 
     class Rejector(models.TextChoices):
         CLIENT = "CLIENT", "Client"
-        FACTORY = "FACTORY", "Factory"
+        OPERATOR = "OPERATOR", "Operator"
+        MANAGER = "MANAGER", "Manager"
 
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
     client: "Client" = models.ForeignKey(
@@ -56,26 +57,11 @@ class Order(BaseModel):
     whouse: "Whouse" = models.ForeignKey(
         "factory_whouse.Whouse", on_delete=models.PROTECT, related_name="orders"
     )
-    product: "Product" = models.ForeignKey(
-        "products.Product", on_delete=models.PROTECT, related_name="orders"
-    )
-    type: "ProductType" = models.ForeignKey(
-        "products.ProductType", on_delete=models.PROTECT, related_name="orders"
-    )
-    unit: "ProductUnit" = models.ForeignKey(
-        "products.ProductUnit", on_delete=models.PROTECT, related_name="orders"
-    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    rejector: "FactoryUser" = models.ForeignKey(
-        "users.FactoryUser",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="rejected_orders",
-    )
+    rejector_role = models.CharField(max_length=20, choices=Rejector.choices, null=True, blank=True)
+    rejector_id = models.UUIDField(null=True, blank=True)
+    
     def save(self, *args, **kwargs):
         if not self.display_id:
             last_order = Order.all_objects.all().order_by("display_id").last()
@@ -130,3 +116,40 @@ class SubOrder(BaseModel):
             else f"Ord-{self.order.id}"
         )
         return f"SubOrd-{self.id} for {display_name}"
+
+class OrderItem(BaseModel):
+    order: "Order" = models.ForeignKey(
+        "orders.Order", on_delete=models.CASCADE, related_name="order_items"
+    )
+    product: "Product" = models.ForeignKey(
+        "products.Product", on_delete=models.PROTECT, related_name="order_items"
+    )
+    type: "ProductType" = models.ForeignKey(
+        "products.ProductType", on_delete=models.PROTECT, related_name="order_items"
+    )
+    unit: "ProductUnit" = models.ForeignKey(
+        "products.ProductUnit", on_delete=models.PROTECT, related_name="order_items"
+    )
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    def __str__(self):
+        return f"OrderItem-{self.id} for {self.order}"
+
+class SubOrderItem(BaseModel):
+    sub_order: "SubOrder" = models.ForeignKey(
+        "orders.SubOrder", on_delete=models.CASCADE, related_name="sub_order_items"
+    )
+    product: "Product" = models.ForeignKey(
+        "products.Product", on_delete=models.PROTECT, related_name="sub_order_items"
+    )
+    type: "ProductType" = models.ForeignKey(
+        "products.ProductType", on_delete=models.PROTECT, related_name="sub_order_items"
+    )
+    unit: "ProductUnit" = models.ForeignKey(
+        "products.ProductUnit", on_delete=models.PROTECT, related_name="sub_order_items"
+    )
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    def __str__(self):
+        return f"SubOrderItem-{self.id} for {self.sub_order}"

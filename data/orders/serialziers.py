@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order, SubOrder
+from .models import Order, SubOrder, OrderItem
 from data.products.serializers import (
     ProductSerializer,
     ProductTypeSerializer,
@@ -7,7 +7,6 @@ from data.products.serializers import (
 )
 from data.clients.serializers import ClientSerializer, ClientBranchesSerializer
 from data.drivers.serializers import DriverSerializer
-from data.transports.models import Transport
 from data.transports.serializers import TransportSerializer
 from data.files.serializers import FileSerializer
 
@@ -31,6 +30,30 @@ class CompetedStatusSerializer(serializers.Serializer):
     files = serializers.ListField(
         child=serializers.UUIDField(), required=False, default=list
     )
+
+
+# --- OrderItem serializers ---
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["id", "product", "type", "unit", "quantity", "price"]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["product"] = ProductSerializer(instance.product).data
+        rep["type"] = ProductTypeSerializer(instance.type).data
+        rep["unit"] = ProductUnitSerializer(instance.unit).data
+        return rep
+
+
+class OrderItemWriteSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(required=False)
+
+    class Meta:
+        model = OrderItem
+        fields = ["id", "product", "type", "unit", "quantity", "price"]
 
 
 # --- SubOrder serializers ---
@@ -92,9 +115,9 @@ class SubOrderSerializer(serializers.ModelSerializer):
                 "id": instance.order.whouse.id,
                 "name": instance.order.whouse.name,
             },
-            "product": ProductSerializer(instance.order.product).data,
-            "type": ProductTypeSerializer(instance.order.type).data,
-            "unit": ProductUnitSerializer(instance.order.unit).data,
+            "order_items": OrderItemSerializer(
+                instance.order.order_items.all(), many=True
+            ).data,
             "status": instance.order.status,
             "created_at": instance.order.created_at,
         }
@@ -110,6 +133,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     sub_orders = SubOrderInlineSerializer(many=True, read_only=True)
+    order_items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
@@ -119,14 +143,12 @@ class OrderSerializer(serializers.ModelSerializer):
             "client",
             "branch",
             "whouse",
-            "product",
-            "type",
-            "unit",
             "status",
-            "quantity",
+            "rejector_role",
+            "rejector_id",
+            "order_items",
             "sub_orders",
             "created_at",
-            "price",
         ]
         read_only_fields = ["id", "display_id", "created_at"]
 
@@ -135,16 +157,12 @@ class OrderSerializer(serializers.ModelSerializer):
         rep["client"] = ClientSerializer(instance.client).data
         rep["branch"] = ClientBranchesSerializer(instance.branch).data
         rep["whouse"] = {"id": instance.whouse.id, "name": instance.whouse.name}
-        rep["product"] = ProductSerializer(instance.product).data
-        rep["type"] = ProductTypeSerializer(instance.type).data
-        rep["unit"] = ProductUnitSerializer(instance.unit).data
-        if instance.rejector:
-            rep["rejector"] = instance.rejector
         return rep
 
 
 class OrderWriteSerializer(serializers.ModelSerializer):
     sub_orders = SubOrderInlineSerializer(many=True, required=False)
+    order_items = OrderItemWriteSerializer(many=True, required=False)
 
     class Meta:
         model = Order
@@ -154,19 +172,19 @@ class OrderWriteSerializer(serializers.ModelSerializer):
             "client",
             "branch",
             "whouse",
-            "product",
-            "type",
-            "unit",
             "status",
-            "quantity",
+            "order_items",
             "sub_orders",
-            "price",
         ]
         read_only_fields = ["id", "display_id"]
 
     def create(self, validated_data):
         sub_orders_data = validated_data.pop("sub_orders", [])
+        order_items_data = validated_data.pop("order_items", [])
         order = Order.objects.create(**validated_data)
+        for item_data in order_items_data:
+            item_data.pop("id", None)
+            OrderItem.objects.create(order=order, **item_data)
         for sub_data in sub_orders_data:
             sub_data.pop("id", None)
             SubOrder.objects.create(order=order, **sub_data)
@@ -174,10 +192,21 @@ class OrderWriteSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         sub_orders_data = validated_data.pop("sub_orders", None)
+        order_items_data = validated_data.pop("order_items", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+
+        if order_items_data is not None:
+            incoming_ids = {item["id"] for item in order_items_data if "id" in item}
+            instance.order_items.exclude(id__in=incoming_ids).delete()
+            for item_data in order_items_data:
+                item_id = item_data.pop("id", None)
+                if item_id:
+                    OrderItem.objects.filter(id=item_id, order=instance).update(**item_data)
+                else:
+                    OrderItem.objects.create(order=instance, **item_data)
 
         if sub_orders_data is not None:
             incoming_ids = {sub["id"] for sub in sub_orders_data if "id" in sub}
@@ -185,9 +214,7 @@ class OrderWriteSerializer(serializers.ModelSerializer):
             for sub_data in sub_orders_data:
                 sub_id = sub_data.pop("id", None)
                 if sub_id:
-                    SubOrder.objects.filter(id=sub_id, order=instance).update(
-                        **sub_data
-                    )
+                    SubOrder.objects.filter(id=sub_id, order=instance).update(**sub_data)
                 else:
                     SubOrder.objects.create(order=instance, **sub_data)
 

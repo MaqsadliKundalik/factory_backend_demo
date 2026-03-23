@@ -91,7 +91,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class OrderFilter(BaseDateFilterSet):
     class Meta:
         model = Order
-        fields = ["client", "branch", "whouse", "product", "type", "unit", "status"]
+        fields = ["client", "branch", "whouse", "status"]
 
 
 class SubOrderFilter(BaseDateFilterSet):
@@ -169,12 +169,12 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
+            required=["rejector_role"],
             properties={
-                "quantity": openapi.Schema(
-                    type=openapi.TYPE_NUMBER, description="Reject quantity"
-                ),
-                "rejector": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Rejector role"
+                "rejector_role": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Rejector role: CLIENT or FACTORY",
+                    enum=["CLIENT", "FACTORY"],
                 ),
             },
         ),
@@ -183,25 +183,32 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, *args, **kwargs):
         order = self.get_object()
-        quantity = request.data.get("quantity")
-        rejector = request.data.get("rejector")
-        order.quantity = max(0, order.quantity - quantity)
-        if order.quantity == 0:
-            order.status = Order.Status.REJECTED
-        order.rejector = rejector
+        rejector_role = request.data.get("rejector_role")
+
+        valid_roles = list(Order.Rejector.values)
+        if rejector_role not in valid_roles:
+            return Response(
+                {"rejector_role": f"Must be one of: {', '.join(valid_roles)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = (
+            request.driver
+            or request.guard
+            or request.operator
+            or request.manager
+        )
+
+        order.status = Order.Status.REJECTED
+        order.rejector_role = rejector_role
+        order.rejector_id = user.id if rejector_role != Order.Rejector.CLIENT else order.client.id
         order.save()
 
-        all_sub_orders = SubOrder.objects.filter(order=order).order_by("quantity")
-        for sub_order in all_sub_orders:
-            if quantity:
-                quantity, sub_order.quantity = max(
-                    0, quantity - sub_order.quantity
-                ), max(0, sub_order.quantity - quantity)
-                if sub_order.quantity == 0:
-                    sub_order.status = SubOrder.Status.REJECTED
-                sub_order.save()
-            else:
-                break
+        SubOrder.objects.filter(
+            order=order
+        ).exclude(
+            status=SubOrder.Status.COMPLETED
+        ).update(status=SubOrder.Status.REJECTED)
 
         return Response(OrderSerializer(order).data)
 
