@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+
 class SimpleCountStatsSerializer(serializers.Serializer):
     drivers = serializers.IntegerField()
     clients = serializers.IntegerField()
@@ -8,18 +9,22 @@ class SimpleCountStatsSerializer(serializers.Serializer):
     products = serializers.IntegerField()
     orders = serializers.IntegerField()
 
+
 class IncomeProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
     income = serializers.IntegerField()
-    
+
+
 class SupplierIncomeProductStatsSerializer(serializers.Serializer):
     supplier = serializers.CharField()
     total = serializers.FloatField()
     products = IncomeProductStatsSerializer(many=True)
 
+
 class OutcomingProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
     outcoming = serializers.IntegerField()
+
 
 class OrderStatusStatsSerializer(serializers.Serializer):
     new = serializers.IntegerField()
@@ -30,6 +35,7 @@ class OrderStatusStatsSerializer(serializers.Serializer):
     completed = serializers.IntegerField()
     total = serializers.IntegerField()
 
+
 class StatusDurationSerializer(serializers.Serializer):
     new = serializers.FloatField()
     in_progress = serializers.FloatField()
@@ -39,9 +45,11 @@ class StatusDurationSerializer(serializers.Serializer):
     completed = serializers.FloatField()
     total = serializers.IntegerField()
 
+
 class OrderStatsSerializer(serializers.Serializer):
     status_counts = OrderStatusStatsSerializer()
     status_durations = StatusDurationSerializer()
+
 
 class ExcavatorOrderStatusStatsSerializer(serializers.Serializer):
     new = serializers.IntegerField()
@@ -51,6 +59,7 @@ class ExcavatorOrderStatusStatsSerializer(serializers.Serializer):
     expired = serializers.IntegerField()
     total = serializers.IntegerField()
 
+
 class ExcavatorStatusDurationSerializer(serializers.Serializer):
     new = serializers.FloatField()
     in_progress = serializers.FloatField()
@@ -59,7 +68,7 @@ class ExcavatorStatusDurationSerializer(serializers.Serializer):
     expired = serializers.FloatField()
     total = serializers.IntegerField()
 
+
 class ExcavatorOrderStatsSerializer(serializers.Serializer):
     status_counts = ExcavatorOrderStatusStatsSerializer()
     status_durations = ExcavatorStatusDurationSerializer()
-

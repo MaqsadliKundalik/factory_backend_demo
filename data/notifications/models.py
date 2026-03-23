@@ -6,10 +6,12 @@ from apps.common.models import BaseModel
 class Notification(BaseModel):
     title = models.CharField(max_length=255)
     message = models.TextField()
-    
+
     from_role = models.CharField(max_length=255)
     to_role = models.CharField(max_length=255)
-    to_user_id = models.UUIDField(null=True, blank=True)  # agar berilsa, faqat shu usergagina
+    to_user_id = models.UUIDField(
+        null=True, blank=True
+    )  # agar berilsa, faqat shu usergagina
 
     is_read = models.BooleanField(default=False)
 

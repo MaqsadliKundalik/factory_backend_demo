@@ -5,6 +5,7 @@ from data.drivers.models import Driver
 from data.drivers.serializers import DriverSerializer
 from data.users.serializers import FactoryUserSerializer
 
+
 class WhouseGetSerializer(serializers.ModelSerializer):
     managers = serializers.SerializerMethodField()
     factory_operators = serializers.SerializerMethodField()
@@ -16,11 +17,11 @@ class WhouseGetSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "managers", "factory_operators", "drivers", "guards"]
 
     def get_managers(self, obj):
-        users = FactoryUser.objects.filter(whouses=obj, role='manager')
+        users = FactoryUser.objects.filter(whouses=obj, role="manager")
         return FactoryUserSerializer(users, many=True).data
 
     def get_factory_operators(self, obj):
-        users = FactoryUser.objects.filter(whouses=obj, role='operator')
+        users = FactoryUser.objects.filter(whouses=obj, role="operator")
         return FactoryUserSerializer(users, many=True).data
 
     def get_drivers(self, obj):
@@ -28,8 +29,9 @@ class WhouseGetSerializer(serializers.ModelSerializer):
         return DriverSerializer(drivers, many=True).data
 
     def get_guards(self, obj):
-        users = FactoryUser.objects.filter(whouses=obj, role='guard')
+        users = FactoryUser.objects.filter(whouses=obj, role="guard")
         return FactoryUserSerializer(users, many=True).data
+
 
 class WhouseCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:

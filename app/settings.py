@@ -26,13 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-359pbm8gkkvm=dv*02#6&+y!&q+c(bpmjvzw6yntj93@k1-52e')
-BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "django-insecure-359pbm8gkkvm=dv*02#6&+y!&q+c(bpmjvzw6yntj93@k1-52e"
+)
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
 
 # SayqalSMS configuration
-SAYQAL_USERNAME = os.environ.get('SAYQAL_USERNAME')
-SAYQAL_TOKEN = os.environ.get('SAYQAL_TOKEN')
-SAYQAL_NICKNAME = os.environ.get('SAYQAL_NICKNAME')
+SAYQAL_USERNAME = os.environ.get("SAYQAL_USERNAME")
+SAYQAL_TOKEN = os.environ.get("SAYQAL_TOKEN")
+SAYQAL_NICKNAME = os.environ.get("SAYQAL_NICKNAME")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -42,63 +44,63 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'corsheaders',
-    'django_filters',
-    'drf_yasg',
-    'apps.common.apps.CommonConfig',
-    'data.drivers.apps.DriversConfig',
-    'data.session.apps.SessionConfig',
-    'data.whouse.apps.WhouseConfig',
-    'data.products.apps.ProductsConfig',
-    'data.transports.apps.TransportsConfig',
-    'data.users.apps.UsersConfig',
-    'data.clients.apps.ClientsConfig',
-    'data.files.apps.FilesConfig',
-    'data.notifications.apps.NotificationsConfig',
-    'data.orders.apps.OrdersConfig',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
+    "django_filters",
+    "drf_yasg",
+    "apps.common.apps.CommonConfig",
+    "data.drivers.apps.DriversConfig",
+    "data.session.apps.SessionConfig",
+    "data.whouse.apps.WhouseConfig",
+    "data.products.apps.ProductsConfig",
+    "data.transports.apps.TransportsConfig",
+    "data.users.apps.UsersConfig",
+    "data.clients.apps.ClientsConfig",
+    "data.files.apps.FilesConfig",
+    "data.notifications.apps.NotificationsConfig",
+    "data.orders.apps.OrdersConfig",
     "data.supplier.apps.SupplierConfig",
     "data.excavator.apps.ExcavatorConfig",
     "data.stats.apps.StatsConfig",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'app.urls'
+ROOT_URLCONF = "app.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'app.wsgi.application'
+WSGI_APPLICATION = "app.wsgi.application"
 
 
 # Database
@@ -112,7 +114,7 @@ if not DATABASE_URL:
     db_host = os.environ.get("POSTGRES_HOST")
     db_port = os.environ.get("POSTGRES_PORT", "5432")
     db_name = os.environ.get("POSTGRES_DB")
-    
+
     # If any the host is missing, we fall back to local defaults ONLY if DEBUG is True
     if not db_host:
         if DEBUG:
@@ -122,15 +124,13 @@ if not DATABASE_URL:
             db_name = db_name or "sender"
         else:
             raise ValueError("DATABASE_URL or POSTGRES_HOST must be set in production")
-    
+
     DATABASE_URL = f"postgres://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 else:
     # If DATABASE_URL is already provided, we don't need to do anything
     pass
 
-DATABASES = {
-    "default": dj_database_url.parse(DATABASE_URL)
-}
+DATABASES = {"default": dj_database_url.parse(DATABASE_URL)}
 
 
 # Password validation
@@ -138,16 +138,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -155,9 +155,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'ru-ru'
+LANGUAGE_CODE = "ru-ru"
 
-TIME_ZONE = 'Asia/Tashkent'
+TIME_ZONE = "Asia/Tashkent"
 
 USE_I18N = True
 
@@ -167,61 +167,59 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CSRF_TRUSTED_ORIGINS = os.environ.get(
-    'CSRF_TRUSTED_ORIGINS', 
-    'https://*.render.com,https://*.vercel.app,https://factory-backend-demo.onrender.com'
-).split(',')
+    "CSRF_TRUSTED_ORIGINS",
+    "https://*.render.com,https://*.vercel.app,https://factory-backend-demo.onrender.com",
+).split(",")
 
 CORS_ALLOWED_ORIGINS = os.environ.get(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,http://localhost:8000,http://127.0.0.1:8000,https://factory-gilt-eta.vercel.app'
-).split(',')
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,http://localhost:8000,http://127.0.0.1:8000,https://factory-gilt-eta.vercel.app",
+).split(",")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # AUTH_USER_MODEL = 'users.FactoryUser'
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # settings.py
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'apps.common.auth.authentication.UnifiedJWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "apps.common.auth.authentication.UnifiedJWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_FILTER_BACKENDS': (
-        'django_filters.rest_framework.DjangoFilterBackend',
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
 }
 
 CSRF_COOKIE_SECURE = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 
 
 # Celery
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://localhost:6379/0"
+)
 CELERY_TIMEZONE = TIME_ZONE
 
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
-    'expire-excavator-orders-daily': {
-        'task': 'data.excavator.tasks.expire_excavator_orders',
-        'schedule': crontab(hour=0, minute=0),
+    "expire-excavator-orders-daily": {
+        "task": "data.excavator.tasks.expire_excavator_orders",
+        "schedule": crontab(hour=0, minute=0),
     },
 }
 
@@ -231,16 +229,12 @@ CELERY_BEAT_SCHEDULE = {
 
 
 SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-        }
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
     },
-    'USE_SESSION_AUTH': False,
-    'JSON_EDITOR': True,
-    'DEFAULT_FILTER_INSPECTORS': [
-        'drf_yasg.inspectors.CoreAPICompatInspector',
+    "USE_SESSION_AUTH": False,
+    "JSON_EDITOR": True,
+    "DEFAULT_FILTER_INSPECTORS": [
+        "drf_yasg.inspectors.CoreAPICompatInspector",
     ],
 }

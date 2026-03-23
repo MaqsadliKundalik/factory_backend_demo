@@ -11,10 +11,15 @@ from data.stats.serializers import (
     StatusDurationSerializer,
     ExcavatorOrderStatusStatsSerializer,
     ExcavatorStatusDurationSerializer,
-    OrderStatsSerializer,   
+    OrderStatsSerializer,
     ExcavatorOrderStatsSerializer,
 )
-from data.products.models import Product, WhouseProducts, WhouseProductsHistory, HistoryStatus
+from data.products.models import (
+    Product,
+    WhouseProducts,
+    WhouseProductsHistory,
+    HistoryStatus,
+)
 from data.supplier.models import Supplier
 from data.drivers.models import Driver
 from data.clients.models import Client
@@ -26,9 +31,9 @@ from django.db.models import Sum
 from data.whouse.models import Whouse
 
 WHOUSE_PARAM = openapi.Parameter(
-    'whouse',
+    "whouse",
     openapi.IN_QUERY,
-    description='Whouse ID (optional, filters by warehouse)',
+    description="Whouse ID (optional, filters by warehouse)",
     type=openapi.TYPE_STRING,
     format=openapi.FORMAT_UUID,
     required=False,
@@ -36,17 +41,17 @@ WHOUSE_PARAM = openapi.Parameter(
 DATE_RANGE_PARAMS = [
     WHOUSE_PARAM,
     openapi.Parameter(
-        'start_date',
+        "start_date",
         openapi.IN_QUERY,
-        description='Filter from date (YYYY-MM-DD)',
+        description="Filter from date (YYYY-MM-DD)",
         type=openapi.TYPE_STRING,
         format=openapi.FORMAT_DATE,
         required=False,
     ),
     openapi.Parameter(
-        'end_date',
+        "end_date",
         openapi.IN_QUERY,
-        description='Filter to date (YYYY-MM-DD)',
+        description="Filter to date (YYYY-MM-DD)",
         type=openapi.TYPE_STRING,
         format=openapi.FORMAT_DATE,
         required=False,
@@ -54,7 +59,7 @@ DATE_RANGE_PARAMS = [
 ]
 OUTCOMING_PRODUCT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
     openapi.Parameter(
-        'client',
+        "client",
         openapi.IN_QUERY,
         type=openapi.TYPE_STRING,
         format=openapi.FORMAT_UUID,
@@ -64,7 +69,7 @@ OUTCOMING_PRODUCT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
 
 INCOME_PRODUCT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
     openapi.Parameter(
-        'supplier',
+        "supplier",
         openapi.IN_QUERY,
         type=openapi.TYPE_STRING,
         format=openapi.FORMAT_UUID,
@@ -81,18 +86,20 @@ def calculate_status_durations(sub_orders):
         for i, entry in enumerate(history):
             if not isinstance(entry, dict):
                 continue
-            status_key = entry.get('status', '').upper()
+            status_key = entry.get("status", "").upper()
             if not status_key or i + 1 >= len(history):
                 continue
             next_entry = history[i + 1]
             if not isinstance(next_entry, dict):
                 continue
             try:
-                t1 = datetime.fromisoformat(str(entry['timestamp']))
-                t2 = datetime.fromisoformat(str(next_entry['timestamp']))
+                t1 = datetime.fromisoformat(str(entry["timestamp"]))
+                t2 = datetime.fromisoformat(str(next_entry["timestamp"]))
                 minutes = (t2 - t1).total_seconds() / 60
                 if minutes >= 0:
-                    duration_totals[status_key] = duration_totals.get(status_key, 0) + minutes
+                    duration_totals[status_key] = (
+                        duration_totals.get(status_key, 0) + minutes
+                    )
                     duration_counts[status_key] = duration_counts.get(status_key, 0) + 1
             except (KeyError, ValueError):
                 continue
@@ -107,43 +114,43 @@ def calculate_status_durations(sub_orders):
 
 class WhouseViewMixin(APIView):
     def get_whouse_filter(self, request):
-        whouse_id = request.query_params.get('whouse')
+        whouse_id = request.query_params.get("whouse")
         if not whouse_id:
             return {}
         whouse = Whouse.objects.filter(id=whouse_id).first()
         if not whouse:
             return None
-        return {'whouse': whouse}
+        return {"whouse": whouse}
 
     def whouse_not_found(self):
-        return Response({'error': 'Whouse not found'}, status=404)
+        return Response({"error": "Whouse not found"}, status=404)
 
 
 class DateRangeFilterMixin:
-    def get_date_filters(self, request, prefix=''):
+    def get_date_filters(self, request, prefix=""):
         filters = {}
-        start = request.query_params.get('start_date')
-        end = request.query_params.get('end_date')
-        field = f'{prefix}created_at__date'
+        start = request.query_params.get("start_date")
+        end = request.query_params.get("end_date")
+        field = f"{prefix}created_at__date"
         if start:
             try:
-                filters[f'{field}__gte'] = date_type.fromisoformat(start)
+                filters[f"{field}__gte"] = date_type.fromisoformat(start)
             except ValueError:
                 pass
         if end:
             try:
-                filters[f'{field}__lte'] = date_type.fromisoformat(end)
+                filters[f"{field}__lte"] = date_type.fromisoformat(end)
             except ValueError:
                 pass
         return filters
 
 
 class OutcomingProductFilterMixin(DateRangeFilterMixin):
-    def get_outcoming_product_filters(self, request, prefix=''):
+    def get_outcoming_product_filters(self, request, prefix=""):
         filters = self.get_date_filters(request, prefix)
-        client = request.query_params.get('client')
+        client = request.query_params.get("client")
         if client:
-            filters[f'{prefix}client_id'] = client
+            filters[f"{prefix}client_id"] = client
         return filters
 
 
@@ -154,14 +161,18 @@ class CountStatsView(DateRangeFilterMixin, WhouseViewMixin):
         if whouse_filter is None:
             return self.whouse_not_found()
         df = self.get_date_filters(request)
-        return Response({
-            'drivers': Driver.objects.filter(**whouse_filter, **df).count(),
-            'suppliers': Supplier.objects.filter(**whouse_filter, **df).count(),
-            'clients': Client.objects.filter(**whouse_filter, **df).count(),
-            'transports': Transport.objects.filter(**whouse_filter, **df).count(),
-            'products': WhouseProducts.objects.filter(**whouse_filter, **df).count(),
-            'orders': Order.objects.filter(**whouse_filter, **df).count(),
-        })
+        return Response(
+            {
+                "drivers": Driver.objects.filter(**whouse_filter, **df).count(),
+                "suppliers": Supplier.objects.filter(**whouse_filter, **df).count(),
+                "clients": Client.objects.filter(**whouse_filter, **df).count(),
+                "transports": Transport.objects.filter(**whouse_filter, **df).count(),
+                "products": WhouseProducts.objects.filter(
+                    **whouse_filter, **df
+                ).count(),
+                "orders": Order.objects.filter(**whouse_filter, **df).count(),
+            }
+        )
 
 
 class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
@@ -171,14 +182,19 @@ class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
         if whouse_filter is None:
             return self.whouse_not_found()
         df = self.get_date_filters(request)
-        supplier = request.query_params.get('supplier')
+        supplier = request.query_params.get("supplier")
         if supplier:
-            whouse_filter['supplier_id'] = supplier
+            whouse_filter["supplier_id"] = supplier
         products = Product.objects.filter(**whouse_filter, items__isnull=True)
         result = []
         for product in products:
-            total_income = WhouseProductsHistory.objects.filter(product=product, status=HistoryStatus.IN, **whouse_filter, **df).aggregate(total=Sum('quantity'))['total'] or 0
-            result.append({'product': product.name, 'income': total_income})
+            total_income = (
+                WhouseProductsHistory.objects.filter(
+                    product=product, status=HistoryStatus.IN, **whouse_filter, **df
+                ).aggregate(total=Sum("quantity"))["total"]
+                or 0
+            )
+            result.append({"product": product.name, "income": total_income})
         serializer = IncomeProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
@@ -193,8 +209,13 @@ class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
         products = Product.objects.filter(**whouse_filter)
         result = []
         for product in products:
-            total_income = WhouseProductsHistory.objects.filter(product=product, status=HistoryStatus.OUT, **whouse_filter, **df).aggregate(total=Sum('quantity'))['total'] or 0
-            result.append({'product': product.name, 'outcoming': total_income})
+            total_income = (
+                WhouseProductsHistory.objects.filter(
+                    product=product, status=HistoryStatus.OUT, **whouse_filter, **df
+                ).aggregate(total=Sum("quantity"))["total"]
+                or 0
+            )
+            result.append({"product": product.name, "outcoming": total_income})
         serializer = OutcomingProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
@@ -213,10 +234,21 @@ class SupplierIncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
             total = 0
             product_result = []
             for product in products:
-                total_income = WhouseProductsHistory.objects.filter(product=product, supplier=supplier, status=HistoryStatus.IN, **whouse_filter, **df).aggregate(total=Sum('quantity'))['total'] or 0
+                total_income = (
+                    WhouseProductsHistory.objects.filter(
+                        product=product,
+                        supplier=supplier,
+                        status=HistoryStatus.IN,
+                        **whouse_filter,
+                        **df,
+                    ).aggregate(total=Sum("quantity"))["total"]
+                    or 0
+                )
                 total += total_income
-                product_result.append({'product': product.name, 'income': total_income})
-            result.append({'supplier': supplier.name, 'total': total, 'products': product_result})
+                product_result.append({"product": product.name, "income": total_income})
+            result.append(
+                {"supplier": supplier.name, "total": total, "products": product_result}
+            )
         serializer = SupplierIncomeProductStatsSerializer(result, many=True)
         return Response(serializer.data)
 
@@ -230,33 +262,32 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         df = self.get_date_filters(request)
         qs = Order.objects.filter(**whouse_filter, **df)
         status_counts = {
-            'total': qs.count(),
-            'new': qs.filter(status=Order.Status.NEW).count(),
-            'in_progress': qs.filter(status=Order.Status.IN_PROGRESS).count(),
-            'on_way': qs.filter(status=Order.Status.ON_WAY).count(),
-            'arrived': qs.filter(status=Order.Status.ARRIVED).count(),
-            'unloading': qs.filter(status=Order.Status.UNLOADING).count(),
-            'completed': qs.filter(status=Order.Status.COMPLETED).count()
+            "total": qs.count(),
+            "new": qs.filter(status=Order.Status.NEW).count(),
+            "in_progress": qs.filter(status=Order.Status.IN_PROGRESS).count(),
+            "on_way": qs.filter(status=Order.Status.ON_WAY).count(),
+            "arrived": qs.filter(status=Order.Status.ARRIVED).count(),
+            "unloading": qs.filter(status=Order.Status.UNLOADING).count(),
+            "completed": qs.filter(status=Order.Status.COMPLETED).count(),
         }
-        
+
         if whouse_filter:
-            whouse_filter = {'order__whouse': whouse_filter['whouse']}
-        df = self.get_date_filters(request, prefix='order__')
-        sub_orders = SubOrder.objects.filter(**whouse_filter, **df).exclude(status_history=[])
+            whouse_filter = {"order__whouse": whouse_filter["whouse"]}
+        df = self.get_date_filters(request, prefix="order__")
+        sub_orders = SubOrder.objects.filter(**whouse_filter, **df).exclude(
+            status_history=[]
+        )
         avg = calculate_status_durations(sub_orders)
         status_durations = {
-            'total': sub_orders.count(),
-            'new': avg('NEW'),
-            'in_progress': avg('IN_PROGRESS'),
-            'on_way': avg('ON_WAY'),
-            'arrived': avg('ARRIVED'),
-            'unloading': avg('UNLOADING'),
-            'completed': avg('COMPLETED')
+            "total": sub_orders.count(),
+            "new": avg("NEW"),
+            "in_progress": avg("IN_PROGRESS"),
+            "on_way": avg("ON_WAY"),
+            "arrived": avg("ARRIVED"),
+            "unloading": avg("UNLOADING"),
+            "completed": avg("COMPLETED"),
         }
-        result = {
-            'status_counts': status_counts,
-            'status_durations': status_durations
-        }
+        result = {"status_counts": status_counts, "status_durations": status_durations}
         serializer = OrderStatsSerializer(result)
         return Response(serializer.data)
 
@@ -271,29 +302,28 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         df = self.get_date_filters(request)
         qs = ExcavatorOrder.objects.filter(**whouse_filter, **df)
         status_counts = {
-            'total': qs.count(),
-            'new': qs.filter(status=ExcavatorOrder.Status.NEW).count(),
-            'in_progress': qs.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
-            'paused': qs.filter(status=ExcavatorOrder.Status.PAUSED).count(),
-            'completed': qs.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
-            'expired': qs.filter(status=ExcavatorOrder.Status.EXPIRED).count()
+            "total": qs.count(),
+            "new": qs.filter(status=ExcavatorOrder.Status.NEW).count(),
+            "in_progress": qs.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
+            "paused": qs.filter(status=ExcavatorOrder.Status.PAUSED).count(),
+            "completed": qs.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
+            "expired": qs.filter(status=ExcavatorOrder.Status.EXPIRED).count(),
         }
         if whouse_filter:
-            whouse_filter = {'parent__whouse': whouse_filter['whouse']}
+            whouse_filter = {"parent__whouse": whouse_filter["whouse"]}
 
-        sub_orders = ExcavatorSubOrder.objects.filter(**df, **whouse_filter).exclude(status_history=[])
+        sub_orders = ExcavatorSubOrder.objects.filter(**df, **whouse_filter).exclude(
+            status_history=[]
+        )
         avg = calculate_status_durations(sub_orders)
         status_durations = {
-            'total': sub_orders.count(),
-            'new': avg('NEW'),
-            'in_progress': avg('IN_PROGRESS'),
-            'paused': avg('PAUSED'), 
-            'completed': avg('COMPLETED'),
-            'expired': avg('EXPIRED')
+            "total": sub_orders.count(),
+            "new": avg("NEW"),
+            "in_progress": avg("IN_PROGRESS"),
+            "paused": avg("PAUSED"),
+            "completed": avg("COMPLETED"),
+            "expired": avg("EXPIRED"),
         }
-        result = {
-            'status_counts': status_counts,
-            'status_durations': status_durations
-        }
+        result = {"status_counts": status_counts, "status_durations": status_durations}
         serializer = ExcavatorOrderStatsSerializer(result)
         return Response(serializer.data)

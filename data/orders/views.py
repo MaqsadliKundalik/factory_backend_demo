@@ -18,45 +18,87 @@ from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
 from .models import Order, SubOrder
 from .serialziers import (
-    OrderSerializer, OrderWriteSerializer,
-    SubOrderSerializer, StatusHistorySerializer, CompetedStatusSerializer,
+    OrderSerializer,
+    OrderWriteSerializer,
+    SubOrderSerializer,
+    StatusHistorySerializer,
+    CompetedStatusSerializer,
 )
 from data.files.models import File
 
 
 ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
-    openapi.Parameter('client', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"),
-    openapi.Parameter('branch', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Branch ID"),
-    openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"),
-    openapi.Parameter('product', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product ID"),
-    openapi.Parameter('type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product Type ID"),
-    openapi.Parameter('unit', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product Unit ID"),
-    openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
+    openapi.Parameter(
+        "client", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Client ID"
+    ),
+    openapi.Parameter(
+        "branch", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Branch ID"
+    ),
+    openapi.Parameter(
+        "whouse", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"
+    ),
+    openapi.Parameter(
+        "product", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product ID"
+    ),
+    openapi.Parameter(
+        "type",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Product Type ID",
+    ),
+    openapi.Parameter(
+        "unit",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Product Unit ID",
+    ),
+    openapi.Parameter(
+        "status", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"
+    ),
 ]
 
 SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
-    openapi.Parameter('order', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Order ID"),
-    openapi.Parameter('driver', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Driver ID"),
-    openapi.Parameter('transport', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport ID"),
-    openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
-    openapi.Parameter('in_progress', openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description="Filter: true for active, false for completed"),
+    openapi.Parameter(
+        "order", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Order ID"
+    ),
+    openapi.Parameter(
+        "driver", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Driver ID"
+    ),
+    openapi.Parameter(
+        "transport",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Transport ID",
+    ),
+    openapi.Parameter(
+        "status", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"
+    ),
+    openapi.Parameter(
+        "in_progress",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_BOOLEAN,
+        description="Filter: true for active, false for completed",
+    ),
 ]
 
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
 class OrderFilter(BaseDateFilterSet):
     class Meta:
         model = Order
-        fields = ['client', 'branch', 'whouse', 'product', 'type', 'unit', 'status']
+        fields = ["client", "branch", "whouse", "product", "type", "unit", "status"]
 
 
 class SubOrderFilter(BaseDateFilterSet):
-    in_progress = filters.BooleanFilter(method='filter_in_progress', label="Filter: true for active, false for completed")
+    in_progress = filters.BooleanFilter(
+        method="filter_in_progress",
+        label="Filter: true for active, false for completed",
+    )
 
     def filter_in_progress(self, queryset, name, value):
         if value is True:
@@ -67,27 +109,34 @@ class SubOrderFilter(BaseDateFilterSet):
 
     class Meta:
         model = SubOrder
-        fields = ['order', 'driver', 'transport', 'status']
+        fields = ["order", "driver", "transport", "status"]
 
 
 class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")]
+    permission_classes = [
+        HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")
+    ]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = OrderFilter
-    search_fields = ['display_id', 'client__name']
+    search_fields = ["display_id", "client__name"]
 
     def get_queryset(self):
-        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
-        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+        user = (
+            self.request.driver
+            or self.request.guard
+            or self.request.operator
+            or self.request.manager
+        )
+        if getattr(self, "swagger_fake_view", False) or not user.is_authenticated:
             return Order.objects.none()
-        if hasattr(user, 'whouses') and user.whouses.exists():
+        if hasattr(user, "whouses") and user.whouses.exists():
             return Order.objects.filter(whouse__in=user.whouses.all())
         return Order.objects.all()
 
     def get_serializer_class(self):
-        if self.action in ('create', 'update', 'partial_update'):
+        if self.action in ("create", "update", "partial_update"):
             return OrderWriteSerializer
         return OrderSerializer
 
@@ -95,7 +144,9 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=OrderWriteSerializer, responses={201: OrderSerializer})
+    @swagger_auto_schema(
+        request_body=OrderWriteSerializer, responses={201: OrderSerializer}
+    )
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -103,10 +154,12 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         order = serializer.save()
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema(request_body=OrderWriteSerializer, responses={200: OrderSerializer})
+    @swagger_auto_schema(
+        request_body=OrderWriteSerializer, responses={200: OrderSerializer}
+    )
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -117,27 +170,33 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description="Reject quantity"),
-                'rejector': openapi.Schema(type=openapi.TYPE_STRING, description="Rejector role"),
-            }
+                "quantity": openapi.Schema(
+                    type=openapi.TYPE_NUMBER, description="Reject quantity"
+                ),
+                "rejector": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Rejector role"
+                ),
+            },
         ),
-        responses={200: OrderSerializer}
+        responses={200: OrderSerializer},
     )
-    @action(detail=True, methods=['post'], url_path='reject')
+    @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, *args, **kwargs):
         order = self.get_object()
-        quantity = request.data.get('quantity')
-        rejector = request.data.get('rejector')
+        quantity = request.data.get("quantity")
+        rejector = request.data.get("rejector")
         order.quantity = max(0, order.quantity - quantity)
         if order.quantity == 0:
             order.status = Order.Status.REJECTED
         order.rejector = rejector
-        order.save()        
+        order.save()
 
-        all_sub_orders = SubOrder.objects.filter(order=order).order_by('quantity')
+        all_sub_orders = SubOrder.objects.filter(order=order).order_by("quantity")
         for sub_order in all_sub_orders:
             if quantity:
-                quantity, sub_order.quantity = max(0, quantity - sub_order.quantity), max(0, sub_order.quantity - quantity)
+                quantity, sub_order.quantity = max(
+                    0, quantity - sub_order.quantity
+                ), max(0, sub_order.quantity - quantity)
                 if sub_order.quantity == 0:
                     sub_order.status = SubOrder.Status.REJECTED
                 sub_order.save()
@@ -146,22 +205,30 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
 
         return Response(OrderSerializer(order).data)
 
+
 class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     serializer_class = SubOrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")]
+    permission_classes = [
+        HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")
+    ]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = SubOrderFilter
-    search_fields = ['order__display_id', 'driver__name', 'transport__model']
+    search_fields = ["order__display_id", "driver__name", "transport__model"]
 
     def get_queryset(self):
-        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
-        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+        user = (
+            self.request.driver
+            or self.request.guard
+            or self.request.operator
+            or self.request.manager
+        )
+        if getattr(self, "swagger_fake_view", False) or not user.is_authenticated:
             return SubOrder.objects.none()
-        if hasattr(user, 'whouses') and user.whouses.exists():
+        if hasattr(user, "whouses") and user.whouses.exists():
             return SubOrder.objects.filter(order__whouse__in=user.whouses.all())
-        if user.__class__.__name__ == 'Driver':
+        if user.__class__.__name__ == "Driver":
             return SubOrder.objects.filter(driver=user)
         return SubOrder.objects.all()
 
@@ -171,9 +238,9 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
     @swagger_auto_schema(
         request_body=StatusHistorySerializer(many=True),
-        responses={200: "Successfully updated status history"}
+        responses={200: "Successfully updated status history"},
     )
-    @action(detail=True, methods=['post'], url_path='update-status-history')
+    @action(detail=True, methods=["post"], url_path="update-status-history")
     def update_status_history(self, request, pk=None):
         instance = self.get_object()
 
@@ -182,24 +249,24 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             history = instance.status_history or []
             history.extend(serializer.data)
             instance.status_history = history
-            new_status = serializer.data[-1]['status']
+            new_status = serializer.data[-1]["status"]
             instance.status = new_status
             instance.save()
 
             order = instance.order
-            sibling_statuses = list(order.sub_orders.values_list('status', flat=True))
+            sibling_statuses = list(order.sub_orders.values_list("status", flat=True))
             if sibling_statuses and all(s == new_status for s in sibling_statuses):
                 order.status = new_status
-                order.save(update_fields=['status'])
+                order.save(update_fields=["status"])
 
             return Response({"status": "Success"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         request_body=CompetedStatusSerializer(),
-        responses={200: "Successfully updated completed status"}
+        responses={200: "Successfully updated completed status"},
     )
-    @action(detail=True, methods=['post'], url_path='update-completed-status')
+    @action(detail=True, methods=["post"], url_path="update-completed-status")
     def update_completed_status(self, request, pk=None):
         instance = self.get_object()
         serializer = CompetedStatusSerializer(data=request.data)
@@ -209,24 +276,25 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         new_status = SubOrder.Status.COMPLETED
         instance.status = new_status
         instance.status_history = instance.status_history or []
-        instance.status_history.append({
-            "status": new_status,
-            "timestamp": str(serializer.validated_data.get("timestamp")),
-        })
+        instance.status_history.append(
+            {
+                "status": new_status,
+                "timestamp": str(serializer.validated_data.get("timestamp")),
+            }
+        )
 
-        if 'sign' in serializer.validated_data:
-            instance.sign_id = serializer.validated_data['sign']
+        if "sign" in serializer.validated_data:
+            instance.sign_id = serializer.validated_data["sign"]
 
-        file_ids = serializer.validated_data.get('files', [])
+        file_ids = serializer.validated_data.get("files", [])
         if file_ids:
             instance.files.set(file_ids)
 
         order = instance.order
-        sibling_statuses = list(order.sub_orders.values_list('status', flat=True))
+        sibling_statuses = list(order.sub_orders.values_list("status", flat=True))
         if sibling_statuses and all(s == new_status for s in sibling_statuses):
             order.status = new_status
-            order.save(update_fields=['status'])
+            order.save(update_fields=["status"])
 
         instance.save()
         return Response({"status": "Success"}, status=status.HTTP_200_OK)
-

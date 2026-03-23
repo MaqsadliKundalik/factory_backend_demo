@@ -3,15 +3,16 @@ from django.dispatch import receiver
 from .models import WhouseProducts, WhouseProductsHistory, HistoryStatus, ProductItem
 from data.notifications.models import Notification
 
+
 @receiver(post_save, sender=WhouseProducts)
 def create_whouse_product_history(sender, instance, **kwargs):
     if instance.status == WhouseProducts.Status.PENDING:
         Notification.objects.create(
-            to_role='whouse_manager',
-            from_role='guard',
-            title='New product added',
-            message=f'New product {instance.product.name} added to whouse {instance.whouse.name}',
-        )   
+            to_role="whouse_manager",
+            from_role="guard",
+            title="New product added",
+            message=f"New product {instance.product.name} added to whouse {instance.whouse.name}",
+        )
 
     WhouseProductsHistory.objects.create(
         wproduct=instance,
@@ -19,8 +20,9 @@ def create_whouse_product_history(sender, instance, **kwargs):
         product=instance.product,
         quantity=instance.quantity,
         supplier=instance.supplier,
-        status=HistoryStatus.IN
+        status=HistoryStatus.IN,
     )
+
 
 @receiver(post_save, sender=WhouseProducts)
 def update_whouse_product_history_extra(sender, instance, **kwargs):
@@ -31,8 +33,9 @@ def update_whouse_product_history_extra(sender, instance, **kwargs):
             product=instance.product,
             quantity=instance.quantity,
             supplier=instance.supplier,
-            status=HistoryStatus.IN
+            status=HistoryStatus.IN,
         )
+
 
 @receiver(post_save, sender=WhouseProductsHistory)
 def update_whouse_product_history(sender, instance, **kwargs):
@@ -45,6 +48,7 @@ def update_whouse_product_history(sender, instance, **kwargs):
         wproduct.quantity += instance.quantity
         wproduct.save()
 
+
 @receiver(post_save, sender=ProductItem)
 def create_product_item_history(sender, instance, created, **kwargs):
     if not created:
@@ -55,5 +59,5 @@ def create_product_item_history(sender, instance, created, **kwargs):
         whouse=instance.raw_material.whouse,
         product=instance.product,
         quantity=instance.quantity,
-        status=HistoryStatus.OUT
+        status=HistoryStatus.OUT,
     )

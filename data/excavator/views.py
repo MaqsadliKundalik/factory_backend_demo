@@ -29,35 +29,68 @@ from .serializers import (
 )
 
 EXCAVATOR_ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
-    openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
-    openapi.Parameter('payment_status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Payment status"),
-    openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Whouse ID"),
+    openapi.Parameter(
+        "status", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"
+    ),
+    openapi.Parameter(
+        "payment_status",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Payment status",
+    ),
+    openapi.Parameter(
+        "whouse", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Whouse ID"
+    ),
 ]
 
 EXCAVATOR_SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
-    openapi.Parameter('parent', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Parent order ID"),
-    openapi.Parameter('driver', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Driver ID"),
-    openapi.Parameter('status', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"),
-    openapi.Parameter('transport_type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Transport type (transport.type)"),
-    openapi.Parameter('in_progress', openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description="Filter: true for active, false for completed"),
+    openapi.Parameter(
+        "parent",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Parent order ID",
+    ),
+    openapi.Parameter(
+        "driver", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Driver ID"
+    ),
+    openapi.Parameter(
+        "status", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Status"
+    ),
+    openapi.Parameter(
+        "transport_type",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Transport type (transport.type)",
+    ),
+    openapi.Parameter(
+        "in_progress",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_BOOLEAN,
+        description="Filter: true for active, false for completed",
+    ),
 ]
 
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
 
 
 class ExcavatorOrderFilter(BaseDateFilterSet):
     class Meta:
         model = ExcavatorOrder
-        fields = ['status', 'payment_status', 'whouse']
+        fields = ["status", "payment_status", "whouse"]
 
 
 class ExcavatorSubOrderFilter(BaseDateFilterSet):
-    transport_type = filters.CharFilter(field_name='transport__type', lookup_expr='iexact')
-    in_progress = filters.BooleanFilter(method='filter_in_progress', label="Filter: true for active, false for completed")
+    transport_type = filters.CharFilter(
+        field_name="transport__type", lookup_expr="iexact"
+    )
+    in_progress = filters.BooleanFilter(
+        method="filter_in_progress",
+        label="Filter: true for active, false for completed",
+    )
 
     def filter_in_progress(self, queryset, name, value):
         if value is True:
@@ -68,20 +101,22 @@ class ExcavatorSubOrderFilter(BaseDateFilterSet):
 
     class Meta:
         model = ExcavatorSubOrder
-        fields = ['parent', 'driver', 'status', 'transport']
+        fields = ["parent", "driver", "status", "transport"]
 
 
 class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorOrder.objects.all()
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="EXCAVATORS_PAGE", read_perm="EXCAVATORS_PAGE")]
+    permission_classes = [
+        HasDynamicPermission(crud_perm="EXCAVATORS_PAGE", read_perm="EXCAVATORS_PAGE")
+    ]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ExcavatorOrderFilter
-    search_fields = ['display_id', 'client_name', 'phone_number']
+    search_fields = ["display_id", "client_name", "phone_number"]
 
     def get_serializer_class(self):
-        if self.action in ['create', 'update', 'partial_update']:
+        if self.action in ["create", "update", "partial_update"]:
             return ExcavatorOrderCreateSerializer
         return ExcavatorOrderSerializer
 
@@ -89,8 +124,10 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=ChangeStatusSerializer, responses={200: "Reject order"})
-    @action(detail=True, methods=['post'], url_path='reject')
+    @swagger_auto_schema(
+        request_body=ChangeStatusSerializer, responses={200: "Reject order"}
+    )
+    @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, pk=None):
         order = self.get_object()
         sub_orders = order.sub_orders.all()
@@ -100,25 +137,34 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
         order.status = ExcavatorOrder.Status.REJECTED
         order.save()
         return Response({"detail": "Order rejected"}, status=status.HTTP_200_OK)
-    
+
 
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
     serializer_class = ExcavatorSubOrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="EXCAVATORS_PAGE", read_perm="EXCAVATORS_PAGE")]
+    permission_classes = [
+        HasDynamicPermission(crud_perm="EXCAVATORS_PAGE", read_perm="EXCAVATORS_PAGE")
+    ]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ExcavatorSubOrderFilter
-    search_fields = ['driver__name', 'transport__number']
+    search_fields = ["driver__name", "transport__number"]
 
     def get_queryset(self):
-        user = self.request.driver or self.request.guard or self.request.operator or self.request.manager
-        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
+        user = (
+            self.request.driver
+            or self.request.guard
+            or self.request.operator
+            or self.request.manager
+        )
+        if getattr(self, "swagger_fake_view", False) or not user.is_authenticated:
             return ExcavatorSubOrder.objects.none()
-        if hasattr(user, 'whouses') and user.whouses.exists():
-            return ExcavatorSubOrder.objects.filter(parent__whouse__in=user.whouses.all())
-        if user.__class__.__name__ == 'Driver':
+        if hasattr(user, "whouses") and user.whouses.exists():
+            return ExcavatorSubOrder.objects.filter(
+                parent__whouse__in=user.whouses.all()
+            )
+        if user.__class__.__name__ == "Driver":
             return ExcavatorSubOrder.objects.filter(driver=user)
         return ExcavatorSubOrder.objects.all()
 
@@ -126,112 +172,121 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=ChangeStatusSerializer, responses={200: "Status updated"})
-    @action(detail=True, methods=['patch'], url_path='change-status')
+    @swagger_auto_schema(
+        request_body=ChangeStatusSerializer, responses={200: "Status updated"}
+    )
+    @action(detail=True, methods=["patch"], url_path="change-status")
     def change_status(self, request, pk=None):
         instance = self.get_object()
         serializer = ChangeStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_status = serializer.validated_data['status']
-        timestamp = serializer.validated_data['timestamp']
+        new_status = serializer.validated_data["status"]
+        timestamp = serializer.validated_data["timestamp"]
 
         user = request.driver or request.guard or request.operator or request.manager
         instance.status_history = instance.status_history or []
-        
-        instance.status_history.append({
-            'old_status': instance.status,
-            'new_status': new_status,
-            'changed_at': str(timestamp),
-            'changed_by': str(user.id),
-            'changed_by_name': getattr(user, 'name', str(user)),
-        })
+
+        instance.status_history.append(
+            {
+                "old_status": instance.status,
+                "new_status": new_status,
+                "changed_at": str(timestamp),
+                "changed_by": str(user.id),
+                "changed_by_name": getattr(user, "name", str(user)),
+            }
+        )
         instance.status = new_status
-        instance.save(update_fields=['status', 'status_history'])
+        instance.save(update_fields=["status", "status_history"])
 
         parent = instance.parent
-        sibling_statuses = list(parent.sub_orders.values_list('status', flat=True))
+        sibling_statuses = list(parent.sub_orders.values_list("status", flat=True))
         if sibling_statuses and all(s == new_status for s in sibling_statuses):
             parent.status = new_status
-            parent.save(update_fields=['status'])
-        
-        return Response({'status': instance.status})
+            parent.save(update_fields=["status"])
+
+        return Response({"status": instance.status})
 
     @swagger_auto_schema(
-        request_body=StartOrderSerializer,
-        responses={200: "Sub-order started"}
+        request_body=StartOrderSerializer, responses={200: "Sub-order started"}
     )
-    @action(detail=True, methods=['post'], url_path='start')
+    @action(detail=True, methods=["post"], url_path="start")
     def start(self, request, pk=None):
         instance = self.get_object()
         serializer = StartOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user = request.driver or request.guard or request.operator or request.manager
-        sign = serializer.validated_data.get('sign')
-        timestamp = serializer.validated_data.get('timestamp')
+        sign = serializer.validated_data.get("sign")
+        timestamp = serializer.validated_data.get("timestamp")
 
         if sign:
             instance.before_sign_id = sign
 
-        file_ids = serializer.validated_data.get('files', [])
+        file_ids = serializer.validated_data.get("files", [])
         if file_ids:
             instance.before_files.set(file_ids)
 
         instance.status_history = instance.status_history or []
-        instance.status_history.append({
-            'old_status': instance.status,
-            'new_status': ExcavatorSubOrder.Status.IN_PROGRESS,
-            'changed_at': str(timestamp),
-            'changed_by': str(user.id),
-            'changed_by_name': getattr(user, 'name', str(user)),
-        })
+        instance.status_history.append(
+            {
+                "old_status": instance.status,
+                "new_status": ExcavatorSubOrder.Status.IN_PROGRESS,
+                "changed_at": str(timestamp),
+                "changed_by": str(user.id),
+                "changed_by_name": getattr(user, "name", str(user)),
+            }
+        )
         instance.status = ExcavatorSubOrder.Status.IN_PROGRESS
         instance.save()
 
         parent = instance.parent
-        sibling_statuses = list(parent.sub_orders.values_list('status', flat=True))
-        if sibling_statuses and all(s == ExcavatorSubOrder.Status.IN_PROGRESS for s in sibling_statuses):
+        sibling_statuses = list(parent.sub_orders.values_list("status", flat=True))
+        if sibling_statuses and all(
+            s == ExcavatorSubOrder.Status.IN_PROGRESS for s in sibling_statuses
+        ):
             parent.status = ExcavatorSubOrder.Status.IN_PROGRESS
-            parent.save(update_fields=['status'])
+            parent.save(update_fields=["status"])
 
-        return Response({'status': instance.status})
+        return Response({"status": instance.status})
 
     @swagger_auto_schema(
-        request_body=FinishOrderSerializer,
-        responses={200: "Sub-order completed"}
+        request_body=FinishOrderSerializer, responses={200: "Sub-order completed"}
     )
-    @action(detail=True, methods=['post'], url_path='finish')
+    @action(detail=True, methods=["post"], url_path="finish")
     def finish(self, request, pk=None):
         instance = self.get_object()
         serializer = FinishOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        timestamp = serializer.validated_data.get('timestamp')
+        timestamp = serializer.validated_data.get("timestamp")
 
         user = request.driver or request.guard or request.operator or request.manager
-        sign = serializer.validated_data.get('sign')
+        sign = serializer.validated_data.get("sign")
         if sign:
             instance.after_sign_id = sign
 
-        file_ids = serializer.validated_data.get('files', [])
+        file_ids = serializer.validated_data.get("files", [])
         if file_ids:
             instance.after_files.set(file_ids)
 
-
         instance.status_history = instance.status_history or []
-        instance.status_history.append({
-            'old_status': instance.status,
-            'new_status': ExcavatorSubOrder.Status.COMPLETED,
-            'changed_at': str(timestamp),
-            'changed_by': str(user.id),
-            'changed_by_name': getattr(user, 'name', str(user)),
-        })
+        instance.status_history.append(
+            {
+                "old_status": instance.status,
+                "new_status": ExcavatorSubOrder.Status.COMPLETED,
+                "changed_at": str(timestamp),
+                "changed_by": str(user.id),
+                "changed_by_name": getattr(user, "name", str(user)),
+            }
+        )
         instance.status = ExcavatorSubOrder.Status.COMPLETED
         instance.save()
 
         parent = instance.parent
-        sibling_statuses = list(parent.sub_orders.values_list('status', flat=True))
-        if sibling_statuses and all(s == ExcavatorSubOrder.Status.COMPLETED for s in sibling_statuses):
+        sibling_statuses = list(parent.sub_orders.values_list("status", flat=True))
+        if sibling_statuses and all(
+            s == ExcavatorSubOrder.Status.COMPLETED for s in sibling_statuses
+        ):
             parent.status = ExcavatorSubOrder.Status.COMPLETED
-            parent.save(update_fields=['status'])
+            parent.save(update_fields=["status"])
 
-        return Response({'status': instance.status})
+        return Response({"status": instance.status})

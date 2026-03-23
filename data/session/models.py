@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from data.drivers.models import Driver
     from data.users.models import FactoryUser
 
+
 # Create your models here.
 class DriverSession(models.Model):
     driver: "Driver" = models.ForeignKey(
@@ -46,8 +47,11 @@ class DriverSession(models.Model):
 
 class FactoryUserSession(models.Model):
     factory_user: "FactoryUser" = models.ForeignKey(
-        "users.FactoryUser", on_delete=models.CASCADE, related_name="sessions",
-        null=True, blank=True
+        "users.FactoryUser",
+        on_delete=models.CASCADE,
+        related_name="sessions",
+        null=True,
+        blank=True,
     )
     fcm_token = models.CharField(max_length=512, null=True, blank=True)
     fcm_invalid = models.BooleanField(default=False)
@@ -62,7 +66,7 @@ class FactoryUserSession(models.Model):
     def token(self):
         refresh = RefreshToken()
         refresh.payload["user_id"] = str(self.factory_user.id)
-        refresh.payload["role"] = getattr(self.factory_user, 'role', 'user')
+        refresh.payload["role"] = getattr(self.factory_user, "role", "user")
         refresh.payload["session"] = str(self.id)
         return refresh
 

@@ -15,45 +15,55 @@ sayqal = SayqalSms()
 class Client(BaseModel):
     name = models.CharField(max_length=255)
     inn_number = models.CharField(max_length=9)
-    photo: "File | None" = models.ForeignKey('files.File', on_delete=models.SET_NULL, null=True, blank=True)
-    whouse: "Whouse" = models.ForeignKey('factory_whouse.Whouse', on_delete=models.CASCADE)
+    photo: "File | None" = models.ForeignKey(
+        "files.File", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    whouse: "Whouse" = models.ForeignKey(
+        "factory_whouse.Whouse", on_delete=models.CASCADE
+    )
 
     list_display = ["name", "inn_number", "whouse", "files"]
 
-    orders: "models.QuerySet[Order]" 
-    branches: "models.QuerySet[ClientBranches]" 
-    phones: "models.QuerySet[ClientPhone]" 
-    
+    orders: "models.QuerySet[Order]"
+    branches: "models.QuerySet[ClientBranches]"
+    phones: "models.QuerySet[ClientPhone]"
+
     def __str__(self):
         return self.name
-    
+
     def send_sms(self, message: str):
         for phone in self.phones.all():
             sayqal.send_sms(phone.phone_number, message)
 
+
 class ClientBranches(BaseModel):
-    client: "Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name="branches")
+    client: "Client" = models.ForeignKey(
+        "clients.Client", on_delete=models.CASCADE, related_name="branches"
+    )
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     longitude = models.FloatField()
     latitude = models.FloatField()
-    
+
     list_display = ["client", "name", "address", "longitude", "latitude"]
-    
+
     def __str__(self):
         return f"{self.name} - {self.client}"
 
     class Meta:
         unique_together = ["client", "longitude", "latitude"]
 
+
 class ClientPhone(BaseModel):
-    client: "Client" = models.ForeignKey("clients.Client", on_delete=models.CASCADE, related_name="phones")
+    client: "Client" = models.ForeignKey(
+        "clients.Client", on_delete=models.CASCADE, related_name="phones"
+    )
     phone_number = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     role = models.CharField(max_length=255)
 
     list_display = ["client", "phone_number", "name", "role"]
-    
+
     def __str__(self):
         return f"{self.phone_number} - {self.name} - {self.role}"
 

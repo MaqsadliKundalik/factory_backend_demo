@@ -23,28 +23,32 @@ class FileDownloadView(generics.RetrieveAPIView):
     queryset = File.objects.all()
     serializer_class = FileSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
+    lookup_field = "id"
 
     def get(self, request, *args, **kwargs):
         file_obj = self.get_object()
-        return FileResponse(file_obj.file.open(), as_attachment=True, filename=file_obj.file.name)
+        return FileResponse(
+            file_obj.file.open(), as_attachment=True, filename=file_obj.file.name
+        )
 
 
 class DocumentsFilter(BaseDateFilterSet):
     class Meta:
         model = Documents
-        fields = ['type', 'object_id']
+        fields = ["type", "object_id"]
 
 
 DOCUMENTS_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter(
-        'type', openapi.IN_QUERY,
+        "type",
+        openapi.IN_QUERY,
         description="Hujjat turi: DRIVER, TRANSPORT, SUPPLIER, CLIENT, SUBORDER, PRODUCT, OTHER",
         type=openapi.TYPE_STRING,
         required=False,
     ),
     openapi.Parameter(
-        'object_id', openapi.IN_QUERY,
+        "object_id",
+        openapi.IN_QUERY,
         description="Bog'liq obyekt UUID si",
         type=openapi.TYPE_STRING,
         format=openapi.FORMAT_UUID,

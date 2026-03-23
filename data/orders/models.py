@@ -19,75 +19,114 @@ if TYPE_CHECKING:
 # Create your models here.
 class Order(BaseModel):
     """
-    NEW - Buyurtma yaratilgach shu statusda bo’ladi
+        NEW - Buyurtma yaratilgach shu statusda bo’ladi
 
-IN_PROGRESS - JArayon boshlandi. Ya’ni buyurtmadagi mahsulot tayyorlana boshladi.
+    IN_PROGRESS - JArayon boshlandi. Ya’ni buyurtmadagi mahsulot tayyorlana boshladi.
 
-ON_WAY - haydovchi yo’lga chiqqach buyurtmani shu statusga o’tkazadi
+    ON_WAY - haydovchi yo’lga chiqqach buyurtmani shu statusga o’tkazadi
 
-ARRIVED - Haydovchi manzilga yetib kelgach buyurtmani shu holatga o’tkazadi
+    ARRIVED - Haydovchi manzilga yetib kelgach buyurtmani shu holatga o’tkazadi
 
-UNLOADING - Haydovchi yukni tushirishni boshlaganida shu statusga o’tkazadi
+    UNLOADING - Haydovchi yukni tushirishni boshlaganida shu statusga o’tkazadi
 
-COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga o’tkazishidan oldin fayl so’rashi kerak. ya’ni rasm kamida 2ta rasm. va mijozni imzosini talab qilishi kerak
-"""
+    COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga o’tkazishidan oldin fayl so’rashi kerak. ya’ni rasm kamida 2ta rasm. va mijozni imzosini talab qilishi kerak
+    """
+
     class Status(models.TextChoices):
-        NEW = 'NEW', 'New'
-        IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
-        ON_WAY = 'ON_WAY', 'On Way'
-        ARRIVED = 'ARRIVED', 'Arrived'
-        UNLOADING = 'UNLOADING', 'Unloading'
-        COMPLETED = 'COMPLETED', 'Completed'
-        REJECTED = 'REJECTED', 'Rejected'
+        NEW = "NEW", "New"
+        IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        ON_WAY = "ON_WAY", "On Way"
+        ARRIVED = "ARRIVED", "Arrived"
+        UNLOADING = "UNLOADING", "Unloading"
+        COMPLETED = "COMPLETED", "Completed"
+        REJECTED = "REJECTED", "Rejected"
 
     class Rejector(models.TextChoices):
-        CLIENT = 'CLIENT', 'Client'
-        FACTORY = 'FACTORY', 'Factory'
+        CLIENT = "CLIENT", "Client"
+        FACTORY = "FACTORY", "Factory"
 
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
-    client:"Client" =models.ForeignKey("clients.Client", on_delete=models.PROTECT, related_name='orders')
-    branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.PROTECT, related_name='orders')
-    whouse:"Whouse" = models.ForeignKey("factory_whouse.Whouse", on_delete=models.PROTECT, related_name='orders')
-    product:"Product" = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name='orders')
-    type:"ProductType" = models.ForeignKey("products.ProductType", on_delete=models.PROTECT, related_name='orders')
-    unit:"ProductUnit" = models.ForeignKey("products.ProductUnit", on_delete=models.PROTECT, related_name='orders')    
+    client: "Client" = models.ForeignKey(
+        "clients.Client", on_delete=models.PROTECT, related_name="orders"
+    )
+    branch: "ClientBranches" = models.ForeignKey(
+        "clients.ClientBranches", on_delete=models.PROTECT, related_name="orders"
+    )
+    whouse: "Whouse" = models.ForeignKey(
+        "factory_whouse.Whouse", on_delete=models.PROTECT, related_name="orders"
+    )
+    product: "Product" = models.ForeignKey(
+        "products.Product", on_delete=models.PROTECT, related_name="orders"
+    )
+    type: "ProductType" = models.ForeignKey(
+        "products.ProductType", on_delete=models.PROTECT, related_name="orders"
+    )
+    unit: "ProductUnit" = models.ForeignKey(
+        "products.ProductUnit", on_delete=models.PROTECT, related_name="orders"
+    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
-    rejector = models.CharField(max_length=20, choices=Rejector.choices, default=Rejector.CLIENT, null=True, blank=True)
+
+    rejector = models.CharField(
+        max_length=20,
+        choices=Rejector.choices,
+        default=Rejector.CLIENT,
+        null=True,
+        blank=True,
+    )
 
     def save(self, *args, **kwargs):
         if not self.display_id:
-            last_order = Order.all_objects.all().order_by('display_id').last()
-            self.display_id = (last_order.display_id + 1) if last_order and last_order.display_id else 1
+            last_order = Order.all_objects.all().order_by("display_id").last()
+            self.display_id = (
+                (last_order.display_id + 1)
+                if last_order and last_order.display_id
+                else 1
+            )
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Ord-{self.display_id:03}" if self.display_id else f"Ord-{self.id}"
 
+
 class SubOrder(BaseModel):
     class Status(models.TextChoices):
-        NEW = 'NEW', 'New'
-        IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
-        ON_WAY = 'ON_WAY', 'On Way'
-        ARRIVED = 'ARRIVED', 'Arrived'
-        UNLOADING = 'UNLOADING', 'Unloading'
-        COMPLETED = 'COMPLETED', 'Completed'
-        REJECTED = 'REJECTED', 'Rejected'
+        NEW = "NEW", "New"
+        IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        ON_WAY = "ON_WAY", "On Way"
+        ARRIVED = "ARRIVED", "Arrived"
+        UNLOADING = "UNLOADING", "Unloading"
+        COMPLETED = "COMPLETED", "Completed"
+        REJECTED = "REJECTED", "Rejected"
 
-    order: "Order" = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name='sub_orders')
-    driver: "Driver" = models.ForeignKey("factory_drivers.Driver", on_delete=models.PROTECT, related_name='sub_orders')
-    transport: "Transport" = models.ForeignKey("transports.Transport", on_delete=models.PROTECT, related_name='sub_orders')
+    order: "Order" = models.ForeignKey(
+        "orders.Order", on_delete=models.CASCADE, related_name="sub_orders"
+    )
+    driver: "Driver" = models.ForeignKey(
+        "factory_drivers.Driver", on_delete=models.PROTECT, related_name="sub_orders"
+    )
+    transport: "Transport" = models.ForeignKey(
+        "transports.Transport", on_delete=models.PROTECT, related_name="sub_orders"
+    )
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     status_history = models.JSONField(default=list, encoder=DjangoJSONEncoder)
-    sign: "File" = models.ForeignKey("files.File", on_delete=models.PROTECT, related_name='sub_orders_sign', null=True, blank=True)
-    files = models.ManyToManyField("files.File", blank=True, related_name='sub_orders_files')
-
-    
+    sign: "File" = models.ForeignKey(
+        "files.File",
+        on_delete=models.PROTECT,
+        related_name="sub_orders_sign",
+        null=True,
+        blank=True,
+    )
+    files = models.ManyToManyField(
+        "files.File", blank=True, related_name="sub_orders_files"
+    )
 
     def __str__(self):
-        display_name = f"Ord-{self.order.display_id:03}" if self.order.display_id else f"Ord-{self.order.id}"
+        display_name = (
+            f"Ord-{self.order.display_id:03}"
+            if self.order.display_id
+            else f"Ord-{self.order.id}"
+        )
         return f"SubOrd-{self.id} for {display_name}"
-

@@ -7,29 +7,33 @@ from data.session.models import FactoryUserSession
 if TYPE_CHECKING:
     from data.files.models import File
 
+
 # Create your managers here.
 class FactoryUserManager(BaseUserManager):
     def create_user(self, phone_number, password=None, **extra_fields):
         if not phone_number:
-            raise ValueError('Поле номера телефона обязательно для заполнения')
+            raise ValueError("Поле номера телефона обязательно для заполнения")
         user = self.model(phone_number=phone_number, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, phone_number, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
         return self.create_user(phone_number, password, **extra_fields)
+
 
 # Create your models here.
 class FactoryUser(BaseModel, AbstractBaseUser):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=100, unique=True)
     # password field is provided by AbstractBaseUser
-    
-    role = models.CharField(max_length=50) # manager, operator, guard
-    photo : 'File' = models.ForeignKey("files.File", on_delete=models.SET_NULL, null=True, blank=True)
+
+    role = models.CharField(max_length=50)  # manager, operator, guard
+    photo: "File" = models.ForeignKey(
+        "files.File", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     MAIN_PAGE = models.BooleanField(default=False)
     PRODUCTS_PAGE = models.BooleanField(default=False)
@@ -43,16 +47,18 @@ class FactoryUser(BaseModel, AbstractBaseUser):
     SUPPLIERS_PAGE = models.BooleanField(default=False)
     EXCAVATORS_PAGE = models.BooleanField(default=False)
 
-    whouses = models.ManyToManyField('factory_whouse.Whouse', blank=True, related_name='users')
-    
+    whouses = models.ManyToManyField(
+        "factory_whouse.Whouse", blank=True, related_name="users"
+    )
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
     objects = FactoryUserManager()
 
-    USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = ['name']
+    USERNAME_FIELD = "phone_number"
+    REQUIRED_FIELDS = ["name"]
 
     def has_perm(self, perm, obj=None):
         return self.is_staff or self.is_superuser
@@ -65,7 +71,7 @@ class FactoryUser(BaseModel, AbstractBaseUser):
 
     @property
     def guard(self):
-        if self.role == 'guard':
+        if self.role == "guard":
             return self
         return None
 
