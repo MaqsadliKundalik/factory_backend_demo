@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from data.drivers.models import Driver
     from data.transports.models import Transport
     from data.whouse.models import Whouse
+    from data.users.models import FactoryUser
 
 
 # Create your models here.
@@ -68,14 +69,13 @@ class Order(BaseModel):
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    rejector = models.CharField(
-        max_length=20,
-        choices=Rejector.choices,
-        default=Rejector.CLIENT,
+    rejector: "FactoryUser" = models.ForeignKey(
+        "users.FactoryUser",
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        related_name="rejected_orders",
     )
-
     def save(self, *args, **kwargs):
         if not self.display_id:
             last_order = Order.all_objects.all().order_by("display_id").last()

@@ -1,17 +1,17 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import SubOrder
+from .models import ExcavatorOrder
 from data.products.models import WhouseProductsHistory
 from data.notifications.models import Notification
 
 
 
-@receiver(post_save, sender=SubOrder)
+@receiver(post_save, sender=ExcavatorOrder)
 def update_whouse_product_history(sender, instance, created, **kwargs):
-    if created and instance.status == SubOrder.Status.NEW:
+    if created and instance.status == ExcavatorOrder.Status.NEW:
         WhouseProductsHistory.objects.create(
-            whouse=instance.order.whouse,
-            product=instance.order.product,
+            whouse=instance.whouse,
+            product=instance.product,
             quantity=instance.quantity,
             status='OUT'  # HistoryStatus.OUT
         )
