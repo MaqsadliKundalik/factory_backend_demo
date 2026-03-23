@@ -25,7 +25,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class DriverFilter(BaseDateFilterSet):
     class Meta:
         model = Driver
-        fields = ['whouse', 'created_at', 'updated_at']
+        fields = ['whouse', "type", 'created_at', 'updated_at']
 
 
 class DriverViewSet(PermissionMetaMixin, ModelViewSet):

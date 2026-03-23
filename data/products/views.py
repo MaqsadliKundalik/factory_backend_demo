@@ -23,7 +23,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (
     WhouseProductActionSerializer, SelectWhouseProductSerializer,
     ProductTypeSerializer, ProductUnitSerializer, ProductSerializer, ProductAndItemCreateSerializer,
-    WhouseProductsSerializer, WhouseProductsSerializerV2, WhouseProductsHistorySerializer, SelectProductSerializer, ProductItemSerializer
+    WhouseProductsSerializer, WhouseProductsHistorySerializer, SelectProductSerializer, ProductItemSerializer
 )
 
 
@@ -286,68 +286,6 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
             
         data = queryset.values('id', 'name')
         return Response(list(data))
-
-
-class WhouseProductsV2ViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
-    queryset = WhouseProducts.objects.all()
-    serializer_class = WhouseProductsSerializerV2
-    authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")]
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_class = WhouseProductsFilter
-    search_fields = ['product__name']
-    parser_classes = [MultiPartParser, FormParser]
-
-    def get_queryset(self):
-        user = self.request.user
-        if getattr(self, 'swagger_fake_view', False) or not user.is_authenticated:
-            return WhouseProducts.objects.none()
-
-        queryset = WhouseProducts.objects.filter(whouse__in=user.whouses.all())
-        if user.guard:
-            queryset = queryset.filter(creator=user)
-        return queryset
-
-    def perform_create(self, serializer):
-        whouse = self.request.user.whouses.first()
-        serializer.save(whouse=whouse, creator=self.request.user)
-
-    @swagger_auto_schema(manual_parameters=WHOUSE_PRODUCTS_FILTER_PARAMS)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        consumes=['multipart/form-data'],
-        request_body=WhouseProductsSerializer(),
-        manual_parameters=[
-            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
-        ],
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        consumes=['multipart/form-data'],
-        request_body=WhouseProductsSerializer(),
-        manual_parameters=[
-            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
-            openapi.Parameter('existing_files', openapi.IN_FORM, type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_INTEGER), required=False, description="IDs of existing files to keep"),
-        ],
-    )
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        consumes=['multipart/form-data'],
-        request_body=WhouseProductsSerializer(),
-        manual_parameters=[
-            openapi.Parameter('files', openapi.IN_FORM, type=openapi.TYPE_FILE, required=False, description="Product files (repeat for multiple)"),
-            openapi.Parameter('existing_files', openapi.IN_FORM, type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_INTEGER), required=False, description="IDs of existing files to keep"),
-        ],
-    )
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
 
 
 class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):

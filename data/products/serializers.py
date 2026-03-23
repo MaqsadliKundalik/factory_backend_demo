@@ -51,7 +51,6 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
 
         if instance.supplier:
             repr['supplier'] = SupplierSerializer(instance.supplier).data
-
         
         repr['whouse'] = {
             'id': instance.whouse.id,
@@ -62,57 +61,6 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
 
 class WhouseProductActionSerializer(serializers.Serializer):
     supplier = serializers.UUIDField(required=False)
-
-class WhouseProductsSerializerV2(serializers.ModelSerializer):
-    files = serializers.ListField(child=serializers.FileField(), required=False, write_only=True)
-    existing_files = serializers.ListField(child=serializers.IntegerField(), required=False, write_only=True)
-
-    class Meta:
-        model = WhouseProducts
-        fields = ['id', 'whouse', 'product', 'supplier', 'product_type', 'quantity', 'files', 'existing_files', 'status', 'created_at']
-        read_only_fields = ['id', 'created_at']
-
-    def to_representation(self, instance):
-        repr = super().to_representation(instance)
-        if instance.product:
-            repr['product'] = ProductSerializer(instance.product).data
-        if instance.product_type:
-            repr['product_type'] = ProductTypeSerializer(instance.product_type).data
-        if instance.supplier:
-            repr['supplier'] = SupplierSerializer(instance.supplier).data
-        repr['whouse'] = {'id': instance.whouse.id, 'name': instance.whouse.name}
-        repr['files'] = FileSerializer(instance.files.all(), many=True).data
-        return repr
-
-    def get_fields(self):
-        fields = super().get_fields()
-        request = self.context.get('request')
-        if request is not None and self.instance is None:
-            fields.pop('existing_files', None)
-        return fields
-
-    def _save_files(self, instance, files):
-        for f in files:
-            instance.files.add(f)
-
-    def create(self, validated_data):
-        files = validated_data.pop('files', [])
-        instance = super().create(validated_data)
-        self._save_files(instance, files)
-        return instance
-
-    def update(self, instance, validated_data):
-        files = validated_data.pop('files', None)
-        existing_file_ids = validated_data.pop('existing_files', None)
-        instance = super().update(instance, validated_data)
-        if files is not None or existing_file_ids is not None:
-            keep_ids = existing_file_ids or []
-            files_to_delete = instance.files.exclude(id__in=keep_ids)
-            File.objects.filter(id__in=files_to_delete.values_list('id', flat=True)).delete()
-            if files:
-                self._save_files(instance, files)
-        return instance
-
 
 class SelectProductSerializer(serializers.ModelSerializer):
     class Meta:

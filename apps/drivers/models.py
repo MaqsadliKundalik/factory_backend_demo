@@ -7,13 +7,29 @@ from data.filedatas.models import File
 
 
 class Driver(BaseModel):
+
+    class Type(models.TextChoices):
+        INTERNAL = 'INTERNAL', 'Internal'
+        EXTERNAL = 'EXTERNAL', 'External'
+
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=25, unique=True)
-    password = models.CharField(max_length=128)
+    password = models.CharField(max_length=128, null=True, blank=True)
     # fcm_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging token")
     
+    type = models.CharField(max_length=20, choices=Type.choices, default=Type.INTERNAL)
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
     whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
+
+    def clean(self):
+        if self.type == self.Type.INTERNAL:
+            errors = {}
+            if not self.password:
+                errors['password'] = 'Internal driver uchun password majburiy.'
+            if not self.whouse_id:
+                errors['whouse'] = 'Internal driver uchun whouse majburiy.'
+            if errors:
+                raise ValidationError(errors)
 
     # Permission fields for compatibility with HasDynamicPermission
     MAIN_PAGE = models.BooleanField(default=False)
@@ -51,8 +67,6 @@ class Driver(BaseModel):
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
-
-    
 
     def save(self, *args, **kwargs):
         if self.password and not self.password.startswith(('pbkdf2_sha256$', 'bcrypt$', 'argon2$')):

@@ -6,8 +6,8 @@ from data.filedatas.models import File
 
 class Supplier(BaseModel):
     class Type(models.TextChoices):
-        INTERNAL = 'internal', 'Internal'
-        EXTERNAL = 'external', 'External'
+        INTERNAL = 'INTERNAL', 'Internal'
+        EXTERNAL = 'EXTERNAL', 'External'
 
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.INTERNAL)
     name = models.CharField(max_length=255)

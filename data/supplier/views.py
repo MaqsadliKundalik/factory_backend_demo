@@ -20,6 +20,7 @@ from .serializers import SupplierSerializer, SupplierPhoneSerializer, SupplierBu
 
 SUPPLIER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter('whouse', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"),
+    openapi.Parameter('type', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Supplier type"),
 ]
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -91,7 +92,7 @@ class SupplierSelectView(APIView):
             return Response({"detail": "Not authenticated"}, status=401)
         
         whouses = user.whouses.all()
-        queryset = Supplier.objects.filter(whouse__in=whouses)
+        queryset = Supplier.objects.filter(whouse__in=whouses, type=Supplier.Type.INTERNAL)
 
         # Apply search if provided
         search = request.query_params.get('search')

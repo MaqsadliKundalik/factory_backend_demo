@@ -90,7 +90,7 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=ChangeStatusSerializer, responses={200: "Reject order"})
-    @action(detail=True, methods=['post'], url_path='reject ')
+    @action(detail=True, methods=['post'], url_path='reject')
     def reject(self, request, pk=None):
         order = self.get_object()
         sub_orders = order.sub_orders.all()

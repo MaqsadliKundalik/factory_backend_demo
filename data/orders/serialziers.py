@@ -7,29 +7,6 @@ from data.transports.models import Transport
 from data.transports.serializers import TransportSerializer
 from data.filedatas.serializers import FileSerializer
 
-
-class ExternalDriverSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
-    phone_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
-    car_name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
-    car_type = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
-    car_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
-    transport_id = serializers.UUIDField(required=False, allow_null=True, default=None)
-    quantity = serializers.IntegerField(required=False, allow_null=True, default=None)
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if data.get('transport_id'):
-            try:
-                transport = Transport.objects.get(id=data['transport_id'])
-                data['transport'] = TransportSerializer(transport).data
-            except Transport.DoesNotExist:
-                data['transport'] = None
-        return data
-
-    class Meta:
-        ref_name = 'OrderExternalDriver'
-
 class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
     timestamp = serializers.DateTimeField()
@@ -89,7 +66,6 @@ class SubOrderSerializer(serializers.ModelSerializer):
             'type': ProductTypeSerializer(instance.order.type).data,
             'unit': ProductUnitSerializer(instance.order.unit).data,
             'status': instance.order.status,
-            'external_drivers': instance.order.external_drivers,
             'created_at': instance.order.created_at,
         }
         rep['driver'] = DriverSerializer(instance.driver).data
@@ -102,7 +78,6 @@ class SubOrderSerializer(serializers.ModelSerializer):
 # --- Order serializers ---
 
 class OrderSerializer(serializers.ModelSerializer):
-    external_drivers = ExternalDriverSerializer(many=True, required=False)
     sub_orders = SubOrderInlineSerializer(many=True, read_only=True)
 
     class Meta:
@@ -110,7 +85,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'display_id', 'client', 'branch', 'whouse',
             'product', 'type', 'unit', 'status', "quantity",
-            'external_drivers', 'sub_orders', 'created_at',
+            'sub_orders', 'created_at',
             "price"
         ]
         read_only_fields = ['id', 'display_id', 'created_at']
@@ -123,20 +98,18 @@ class OrderSerializer(serializers.ModelSerializer):
         rep['product'] = ProductSerializer(instance.product).data
         rep['type'] = ProductTypeSerializer(instance.type).data
         rep['unit'] = ProductUnitSerializer(instance.unit).data
-        rep['external_drivers'] = ExternalDriverSerializer(instance.external_drivers, many=True).data
         if instance.rejector:
             rep['rejector'] = instance.rejector
         return rep
 
 class OrderWriteSerializer(serializers.ModelSerializer):
-    external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
     sub_orders = SubOrderInlineSerializer(many=True, required=False)
 
     class Meta:
         model = Order
         fields = [
             'id', 'display_id', 'client', 'branch', 'whouse',
-            'product', 'type', 'unit', 'status', 'quantity', 'external_drivers', 'sub_orders',
+            'product', 'type', 'unit', 'status', 'quantity', 'sub_orders',
             'price'
         ]
         read_only_fields = ['id', 'display_id']

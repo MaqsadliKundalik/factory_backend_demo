@@ -6,7 +6,7 @@ from data.orders.models import SubOrder
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transport
-        fields = ['id', 'name', 'type', 'number', 'whouse', 'created_at']
+        fields = ['id', 'name', 'type', "car_type", 'number', 'whouse', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
@@ -31,4 +31,4 @@ class TransportSerializer(serializers.ModelSerializer):
 class SelectTransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transport
-        fields = ['id', 'name', "number"]
+        fields = ['id', 'name', "number", "car_type"]

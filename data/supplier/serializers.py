@@ -22,7 +22,7 @@ class SupplierSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Supplier
-        fields = ['id', 'name', 'inn_number', 'photo', 'phone_numbers', "created_at"]
+        fields = ['id', 'name', 'inn_number', 'photo', "type", 'phone_numbers', "created_at"]
         read_only_fields = ['id', 'created_at']
 
     def to_representation(self, instance):
@@ -66,7 +66,7 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
     phone_numbers = SupplierPhoneBulkSerializer(many=True, required=False)
     class Meta:
         model = Supplier
-        fields = ['id', 'name', 'inn_number', 'phone_numbers', 'photo', 'whouse']
+        fields = ['id', 'name', 'inn_number', 'phone_numbers', 'photo', 'whouse', 'type']
         extra_kwargs = {
             'whouse': {'required': False}
         }
@@ -118,4 +118,4 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
 class SelectSupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        fields = ['id', 'name', "photo"]
+        fields = ['id', 'name', "photo", "type"]

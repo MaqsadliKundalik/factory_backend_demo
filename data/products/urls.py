@@ -6,7 +6,7 @@ from .views import (
 
     ProductTypeViewSet, ProductUnitViewSet, ProductViewSet,
 
-    WhouseProductsViewSet, WhouseProductsV2ViewSet, WhouseProductsHistoryViewSet,
+    WhouseProductsViewSet, WhouseProductsHistoryViewSet,
 
     WhouseProductsActionViewSet, ProductItemViewSet, ProductAndItemCreateView, ProductAndItemUpdateView
 

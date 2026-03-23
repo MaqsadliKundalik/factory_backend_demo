@@ -27,6 +27,12 @@ TRANSPORT_FILTER_PARAMS = [
         type=openapi.TYPE_STRING,
         description="Filter by type",
     ),
+    openapi.Parameter(
+        'car_type',
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Filter by car type",
+    ),
 ]
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -37,7 +43,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class TransportFilter(BaseDateFilterSet):
     class Meta:
         model = Transport
-        fields = ['whouse', 'created_at', 'updated_at']
+        fields = ['whouse', 'type', 'car_type', 'created_at', 'updated_at']
 
 class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     queryset = Transport.objects.all()
@@ -79,6 +85,8 @@ class TransportSelectView(APIView):
     def get(self, request):
         has_order = request.query_params.get('hasOrder')
         transport_type = request.query_params.get('type')
+        car_type = request.query_params.get('car_type')
+
         user = self.request.user
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
@@ -96,9 +104,11 @@ class TransportSelectView(APIView):
                 SubOrder.Status.ON_WAY,
                 SubOrder.Status.UNLOADING
             ])        
+        if car_type:
+            queryset = queryset.filter(car_type=car_type)
         if transport_type:
             queryset = queryset.filter(type=transport_type)
             
-        data = queryset.values('id', 'name', "number")
+        data = queryset.values('id', 'name', "number", "car_type")
         return Response(list(data))
 

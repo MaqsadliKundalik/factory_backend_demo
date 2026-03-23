@@ -6,18 +6,6 @@ from data.transports.models import Transport
 from apps.drivers.serializers import DriverSerializer
 from apps.drivers.models import Driver
 
-class ExternalDriverSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
-    phone_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
-    car_name = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
-    car_type = serializers.CharField(max_length=255, required=False, allow_null=True, default=None)
-    car_number = serializers.CharField(max_length=20, required=False, allow_null=True, default=None)
-    transport_id = serializers.UUIDField(required=False, allow_null=True, default=None)
-
-    class Meta:
-        ref_name = 'ExcavatorExternalDriver'
-
-
 class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExcavatorSubOrder
@@ -47,7 +35,6 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
             "whouse": {'id': instance.parent.whouse.id, 'name': instance.parent.whouse.name} if instance.parent.whouse else None,
             "payment_status": instance.parent.payment_status,
             'status': instance.parent.status,
-            'external_drivers': instance.parent.external_drivers,
             "files": FileSerializer(instance.parent.files.all(), many=True).data,
             'created_at': instance.parent.created_at,
         }
@@ -62,7 +49,6 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
 
 class ExcavatorOrderSerializer(serializers.ModelSerializer):
     sub_orders = ExcavatorSubOrderSerializer(many=True, read_only=True)
-    external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
 
     class Meta:
         model = ExcavatorOrder
@@ -73,7 +59,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             'start_date', 'end_date',
             'comment', 'status', 
             'payment_status', 'files',
-            'sub_orders', "external_drivers",
+            'sub_orders',
             'created_at', "whouse"
         ]
         read_only_fields = ['id', 'display_id', 'created_at']
@@ -91,7 +77,6 @@ class ExcavatorSubOrderCreateSerializer(serializers.Serializer):
 
 class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
     sub_orders = ExcavatorSubOrderCreateSerializer(many=True, required=False)
-    external_drivers = serializers.ListField(child=ExternalDriverSerializer(), required=False, default=list)
 
     class Meta:
         model = ExcavatorOrder
@@ -100,7 +85,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
             'client_name', 'phone_number',
             'lat', 'lon', 'address', "whouse",
             'start_date', 'end_date',
-            'comment', 'sub_orders', 'external_drivers',
+            'comment', 'sub_orders',
         ]
         read_only_fields = ['id', 'display_id', "start_date", "end_date"]
 
