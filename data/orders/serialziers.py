@@ -237,7 +237,9 @@ class OrderWriteSerializer(serializers.ModelSerializer):
             for item_data in order_items_data:
                 item_id = item_data.pop("id", None)
                 if item_id:
-                    OrderItem.objects.filter(id=item_id, order=instance).update(**item_data)
+                    OrderItem.objects.filter(id=item_id, order=instance).update(
+                        **item_data
+                    )
                 else:
                     OrderItem.objects.create(order=instance, **item_data)
 
@@ -248,7 +250,9 @@ class OrderWriteSerializer(serializers.ModelSerializer):
                 sub_order_items_data = sub_data.pop("sub_order_items", None)
                 sub_id = sub_data.pop("id", None)
                 if sub_id:
-                    SubOrder.objects.filter(id=sub_id, order=instance).update(**sub_data)
+                    SubOrder.objects.filter(id=sub_id, order=instance).update(
+                        **sub_data
+                    )
                     sub_order = SubOrder.objects.get(id=sub_id)
                 else:
                     sub_order = SubOrder.objects.create(order=instance, **sub_data)

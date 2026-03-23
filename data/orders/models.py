@@ -59,9 +59,11 @@ class Order(BaseModel):
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
 
-    rejector_role = models.CharField(max_length=20, choices=Rejector.choices, null=True, blank=True)
+    rejector_role = models.CharField(
+        max_length=20, choices=Rejector.choices, null=True, blank=True
+    )
     rejector_id = models.UUIDField(null=True, blank=True)
-    
+
     def save(self, *args, **kwargs):
         if not self.display_id:
             last_order = Order.all_objects.all().order_by("display_id").last()
@@ -117,6 +119,7 @@ class SubOrder(BaseModel):
         )
         return f"SubOrd-{self.id} for {display_name}"
 
+
 class OrderItem(BaseModel):
     order: "Order" = models.ForeignKey(
         "orders.Order", on_delete=models.CASCADE, related_name="order_items"
@@ -132,9 +135,10 @@ class OrderItem(BaseModel):
     )
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
+
     def __str__(self):
         return f"OrderItem-{self.id} for {self.order}"
+
 
 class SubOrderItem(BaseModel):
     sub_order: "SubOrder" = models.ForeignKey(
@@ -150,6 +154,6 @@ class SubOrderItem(BaseModel):
         "products.ProductUnit", on_delete=models.PROTECT, related_name="sub_order_items"
     )
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
+
     def __str__(self):
         return f"SubOrderItem-{self.id} for {self.sub_order}"
