@@ -11,6 +11,8 @@ from data.stats.serializers import (
     StatusDurationSerializer,
     ExcavatorOrderStatusStatsSerializer,
     ExcavatorStatusDurationSerializer,
+    OrderStatsSerializer,   
+    ExcavatorOrderStatsSerializer,
 )
 from data.products.models import Product, WhouseProducts, WhouseProductsHistory, HistoryStatus
 from data.supplier.models import Supplier
@@ -57,6 +59,16 @@ OUTCOMING_PRODUCT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
         type=openapi.TYPE_STRING,
         format=openapi.FORMAT_UUID,
         description="Client ID",
+    ),
+]
+
+INCOME_PRODUCT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
+    openapi.Parameter(
+        'supplier',
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        format=openapi.FORMAT_UUID,
+        description="Supplier ID",
     ),
 ]
 
@@ -153,12 +165,15 @@ class CountStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 
 class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
-    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
+    @swagger_auto_schema(manual_parameters=INCOME_PRODUCT_FILTER_PARAMS)
     def get(self, request):
         whouse_filter = self.get_whouse_filter(request)
         if whouse_filter is None:
             return self.whouse_not_found()
         df = self.get_date_filters(request)
+        supplier = request.query_params.get('supplier')
+        if supplier:
+            whouse_filter['supplier_id'] = supplier
         products = Product.objects.filter(**whouse_filter, items__isnull=True)
         result = []
         for product in products:
@@ -214,7 +229,7 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             return self.whouse_not_found()
         df = self.get_date_filters(request)
         qs = Order.objects.filter(**whouse_filter, **df)
-        result = {
+        status_counts = {
             'total': qs.count(),
             'new': qs.filter(status=Order.Status.NEW).count(),
             'in_progress': qs.filter(status=Order.Status.IN_PROGRESS).count(),
@@ -223,22 +238,13 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             'unloading': qs.filter(status=Order.Status.UNLOADING).count(),
             'completed': qs.filter(status=Order.Status.COMPLETED).count()
         }
-        serializer = OrderStatusStatsSerializer(result)
-        return Response(serializer.data)
-
-
-class OrderStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
-    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request):
-        whouse_filter = self.get_whouse_filter(request)
-        if whouse_filter is None:
-            return self.whouse_not_found()
+        
         if whouse_filter:
             whouse_filter = {'order__whouse': whouse_filter['whouse']}
         df = self.get_date_filters(request, prefix='order__')
         sub_orders = SubOrder.objects.filter(**whouse_filter, **df).exclude(status_history=[])
         avg = calculate_status_durations(sub_orders)
-        result = {
+        status_durations = {
             'total': sub_orders.count(),
             'new': avg('NEW'),
             'in_progress': avg('IN_PROGRESS'),
@@ -247,16 +253,24 @@ class OrderStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
             'unloading': avg('UNLOADING'),
             'completed': avg('COMPLETED')
         }
-        serializer = StatusDurationSerializer(result)
+        result = {
+            'status_counts': status_counts,
+            'status_durations': status_durations
+        }
+        serializer = OrderStatsSerializer(result)
         return Response(serializer.data)
 
 
 class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
+
         df = self.get_date_filters(request)
-        qs = ExcavatorOrder.objects.filter(**df)
-        result = {
+        qs = Order.objects.filter(**whouse_filter, **df)
+        status_counts = {
             'total': qs.count(),
             'new': qs.filter(status=ExcavatorOrder.Status.NEW).count(),
             'in_progress': qs.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
@@ -264,17 +278,12 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             'completed': qs.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
             'expired': qs.filter(status=ExcavatorOrder.Status.EXPIRED).count()
         }
-        serializer = ExcavatorOrderStatusStatsSerializer(result)
-        return Response(serializer.data)
+        if whouse_filter:
+            whouse_filter = {'order__whouse': whouse_filter['whouse']}
 
-
-class ExcavatorStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
-    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request):
-        df = self.get_date_filters(request)
-        sub_orders = ExcavatorSubOrder.objects.filter(**df).exclude(status_history=[])
+        sub_orders = ExcavatorSubOrder.objects.filter(**df, **whouse_filter).exclude(status_history=[])
         avg = calculate_status_durations(sub_orders)
-        result = {
+        status_durations = {
             'total': sub_orders.count(),
             'new': avg('NEW'),
             'in_progress': avg('IN_PROGRESS'),
@@ -282,5 +291,9 @@ class ExcavatorStatusDurationStatsView(DateRangeFilterMixin, WhouseViewMixin):
             'completed': avg('COMPLETED'),
             'expired': avg('EXPIRED')
         }
-        serializer = ExcavatorStatusDurationSerializer(result)
+        result = {
+            'status_counts': status_counts,
+            'status_durations': status_durations
+        }
+        serializer = ExcavatorOrderStatsSerializer(result)
         return Response(serializer.data)

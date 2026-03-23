@@ -36,6 +36,10 @@ class StatusDurationSerializer(serializers.Serializer):
     completed = serializers.FloatField()
     total = serializers.IntegerField()
 
+class OrderStatsSerializer(OrderStatusStatsSerializer):
+    status_counts = OrderStatusStatsSerializer()
+    status_durations = StatusDurationSerializer()
+
 class ExcavatorOrderStatusStatsSerializer(serializers.Serializer):
     new = serializers.IntegerField()
     in_progress = serializers.IntegerField()
@@ -51,3 +55,8 @@ class ExcavatorStatusDurationSerializer(serializers.Serializer):
     completed = serializers.FloatField()
     expired = serializers.FloatField()
     total = serializers.IntegerField()
+
+class ExcavatorOrderStatsSerializer(ExcavatorOrderStatusStatsSerializer):
+    status_counts = ExcavatorOrderStatusStatsSerializer()
+    status_durations = ExcavatorStatusDurationSerializer()
+
