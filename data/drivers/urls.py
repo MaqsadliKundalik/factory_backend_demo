@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from apps.drivers.views import DriverViewSet, DriverPasswordChangeView
+from data.drivers.views import DriverViewSet, DriverPasswordChangeView
 
 router = DefaultRouter()
 router.register('', DriverViewSet, basename='driver')

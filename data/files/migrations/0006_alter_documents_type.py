@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filedatas', '0005_remove_file_object_id_remove_file_type_documents'),
+        ('files', '0005_remove_file_object_id_remove_file_type_documents'),
     ]
 
     operations = [

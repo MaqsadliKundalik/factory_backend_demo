@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filedatas', '0001_initial'),
+        ('files', '0001_initial'),
         ('users', '0002_factoryuser_wherehouses_page'),
     ]
 

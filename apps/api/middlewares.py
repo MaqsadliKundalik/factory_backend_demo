@@ -1,8 +1,8 @@
 import jwt
 from django.conf import settings
 from django.http import JsonResponse
-from apps.drivers.models import Driver
-from apps.session.models import DriverSession
+from data.drivers.models import Driver
+from data.session.models import DriverSession
 
 
 class CombinedAuthMiddleware:

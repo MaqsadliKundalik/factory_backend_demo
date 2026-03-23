@@ -9,9 +9,9 @@ from apps.common.models import BaseModel
 
 if TYPE_CHECKING:
     from data.products.models import ProductType, ProductUnit, Product
-    from data.filedatas.models import File
+    from data.files.models import File
     from data.clients.models import Client, ClientBranches
-    from apps.drivers.models import Driver
+    from data.drivers.models import Driver
     from data.transports.models import Transport
     from data.whouse.models import Whouse
 
@@ -45,7 +45,7 @@ COMPLETED - Yukni tushirib bo’lgach shu statusga o’tkazadi. Lekin bu holatga
         FACTORY = 'FACTORY', 'Factory'
 
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
-    client:"Client" = models.ForeignKey("clients.Client", on_delete=models.PROTECT, related_name='orders')
+    client:"Client" =models.ForeignKey("clients.Client", on_delete=models.PROTECT, related_name='orders')
     branch:"ClientBranches" = models.ForeignKey("clients.ClientBranches", on_delete=models.PROTECT, related_name='orders')
     whouse:"Whouse" = models.ForeignKey("factory_whouse.Whouse", on_delete=models.PROTECT, related_name='orders')
     product:"Product" = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name='orders')
@@ -76,41 +76,18 @@ class SubOrder(BaseModel):
         COMPLETED = 'COMPLETED', 'Completed'
         REJECTED = 'REJECTED', 'Rejected'
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='sub_orders')
-    driver = models.ForeignKey("factory_drivers.Driver", on_delete=models.PROTECT, related_name='sub_orders')
-    transport = models.ForeignKey("transports.Transport", on_delete=models.PROTECT, related_name='sub_orders')
+    order: "Order" = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name='sub_orders')
+    driver: "Driver" = models.ForeignKey("factory_drivers.Driver", on_delete=models.PROTECT, related_name='sub_orders')
+    transport: "Transport" = models.ForeignKey("transports.Transport", on_delete=models.PROTECT, related_name='sub_orders')
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     status_history = models.JSONField(default=list, encoder=DjangoJSONEncoder)
-    sign: "File" = models.ForeignKey("filedatas.File", on_delete=models.PROTECT, related_name='sub_orders_sign', null=True, blank=True)
-    files = models.ManyToManyField("filedatas.File", blank=True, related_name='sub_orders_files')
+    sign: "File" = models.ForeignKey("files.File", on_delete=models.PROTECT, related_name='sub_orders_sign', null=True, blank=True)
+    files = models.ManyToManyField("files.File", blank=True, related_name='sub_orders_files')
 
     
 
     def __str__(self):
         display_name = f"Ord-{self.order.display_id:03}" if self.order.display_id else f"Ord-{self.order.id}"
         return f"SubOrd-{self.id} for {display_name}"
-
-@receiver(post_save, sender=SubOrder)
-def update_whouse_product_history(sender, instance, **kwargs):
-    if instance.status == SubOrder.Status.NEW:
-        from django.apps import apps
-        WhouseProductsHistory = apps.get_model('products', 'WhouseProductsHistory')
-        WhouseProductsHistory.objects.create(
-            whouse=instance.order.whouse,
-            product=instance.order.product,
-            quantity=instance.quantity,
-            status='OUT'  # HistoryStatus.OUT
-        )
-    # elif instance.status == SubOrder.Status.IN_PROGRESS:
-    #     instance.order.client.send_sms("SubOrder is in progress")
-    # elif instance.status == SubOrder.Status.ON_WAY:
-    #     instance.order.client.send_sms("SubOrder is on way")
-    # elif instance.status == SubOrder.Status.ARRIVED:
-    #     instance.order.client.send_sms("SubOrder is arrived")
-    # elif instance.status == SubOrder.Status.UNLOADING:
-    #     instance.order.client.send_sms("SubOrder is unloading")
-    # elif instance.status == SubOrder.Status.COMPLETED:
-    #     instance.order.client.send_sms("SubOrder is completed")
-    
 

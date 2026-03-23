@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         ('clients', '0004_client_photo'),
         ('factory_drivers', '0003_driver_photo'),
         ('factory_whouse', '0001_initial'),
-        ('filedatas', '0002_alter_file_user'),
+        ('files', '0002_alter_file_user'),
         ('products', '0002_remove_whouseproductshistory_files_and_more'),
         ('transports', '0001_initial'),
     ]
@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('PENDING', 'Pending'), ('CREATED', 'Created'), ('DELIVERED', 'Delivered'), ('CANCELLED', 'Cancelled')], default='CREATED', max_length=20)),
                 ('status_history', models.JSONField(default=list)),
                 ('driver', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sub_orders', to='factory_drivers.driver')),
-                ('files', models.ManyToManyField(related_name='sub_orders', to='filedatas.file')),
+                ('files', models.ManyToManyField(related_name='sub_orders', to='files.file')),
                 ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sub_orders', to='orders.order')),
                 ('transport', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sub_orders', to='transports.transport')),
             ],

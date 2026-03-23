@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.session.models import DriverSession, FactoryUserSession
+from data.session.models import DriverSession, FactoryUserSession
 
 # Register your models here.
 admin.site.register(DriverSession)

@@ -3,7 +3,7 @@ from firebase_admin import messaging
 
 from apps.common.firebase import get_firebase_app
 from data.notifications.models import Notification
-from apps.session.models import DriverSession, FactoryUserSession
+from data.session.models import DriverSession, FactoryUserSession
 
 BATCH_SIZE = 500
 

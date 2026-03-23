@@ -147,7 +147,7 @@ class Command(BaseCommand):
         from data.products.models import Product, ProductType, ProductUnit, WhouseProducts, WhouseProductsHistory, HistoryStatus
         from data.clients.models import Client, ClientBranches
         from data.supplier.models import Supplier
-        from apps.drivers.models import Driver
+        from data.drivers.models import Driver
         from data.transports.models import Transport
         from data.orders.models import Order, SubOrder
         from data.excavator.models import ExcavatorOrder, ExcavatorSubOrder

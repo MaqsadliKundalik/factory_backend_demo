@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('excavator', '0003_remove_excavatororder_after_files_and_more'),
-        ('filedatas', '0007_alter_documents_type'),
+        ('files', '0007_alter_documents_type'),
     ]
 
     operations = [
@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='excavatorsuborder',
             name='files',
-            field=models.ManyToManyField(blank=True, related_name='excavator_suborder_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='excavator_suborder_files', to='files.file'),
         ),
     ]

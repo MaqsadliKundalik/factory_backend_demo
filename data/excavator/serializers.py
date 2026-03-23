@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from .models import ExcavatorOrder, ExcavatorSubOrder
-from data.filedatas.serializers import FileSerializer
+from data.files.serializers import FileSerializer
 from data.transports.serializers import TransportSerializer
 from data.transports.models import Transport
-from apps.drivers.serializers import DriverSerializer
-from apps.drivers.models import Driver
+from data.drivers.serializers import DriverSerializer
+from data.drivers.models import Driver
 
 class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from utils.password import password_validator
+from data.drivers.models import Driver
 
 class LoginSerializer(serializers.Serializer):
 
@@ -17,7 +18,6 @@ class LoginSerializer(serializers.Serializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        from apps.drivers.models import Driver
         model = Driver
         fields = ["id", "name", "phone_number", "car_type", "car_number"]
 
@@ -33,7 +33,6 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         old_password = attrs.get("old_password")
-        from apps.drivers.models import Driver
         driver: Driver = self.context["driver"]
 
         if not driver.check_password(old_password):
@@ -43,7 +42,6 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         new_password = self.validated_data["new_password"]
-        from apps.drivers.models import Driver
         driver: Driver = self.context["driver"]
 
         driver.set_password(new_password)

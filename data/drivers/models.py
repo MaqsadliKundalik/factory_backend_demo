@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
-
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from apps.common.models import BaseModel
-from data.filedatas.models import File
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from data.whouse.models import Whouse
+    from data.files.models import File
+    from data.session.models import DriverSession
 
 class Driver(BaseModel):
 
@@ -18,8 +20,8 @@ class Driver(BaseModel):
     # fcm_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging token")
     
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.INTERNAL)
-    photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
-    whouse = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
+    photo: 'File' = models.ForeignKey("files.File", on_delete=models.SET_NULL, null=True, blank=True)
+    whouse: 'Whouse' = models.ForeignKey("factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True)
 
     def clean(self):
         if self.type == self.Type.INTERNAL:
@@ -47,7 +49,6 @@ class Driver(BaseModel):
     @property
     def whouses(self):
         # Returns a queryset for compatibility with FactoryUser.whouses.all()
-        from data.whouse.models import Whouse
         if self.whouse:
             return Whouse.objects.filter(id=self.whouse.id)
         return Whouse.objects.none()
@@ -61,7 +62,6 @@ class Driver(BaseModel):
         return True
 
     def new_session(self):
-        from apps.session.models import DriverSession
         return DriverSession.for_driver(self)
 
 

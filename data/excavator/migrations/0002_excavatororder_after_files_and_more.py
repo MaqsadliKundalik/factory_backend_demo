@@ -7,33 +7,33 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('excavator', '0001_initial'),
-        ('filedatas', '0006_alter_documents_type'),
+        ('files', '0006_alter_documents_type'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='excavatororder',
             name='after_files',
-            field=models.ManyToManyField(blank=True, related_name='excavator_order_after_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='excavator_order_after_files', to='files.file'),
         ),
         migrations.AddField(
             model_name='excavatororder',
             name='before_files',
-            field=models.ManyToManyField(blank=True, related_name='excavator_order_before_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='excavator_order_before_files', to='files.file'),
         ),
         migrations.AddField(
             model_name='excavatororder',
             name='files',
-            field=models.ManyToManyField(blank=True, related_name='excavator_order_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='excavator_order_files', to='files.file'),
         ),
         migrations.AddField(
             model_name='excavatorsuborder',
             name='after_files',
-            field=models.ManyToManyField(blank=True, related_name='excavator_suborder_after_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='excavator_suborder_after_files', to='files.file'),
         ),
         migrations.AddField(
             model_name='excavatorsuborder',
             name='before_files',
-            field=models.ManyToManyField(blank=True, related_name='excavator_suborder_before_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='excavator_suborder_before_files', to='files.file'),
         ),
     ]

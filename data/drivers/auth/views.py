@@ -6,9 +6,10 @@ from django.http import HttpRequest
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from drf_yasg.utils import swagger_auto_schema
+from data.session.models import DriverSession
 from drf_yasg import openapi
-from apps.drivers.models import Driver
-from apps.drivers.auth.serializers import LoginSerializer
+from data.drivers.models import Driver
+from data.drivers.auth.serializers import LoginSerializer
 
 class CustomTokenRefreshView(APIView):
     permission_classes = []  # No authentication required for this view
@@ -162,7 +163,6 @@ class LogoutAPIView(APIView):
     )
     def post(self, request: HttpRequest | Request):
         from .serializers import LogoutSerializer
-        from apps.session.models import DriverSession
 
         serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -211,7 +211,6 @@ class ChangePasswordAPIView(APIView):
     )
     def post(self, request: HttpRequest | Request):
         from .serializers import ChangePasswordSerializer
-        from apps.session.models import DriverSession
 
         serializer = ChangePasswordSerializer(
             data=request.data,

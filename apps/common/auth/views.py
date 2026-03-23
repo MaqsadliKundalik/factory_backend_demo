@@ -10,8 +10,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from apps.drivers.models import Driver
-from apps.session.models import (
+from data.drivers.models import Driver
+from data.session.models import (
     DriverSession,
     FactoryUserSession
 )

@@ -1,7 +1,8 @@
 from django.apps import AppConfig
 
 
-class DriversConfig(AppConfig):
+class FilesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.drivers'
-    label = 'factory_drivers'
+    name = 'data.files'
+    label = 'files'
+

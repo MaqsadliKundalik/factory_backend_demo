@@ -16,7 +16,7 @@ from data.stats.serializers import (
 )
 from data.products.models import Product, WhouseProducts, WhouseProductsHistory, HistoryStatus
 from data.supplier.models import Supplier
-from apps.drivers.models import Driver
+from data.drivers.models import Driver
 from data.clients.models import Client
 from data.transports.models import Transport
 from data.orders.models import Order, SubOrder

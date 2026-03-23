@@ -2,13 +2,16 @@ from django.db import models
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib import admin
 from django.conf import settings
+from typing import TYPE_CHECKING
 
-from apps.drivers.models import Driver
+if TYPE_CHECKING:
+    from data.drivers.models import Driver
+    from data.users.models import FactoryUser
 
 # Create your models here.
 class DriverSession(models.Model):
-    driver = models.ForeignKey(
-        Driver, on_delete=models.CASCADE, related_name="sessions"
+    driver: "Driver" = models.ForeignKey(
+        "factory_drivers.Driver", on_delete=models.CASCADE, related_name="sessions"
     )
     fcm_token = models.CharField(max_length=512, null=True, blank=True)
     fcm_invalid = models.BooleanField(default=False)
@@ -42,7 +45,7 @@ class DriverSession(models.Model):
 
 
 class FactoryUserSession(models.Model):
-    factory_user = models.ForeignKey(
+    factory_user: "FactoryUser" = models.ForeignKey(
         "users.FactoryUser", on_delete=models.CASCADE, related_name="sessions",
         null=True, blank=True
     )

@@ -16,7 +16,7 @@ from apps.common.permissions import HasDynamicPermission
 from apps.common.mixins import PermissionMetaMixin
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
-from data.filedatas.models import File
+from data.files.models import File
 
 from .models import ExcavatorOrder, ExcavatorSubOrder
 from .serializers import (

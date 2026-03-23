@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('filedatas', '0006_alter_documents_type'),
+        ('files', '0006_alter_documents_type'),
         ('transports', '0001_initial'),
     ]
 
@@ -35,8 +35,8 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('NEW', 'New'), ('IN_PROGRESS', 'In Progress'), ('PAUSED', 'Paused'), ('COMPLETED', 'Completed'), ('EXPIRED', 'Expired')], default='NEW', max_length=20)),
                 ('payment_status', models.CharField(choices=[('PENDING', 'Pending'), ('PAID', 'Paid')], default='PENDING', max_length=20)),
                 ('status_history', models.JSONField(default=list, encoder=django.core.serializers.json.DjangoJSONEncoder)),
-                ('after_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_orders_after_sign', to='filedatas.file')),
-                ('before_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_orders_before_sign', to='filedatas.file')),
+                ('after_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_orders_after_sign', to='files.file')),
+                ('before_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_orders_before_sign', to='files.file')),
                 ('transport', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_orders', to='transports.transport')),
             ],
             options={
@@ -62,8 +62,8 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('NEW', 'New'), ('IN_PROGRESS', 'In Progress'), ('PAUSED', 'Paused'), ('COMPLETED', 'Completed'), ('EXPIRED', 'Expired')], default='NEW', max_length=20)),
                 ('payment_status', models.CharField(choices=[('PENDING', 'Pending'), ('PAID', 'Paid')], default='PENDING', max_length=20)),
                 ('status_history', models.JSONField(default=list, encoder=django.core.serializers.json.DjangoJSONEncoder)),
-                ('after_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_sub_orders_after_sign', to='filedatas.file')),
-                ('before_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_sub_orders_before_sign', to='filedatas.file')),
+                ('after_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_sub_orders_after_sign', to='files.file')),
+                ('before_sign', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_sub_orders_before_sign', to='files.file')),
                 ('parent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sub_orders', to='excavator.excavatororder')),
                 ('transport', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='excavator_sub_orders', to='transports.transport')),
             ],

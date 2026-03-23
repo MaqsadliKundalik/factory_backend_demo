@@ -2,7 +2,7 @@ from rest_framework import serializers
 from data.whouse.models import Whouse
 from data.users.models import FactoryUser
 import re
-from data.filedatas.serializers import FileSerializer
+from data.files.serializers import FileSerializer
 
 class FactoryUserSerializer(serializers.ModelSerializer):
     
@@ -40,7 +40,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon ro'yxatdan o'tgan"})
         
         # Driver da tekshirish
-        from apps.drivers.models import Driver
+        from data.drivers.models import Driver
         if Driver.objects.filter(phone_number=phone_number).exists():
             raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon haydovchi tomonidan ro'yxatdan o'tgan"})
         
@@ -61,7 +61,7 @@ class FactoryUserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon boshqa foydalanuvchi tomonidan ro'yxatdan o'tgan"})
             
             # Driver lar orasida tekshirish
-            from apps.drivers.models import Driver
+            from data.drivers.models import Driver
             if Driver.objects.filter(phone_number=new_phone_number).exists():
                 raise serializers.ValidationError({"phone_number": "Bu telefon raqami allaqachon haydovchi tomonidan ro'yxatdan o'tgan"})
         

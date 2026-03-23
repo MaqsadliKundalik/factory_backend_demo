@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('factory_whouse', '0001_initial'),
-        ('filedatas', '0003_remove_file_user'),
+        ('files', '0003_remove_file_user'),
     ]
 
     operations = [
@@ -24,8 +24,8 @@ class Migration(migrations.Migration):
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
                 ('name', models.CharField(max_length=255)),
                 ('inn_number', models.CharField(max_length=9)),
-                ('files', models.ManyToManyField(blank=True, null=True, related_name='suppliers', to='filedatas.file')),
-                ('photo', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='filedatas.file')),
+                ('files', models.ManyToManyField(blank=True, null=True, related_name='suppliers', to='files.file')),
+                ('photo', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='files.file')),
                 ('whouse', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='factory_whouse.whouse')),
             ],
             options={

@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from apps.drivers.urls import urlpatterns as driver_urls
+from data.drivers.urls import urlpatterns as driver_urls
 from data.whouse.urls import urlpatterns as whouse_urls
 from data.users.urls import urlpatterns as users_urls
 from apps.common.auth.urls import urlpatterns as auth_urls
@@ -25,7 +25,7 @@ from data.supplier.urls import urlpatterns as supplier_urls
 from data.transports.urls import urlpatterns as transports_urls
 from data.notifications.urls import urlpatterns as notifications_urls
 from data.clients.urls import urlpatterns as clients_urls
-from data.filedatas.urls import urlpatterns as filedatas_urls
+from data.files.urls import urlpatterns as files_urls
 from data.orders.urls import urlpatterns as orders_urls
 from data.excavator.urls import urlpatterns as excavator_urls
 from data.stats.urls import urlpatterns as stats_urls
@@ -65,7 +65,7 @@ urlpatterns = [
     path('users/', include(users_urls)),
     path('notifications/', include(notifications_urls)),
     path('clients/', include(clients_urls)),
-    path('files/', include(filedatas_urls)),
+    path('files/', include(files_urls)),
     path('orders/', include(orders_urls)),
     path('excavator-order/', include(excavator_urls)),
     path('stats/', include(stats_urls)),

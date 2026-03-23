@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.core.validators import RegexValidator
-from apps.drivers.models import Driver
+from data.drivers.models import Driver
 from utils.password import password_validator
-from data.filedatas.serializers import FileSerializer
+from data.files.serializers import FileSerializer
 from data.orders.models import SubOrder
 from data.users.models import FactoryUser
 

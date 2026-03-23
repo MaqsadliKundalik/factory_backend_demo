@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Client, ClientBranches, ClientPhone
-from data.filedatas.serializers import FileSerializer
+from data.files.serializers import FileSerializer
 from app.settings import BASE_URL
 
 class ClientBranchesSerializer(serializers.ModelSerializer):

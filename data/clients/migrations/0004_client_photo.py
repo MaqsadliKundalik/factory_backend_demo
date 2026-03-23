@@ -8,13 +8,13 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('clients', '0003_clientbranches_delete_userbranches'),
-        ('filedatas', '0001_initial'),
+        ('files', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='client',
             name='photo',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='filedatas.file'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='files.file'),
         ),
     ]

@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
-from data.filedatas.models import File
-from data.filedatas.serializers import FileSerializer
+from data.files.models import File
+from data.files.serializers import FileSerializer
 from app.settings import BASE_URL
 from data.supplier.serializers import SupplierSerializer
 from .models import ProductType, ProductUnit, Product, WhouseProducts, WhouseProductsHistory, ProductItem

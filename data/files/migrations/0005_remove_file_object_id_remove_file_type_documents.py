@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filedatas', '0004_file_object_id_file_type'),
+        ('files', '0004_file_object_id_file_type'),
     ]
 
     operations = [
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
                 ('type', models.CharField(choices=[('DRIVER', 'Driver'), ('TRANSPORT', 'Transport'), ('SUPPLIER', 'Supplier'), ('CLIENT', 'Client'), ('SUBORDER', 'Suborder'), ('PRODUCT', 'Product'), ('OTHER', 'Other')], default='OTHER', max_length=255)),
                 ('object_id', models.UUIDField(blank=True, null=True)),
-                ('file', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='filedatas.file')),
+                ('file', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='files.file')),
             ],
             options={
                 'ordering': ['-created_at'],

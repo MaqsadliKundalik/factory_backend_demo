@@ -21,7 +21,7 @@ from .serialziers import (
     OrderSerializer, OrderWriteSerializer,
     SubOrderSerializer, StatusHistorySerializer, CompetedStatusSerializer,
 )
-from data.filedatas.models import File
+from data.files.models import File
 
 
 ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [

@@ -1,11 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from django.contrib.auth.hashers import make_password, check_password
 from typing import TYPE_CHECKING
 from apps.common.models import BaseModel
+from data.session.models import FactoryUserSession
 
 if TYPE_CHECKING:
-    from data.filedatas.models import File
+    from data.files.models import File
 
 # Create your managers here.
 class FactoryUserManager(BaseUserManager):
@@ -29,7 +29,7 @@ class FactoryUser(BaseModel, AbstractBaseUser):
     # password field is provided by AbstractBaseUser
     
     role = models.CharField(max_length=50) # manager, operator, guard
-    photo : 'File' = models.ForeignKey("filedatas.File", on_delete=models.SET_NULL, null=True, blank=True)
+    photo : 'File' = models.ForeignKey("files.File", on_delete=models.SET_NULL, null=True, blank=True)
 
     MAIN_PAGE = models.BooleanField(default=False)
     PRODUCTS_PAGE = models.BooleanField(default=False)
@@ -61,7 +61,6 @@ class FactoryUser(BaseModel, AbstractBaseUser):
         return self.is_staff or self.is_superuser
 
     def new_session(self):
-        from apps.session.models import FactoryUserSession
         return FactoryUserSession.for_factory_user(self)
 
     @property

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filedatas', '0007_alter_documents_type'),
+        ('files', '0007_alter_documents_type'),
         ('products', '0005_remove_whouseproducts_files'),
     ]
 
@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='whouseproducts',
             name='files',
-            field=models.ManyToManyField(blank=True, related_name='whouse_product_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='whouse_product_files', to='files.file'),
         ),
     ]

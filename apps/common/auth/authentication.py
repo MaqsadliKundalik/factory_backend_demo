@@ -1,8 +1,8 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken
 from django.utils.translation import gettext_lazy as _
-from apps.drivers.models import Driver
-from apps.session.models import DriverSession, FactoryUserSession
+from data.drivers.models import Driver
+from data.session.models import DriverSession, FactoryUserSession
 from data.users.models import FactoryUser
 
 class UnifiedJWTAuthentication(JWTAuthentication):

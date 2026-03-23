@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('factory_drivers', '0003_driver_photo'),
-        ('filedatas', '0002_alter_file_user'),
+        ('files', '0002_alter_file_user'),
     ]
 
     operations = [
@@ -22,6 +22,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='driver',
             name='files',
-            field=models.ManyToManyField(blank=True, related_name='drivers', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='drivers', to='files.file'),
         ),
     ]

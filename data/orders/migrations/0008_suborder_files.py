@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filedatas', '0006_alter_documents_type'),
+        ('files', '0006_alter_documents_type'),
         ('orders', '0007_remove_suborder_files'),
     ]
 
@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='suborder',
             name='files',
-            field=models.ManyToManyField(blank=True, related_name='sub_orders_files', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, related_name='sub_orders_files', to='files.file'),
         ),
     ]

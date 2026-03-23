@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filedatas', '0002_alter_file_user'),
+        ('files', '0002_alter_file_user'),
     ]
 
     operations = [

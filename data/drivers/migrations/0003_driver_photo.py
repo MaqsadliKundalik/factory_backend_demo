@@ -8,13 +8,13 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('factory_drivers', '0002_driver_clients_page_driver_drivers_page_and_more'),
-        ('filedatas', '0002_alter_file_user'),
+        ('files', '0002_alter_file_user'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='driver',
             name='photo',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='filedatas.file'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='files.file'),
         ),
     ]

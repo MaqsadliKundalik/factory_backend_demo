@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filedatas', '0003_remove_file_user'),
+        ('files', '0003_remove_file_user'),
         ('orders', '0004_alter_order_client_alter_order_product_and_more'),
     ]
 
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='suborder',
             name='sign',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='sub_orders_sign', to='filedatas.file'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='sub_orders_sign', to='files.file'),
         ),
     ]

@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from apps.drivers.models import Driver
-from apps.drivers.serializers import DriverSerializer, DriverPasswordChangeSerializer, SelectDriverSerializer
+from data.drivers.models import Driver
+from data.drivers.serializers import DriverSerializer, DriverPasswordChangeSerializer, SelectDriverSerializer
 from apps.common.permissions import HasDynamicPermission
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.mixins import PermissionMetaMixin

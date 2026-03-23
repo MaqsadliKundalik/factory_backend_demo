@@ -2,8 +2,8 @@ from rest_framework import serializers
 from django.core.validators import RegexValidator
 from utils.password import password_validator
 from data.users.models import FactoryUser
-from apps.drivers.models import Driver
-from data.filedatas.serializers import FileSerializer
+from data.drivers.models import Driver
+from data.files.serializers import FileSerializer
 
 class UnifiedLoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField(

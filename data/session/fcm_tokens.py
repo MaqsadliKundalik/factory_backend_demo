@@ -1,4 +1,4 @@
-from apps.session.models import DriverSession, FactoryUserSession
+from data.session.models import DriverSession, FactoryUserSession
 
 
 def normalize_fcm_token(value) -> str | None:

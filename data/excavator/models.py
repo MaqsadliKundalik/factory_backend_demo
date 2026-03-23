@@ -2,6 +2,13 @@ from django.db import models, transaction
 from django.db.models import Max
 from django.core.serializers.json import DjangoJSONEncoder
 from apps.common.models import BaseModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from data.whouse.models import Whouse
+    from data.drivers.models import Driver
+    from data.transports.models import Transport
+    from data.files.models import File
 
 
 class ExcavatorOrder(BaseModel):
@@ -34,7 +41,7 @@ class ExcavatorOrder(BaseModel):
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
 
     files = models.ManyToManyField(
-        'filedatas.File',
+        'files.File',
         blank=True,
         related_name='excavator_order_files'
     )
@@ -63,19 +70,19 @@ class ExcavatorSubOrder(BaseModel):
         PENDING = 'PENDING', 'Pending'
         PAID = 'PAID', 'Paid'
 
-    parent = models.ForeignKey(
-        ExcavatorOrder,
+    parent: 'ExcavatorOrder' = models.ForeignKey(
+        "excavator.ExcavatorOrder",
         on_delete=models.CASCADE,
         related_name='sub_orders'
     )
-    driver = models.ForeignKey(
+    driver: 'Driver' = models.ForeignKey(
         'factory_drivers.Driver',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='excavator_sub_orders'
     )
 
-    transport = models.ForeignKey(
+    transport: 'Transport' = models.ForeignKey(
         'transports.Transport',
         on_delete=models.SET_NULL,
         null=True, blank=True,
@@ -86,25 +93,25 @@ class ExcavatorSubOrder(BaseModel):
 
     status_history = models.JSONField(default=list, encoder=DjangoJSONEncoder)
 
-    before_sign = models.ForeignKey(
-        'filedatas.File',
+    before_sign: 'File' = models.ForeignKey(
+        'files.File',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='excavator_sub_orders_before_sign'
     )
     before_files = models.ManyToManyField(
-        'filedatas.File',
+        'files.File',
         blank=True,
         related_name='excavator_suborder_before_files'
     )
-    after_sign = models.ForeignKey(
-        'filedatas.File',
+    after_sign: 'File' = models.ForeignKey(
+        'files.File',
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='excavator_sub_orders_after_sign'
     )
     after_files = models.ManyToManyField(
-        'filedatas.File',
+        'files.File',
         blank=True,
         related_name='excavator_suborder_after_files'
     )

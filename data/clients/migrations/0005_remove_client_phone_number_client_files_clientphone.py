@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('clients', '0004_client_photo'),
-        ('filedatas', '0003_remove_file_user'),
+        ('files', '0003_remove_file_user'),
     ]
 
     operations = [
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='client',
             name='files',
-            field=models.ManyToManyField(blank=True, null=True, related_name='clients', to='filedatas.file'),
+            field=models.ManyToManyField(blank=True, null=True, related_name='clients', to='files.file'),
         ),
         migrations.CreateModel(
             name='ClientPhone',

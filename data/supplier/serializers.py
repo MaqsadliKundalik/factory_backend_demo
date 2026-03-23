@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Supplier, SupplierPhone
-from data.filedatas.serializers import FileSerializer
+from data.files.serializers import FileSerializer
 from app.settings import BASE_URL
 
 class SupplierPhoneSerializer(serializers.ModelSerializer):

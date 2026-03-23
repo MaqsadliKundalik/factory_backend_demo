@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from apps.common.models import BaseModel
-from data.filedatas.models import File
+from data.files.models import File
 
 
 class Supplier(BaseModel):

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('factory_whouse', '0001_initial'),
-        ('filedatas', '0001_initial'),
+        ('files', '0001_initial'),
     ]
 
     operations = [
@@ -93,7 +93,7 @@ class Migration(migrations.Migration):
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
                 ('quantity', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
                 ('status', models.CharField(choices=[('PENDING', 'Pending'), ('CREATED', 'Created'), ('REJECTED', 'Rejected'), ('CONFIRMED', 'Confirmed')], default='PENDING', max_length=20)),
-                ('files', models.ManyToManyField(related_name='whouse_products', to='filedatas.file')),
+                ('files', models.ManyToManyField(related_name='whouse_products', to='files.file')),
                 ('product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='products.product')),
                 ('product_type', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='products.producttype')),
                 ('whouse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='factory_whouse.whouse')),
@@ -112,7 +112,7 @@ class Migration(migrations.Migration):
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
                 ('quantity', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
                 ('status', models.CharField(choices=[('PENDING', 'Pending'), ('CREATED', 'Created'), ('REJECTED', 'Rejected'), ('CONFIRMED', 'Confirmed')], default='PENDING', max_length=20)),
-                ('files', models.ManyToManyField(related_name='whouse_products_history', to='filedatas.file')),
+                ('files', models.ManyToManyField(related_name='whouse_products_history', to='files.file')),
                 ('product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='products.product')),
                 ('whouse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='factory_whouse.whouse')),
                 ('whouse_product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='history', to='products.whouseproducts')),

@@ -2,10 +2,10 @@ from rest_framework import serializers
 from .models import Order, SubOrder
 from data.products.serializers import ProductSerializer, ProductTypeSerializer, ProductUnitSerializer
 from data.clients.serializers import ClientSerializer, ClientBranchesSerializer
-from apps.drivers.serializers import DriverSerializer
+from data.drivers.serializers import DriverSerializer
 from data.transports.models import Transport
 from data.transports.serializers import TransportSerializer
-from data.filedatas.serializers import FileSerializer
+from data.files.serializers import FileSerializer
 
 class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
@@ -73,7 +73,6 @@ class SubOrderSerializer(serializers.ModelSerializer):
         rep['sign'] = FileSerializer(instance.sign).data if instance.sign else None
         rep['files'] = FileSerializer(instance.files.all(), many=True).data
         return rep
-
 
 # --- Order serializers ---
 
