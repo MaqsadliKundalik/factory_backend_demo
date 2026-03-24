@@ -33,6 +33,7 @@ class OrderStatusStatsSerializer(serializers.Serializer):
     arrived = serializers.IntegerField()
     unloading = serializers.IntegerField()
     completed = serializers.IntegerField()
+    rejected = serializers.IntegerField()
     total = serializers.IntegerField()
 
 
@@ -43,6 +44,7 @@ class StatusDurationSerializer(serializers.Serializer):
     arrived = serializers.FloatField()
     unloading = serializers.FloatField()
     completed = serializers.FloatField()
+    rejected = serializers.FloatField()
     total = serializers.IntegerField()
 
 
@@ -57,6 +59,7 @@ class ExcavatorOrderStatusStatsSerializer(serializers.Serializer):
     paused = serializers.IntegerField()
     completed = serializers.IntegerField()
     expired = serializers.IntegerField()
+    rejected = serializers.IntegerField()
     total = serializers.IntegerField()
 
 
@@ -66,6 +69,7 @@ class ExcavatorStatusDurationSerializer(serializers.Serializer):
     paused = serializers.FloatField()
     completed = serializers.FloatField()
     expired = serializers.FloatField()
+    rejected = serializers.FloatField()
     total = serializers.IntegerField()
 
 

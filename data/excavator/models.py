@@ -18,6 +18,7 @@ class ExcavatorOrder(BaseModel):
         PAUSED = "PAUSED", "Paused"
         COMPLETED = "COMPLETED", "Completed"
         EXPIRED = "EXPIRED", "Expired"
+        REJECTED = "REJECTED", "Rejected"
 
     class PaymentStatus(models.TextChoices):
         PENDING = "PENDING", "Pending"
@@ -77,6 +78,7 @@ class ExcavatorSubOrder(BaseModel):
         PAUSED = "PAUSED", "Paused"
         COMPLETED = "COMPLETED", "Completed"
         EXPIRED = "EXPIRED", "Expired"
+        REJECTED = "REJECTED", "Rejected"
 
     class PaymentStatus(models.TextChoices):
         PENDING = "PENDING", "Pending"

@@ -269,6 +269,7 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             "arrived": qs.filter(status=Order.Status.ARRIVED).count(),
             "unloading": qs.filter(status=Order.Status.UNLOADING).count(),
             "completed": qs.filter(status=Order.Status.COMPLETED).count(),
+            "rejected": qs.filter(status=Order.Status.REJECTED).count(),
         }
 
         if whouse_filter:
@@ -286,6 +287,7 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             "arrived": avg("ARRIVED"),
             "unloading": avg("UNLOADING"),
             "completed": avg("COMPLETED"),
+            "rejected": avg("REJECTED"),
         }
         result = {"status_counts": status_counts, "status_durations": status_durations}
         serializer = OrderStatsSerializer(result)
@@ -308,6 +310,7 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             "paused": qs.filter(status=ExcavatorOrder.Status.PAUSED).count(),
             "completed": qs.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
             "expired": qs.filter(status=ExcavatorOrder.Status.EXPIRED).count(),
+            "rejected": qs.filter(status=ExcavatorOrder.Status.REJECTED).count(),
         }
         if whouse_filter:
             whouse_filter = {"parent__whouse": whouse_filter["whouse"]}
@@ -323,6 +326,7 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
             "paused": avg("PAUSED"),
             "completed": avg("COMPLETED"),
             "expired": avg("EXPIRED"),
+            "rejected": avg("REJECTED"),
         }
         result = {"status_counts": status_counts, "status_durations": status_durations}
         serializer = ExcavatorOrderStatsSerializer(result)
