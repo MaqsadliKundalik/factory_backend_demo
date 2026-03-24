@@ -1,6 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound, NotAuthenticated, AuthenticationFailed
+from apps.common.exceptions import (
+    WrongPasswordError,
+    UserNotFoundError,
+    RefreshTokenRequiredError,
+    RefreshTokenInvalidError,
+)
 from rest_framework.request import Request
 from data.users.models import FactoryUser
 from django.http import HttpRequest
@@ -48,10 +53,10 @@ class UnifiedLoginAPIView(APIView):
             role = user.role
 
         if user is None or role in ["driver", "guard"]:
-            raise NotFound("Пользователь не найден.")
+            raise UserNotFoundError()
 
         if not user.check_password(data["password"]):
-            raise NotAuthenticated("Неверный пароль.")
+            raise WrongPasswordError()
 
         new_session = user.new_session()
         refresh = new_session.token
@@ -187,7 +192,7 @@ class UnifiedTokenRefreshView(APIView):
     def post(self, request, *args, **kwargs):   
         refresh_token = request.data.get("refresh")
         if not refresh_token:
-            raise AuthenticationFailed("Требуется refresh-токен.")
+            raise RefreshTokenRequiredError()
 
         try:
             refresh = RefreshToken(refresh_token)
@@ -195,8 +200,8 @@ class UnifiedTokenRefreshView(APIView):
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
             })
-        except TokenError as e:
-            raise AuthenticationFailed(f"Недействительный refresh-токен: {str(e)}")
+        except TokenError:
+            raise RefreshTokenInvalidError()
 
 # --- MOBILE UNIFIED AUTH ---
 
@@ -229,10 +234,10 @@ class UnifiedMobileLoginAPIView(APIView):
                 role = "guard"
 
         if user is None:
-            raise NotFound("Пользователь не найден.")
+            raise UserNotFoundError()
 
         if not user.check_password(data["password"]):
-            raise NotAuthenticated("Noto'g'ri parol.")
+            raise WrongPasswordError()
 
 
         new_session = user.new_session()

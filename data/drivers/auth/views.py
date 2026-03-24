@@ -1,6 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound, NotAuthenticated, AuthenticationFailed
+from apps.common.exceptions import (
+    WrongPasswordError,
+    DriverNotFoundError,
+    RefreshTokenRequiredError,
+    RefreshTokenInvalidError,
+)
 from rest_framework.request import Request
 from django.http import HttpRequest
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -39,26 +44,18 @@ class CustomTokenRefreshView(APIView):
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
-            raise AuthenticationFailed("Refresh token is required")
+            raise RefreshTokenRequiredError()
 
         try:
-            # Decode the refresh token to create a new access token
-
             refresh = RefreshToken(refresh_token)
-
-            # Create a new access token using the refresh token
-            access_token = refresh.access_token
-
-            # Return the new access token
             return Response(
                 {
-                    "access": str(access_token),
+                    "access": str(refresh.access_token),
                     "refresh": str(refresh),
                 }
             )
-
-        except TokenError as e:
-            raise AuthenticationFailed(f"Invalid refresh token: {str(e)}")
+        except TokenError:
+            raise RefreshTokenInvalidError()
 
 
 
@@ -96,11 +93,10 @@ class LoginAPIView(APIView):
         ).first()
 
         if driver is None:
-            raise NotFound("Driver topilmadi.")
+            raise DriverNotFoundError()
 
         if not driver.check_password(data["password"]):
-
-            raise NotAuthenticated("Wrong password")
+            raise WrongPasswordError()
 
         new_session = driver.new_session()
 

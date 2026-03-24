@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from apps.common.models import BaseModel
+from data.session.models import DriverSession
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from data.whouse.models import Whouse
     from data.files.models import File
-    from data.session.models import DriverSession
 
 
 class Driver(BaseModel):

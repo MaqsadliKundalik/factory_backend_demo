@@ -200,6 +200,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    "EXCEPTION_HANDLER": "apps.common.exception_handler.custom_exception_handler",
 }
 
 CSRF_COOKIE_SECURE = True
