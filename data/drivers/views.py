@@ -21,6 +21,22 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 
+DRIVER_FILTER_PARAMS = [
+    openapi.Parameter(
+        "hasOrder",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_BOOLEAN,
+        description="Filter by order presence",
+    ),
+    openapi.Parameter(
+        "type",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Filter by type",
+    )
+]
+
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
