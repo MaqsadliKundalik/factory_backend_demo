@@ -150,7 +150,7 @@ class OutcomingProductFilterMixin(DateRangeFilterMixin):
         filters = self.get_date_filters(request, prefix)
         client = request.query_params.get("client")
         if client:
-            filters[f"{prefix}client_id"] = client
+            filters[f"{prefix}client__id"] = client
         return filters
 
 
