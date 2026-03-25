@@ -95,10 +95,10 @@ def calculate_status_durations(sub_orders):
             try:
                 t1 = datetime.fromisoformat(str(entry["timestamp"]))
                 t2 = datetime.fromisoformat(str(next_entry["timestamp"]))
-                minutes = (t2 - t1).total_seconds() / 60
-                if minutes >= 0:
+                seconds = (t2 - t1).total_seconds()
+                if seconds >= 0:
                     duration_totals[status_key] = (
-                        duration_totals.get(status_key, 0) + minutes
+                        duration_totals.get(status_key, 0) + seconds
                     )
                     duration_counts[status_key] = duration_counts.get(status_key, 0) + 1
             except (KeyError, ValueError):
