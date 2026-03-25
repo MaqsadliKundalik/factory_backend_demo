@@ -97,7 +97,6 @@ class SubOrder(BaseModel):
     transport: "Transport" = models.ForeignKey(
         "transports.Transport", on_delete=models.PROTECT, related_name="sub_orders"
     )
-    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     status_history = models.JSONField(default=list, encoder=DjangoJSONEncoder)
     sign: "File" = models.ForeignKey(
