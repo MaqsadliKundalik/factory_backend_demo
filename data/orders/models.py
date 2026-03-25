@@ -108,7 +108,7 @@ class SubOrder(BaseModel):
         blank=True,
     )
     files = models.ManyToManyField(
-        "files.File", blank=True, related_name="sub_orders_files"
+        "files.File", blank=True, related_name="sub_orders_files", null=True
     )
 
     def __str__(self):

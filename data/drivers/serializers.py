@@ -17,7 +17,7 @@ class DriverSerializer(serializers.ModelSerializer):
         ]
     )
     password = serializers.CharField(
-        write_only=True, validators=[password_validator(8)]
+        write_only=True, required=False, allow_blank=True, allow_null=True,
     )
 
     class Meta:
@@ -33,6 +33,28 @@ class DriverSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+
+    def validate_password(self, value):
+        if value:
+            validator = password_validator(8)
+            validator(value)
+        return value
+
+    def validate(self, attrs):
+        driver_type = attrs.get("type", getattr(self.instance, "type", None))
+        if driver_type == Driver.Type.INTERNAL:
+            if not attrs.get("password") and not (self.instance and self.instance.password):
+                raise serializers.ValidationError(
+                    {"password": "Internal driver uchun password majburiy."}
+                )
+            if not attrs.get("whouse") and not (self.instance and self.instance.whouse_id):
+                raise serializers.ValidationError(
+                    {"whouse": "Internal driver uchun whouse majburiy."}
+                )
+        if driver_type == Driver.Type.EXTERNAL:
+            attrs.pop("password", None)
+            attrs.pop("whouse", None)
+        return attrs
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

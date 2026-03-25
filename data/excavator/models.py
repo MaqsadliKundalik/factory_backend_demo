@@ -44,7 +44,7 @@ class ExcavatorOrder(BaseModel):
     )
 
     files = models.ManyToManyField(
-        "files.File", blank=True, related_name="excavator_order_files"
+        "files.File", blank=True, related_name="excavator_order_files", null=True
     )
 
     whouse: "Whouse" = models.ForeignKey(
@@ -115,7 +115,7 @@ class ExcavatorSubOrder(BaseModel):
         related_name="excavator_sub_orders_before_sign",
     )
     before_files = models.ManyToManyField(
-        "files.File", blank=True, related_name="excavator_suborder_before_files"
+        "files.File", blank=True, related_name="excavator_suborder_before_files", null=True
     )
     after_sign: "File" = models.ForeignKey(
         "files.File",
@@ -125,7 +125,7 @@ class ExcavatorSubOrder(BaseModel):
         related_name="excavator_sub_orders_after_sign",
     )
     after_files = models.ManyToManyField(
-        "files.File", blank=True, related_name="excavator_suborder_after_files"
+        "files.File", blank=True, related_name="excavator_suborder_after_files", null=True
     )
 
     def __str__(self):
