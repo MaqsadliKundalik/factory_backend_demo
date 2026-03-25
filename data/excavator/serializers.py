@@ -94,6 +94,8 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             "status",
             "payment_status",
             "files",
+            "start_date",
+            "end_date",
             "sub_orders",
             "created_at",
             "whouse",
