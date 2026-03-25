@@ -24,7 +24,7 @@ from data.supplier.models import Supplier
 from data.drivers.models import Driver
 from data.clients.models import Client
 from data.transports.models import Transport
-from data.orders.models import Order, SubOrder
+from data.orders.models import Order, SubOrder, OrderItem
 from data.excavator.models import ExcavatorOrder, ExcavatorSubOrder
 from rest_framework.response import Response
 from django.db.models import Sum
@@ -181,21 +181,24 @@ class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
         whouse_filter = self.get_whouse_filter(request)
         if whouse_filter is None:
             return self.whouse_not_found()
-        df = self.get_date_filters(request)
-        supplier = request.query_params.get("supplier")
-        if supplier:
-            whouse_filter["supplier_id"] = supplier
-        products = Product.objects.filter(**whouse_filter, items__isnull=True)
-        result = []
-        for product in products:
-            total_income = (
-                WhouseProductsHistory.objects.filter(
-                    product=product, status=HistoryStatus.IN, **whouse_filter, **df
-                ).aggregate(total=Sum("quantity"))["total"]
-                or 0
-            )
-            result.append({"product": product.name, "income": total_income})
-        serializer = IncomeProductStatsSerializer(result, many=True)
+        filters = {"status": HistoryStatus.IN}
+        if whouse_filter:
+            filters["whouse"] = whouse_filter["whouse"]
+        filters.update(self.get_date_filters(request))
+        supplier_id = request.query_params.get("supplier")
+        if supplier_id:
+            filters["supplier__id"] = supplier_id
+        result = (
+            WhouseProductsHistory.objects.filter(**filters)
+            .values("product__name")
+            .annotate(income=Sum("quantity"))
+            .order_by("product__name")
+        )
+        data = [
+            {"product": row["product__name"], "income": row["income"]}
+            for row in result
+        ]
+        serializer = IncomeProductStatsSerializer(data, many=True)
         return Response(serializer.data)
 
 
@@ -205,18 +208,25 @@ class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
         whouse_filter = self.get_whouse_filter(request)
         if whouse_filter is None:
             return self.whouse_not_found()
-        df = self.get_outcoming_product_filters(request)
-        products = Product.objects.filter(**whouse_filter)
-        result = []
-        for product in products:
-            total_income = (
-                WhouseProductsHistory.objects.filter(
-                    product=product, status=HistoryStatus.OUT, **whouse_filter, **df
-                ).aggregate(total=Sum("quantity"))["total"]
-                or 0
-            )
-            result.append({"product": product.name, "outcoming": total_income})
-        serializer = OutcomingProductStatsSerializer(result, many=True)
+        filters = {}
+        if whouse_filter:
+            filters["order__whouse"] = whouse_filter["whouse"]
+        date_filters = self.get_date_filters(request, prefix="order__")
+        filters.update(date_filters)
+        client_id = request.query_params.get("client")
+        if client_id:
+            filters["order__client__id"] = client_id
+        result = (
+            OrderItem.objects.filter(**filters)
+            .values("product__name")
+            .annotate(outcoming=Sum("quantity"))
+            .order_by("product__name")
+        )
+        data = [
+            {"product": row["product__name"], "outcoming": row["outcoming"]}
+            for row in result
+        ]
+        serializer = OutcomingProductStatsSerializer(data, many=True)
         return Response(serializer.data)
 
 
