@@ -6,6 +6,7 @@ from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from data.drivers.models import Driver
+from data.orders.models import Order, SubOrder
 from data.drivers.serializers import (
     DriverSerializer,
     DriverPasswordChangeSerializer,
@@ -68,11 +69,51 @@ class DriverViewSet(PermissionMetaMixin, ModelViewSet):
         else:
             serializer.save(whouse=user.whouses.first())
 
-    @swagger_auto_schema(responses={200: SelectDriverSerializer(many=True)})
-    @action(detail=False, methods=["get"], url_path="select")
-    def select(self, request):
-        qs = self.get_queryset()
-        return Response(SelectDriverSerializer(qs, many=True).data)
+
+class DriverSelectView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [
+        HasDynamicPermission(crud_perm="DRIVERS_PAGE", read_perm="DRIVERS_PAGE")
+    ]
+
+    @swagger_auto_schema(
+        operation_summary="Select drivers (id and name only)",
+        responses={200: SelectDriverSerializer(many=True)},
+        manual_parameters=DRIVER_FILTER_PARAMS,
+    )
+    def get(self, request):
+        has_order = request.query_params.get("hasOrder")
+        driver_type = request.query_params.get("type")
+
+        user = (
+            self.request.driver
+            or self.request.guard
+            or self.request.operator
+            or self.request.manager
+        )
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"}, status=401)
+
+        whouses = user.whouses.all()
+        queryset = Driver.objects.filter(whouse__in=whouses)
+
+        search = request.query_params.get("search")
+
+        if has_order:
+            queryset = queryset.exclude(
+                sub_orders__status__in=[
+                    SubOrder.Status.NEW,
+                    SubOrder.Status.IN_PROGRESS,
+                    SubOrder.Status.ARRIVED,
+                    SubOrder.Status.ON_WAY,
+                    SubOrder.Status.UNLOADING,
+                ]
+            )
+        if driver_type:
+            queryset = queryset.filter(type=driver_type)
+
+        data = queryset.values("id", "name", "phone_number")
+        return Response(list(data))
 
 
 class DriverPasswordChangeView(APIView):
