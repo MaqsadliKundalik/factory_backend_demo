@@ -130,9 +130,8 @@ class SupplierSelectView(APIView):
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
 
-        whouses = user.whouses.all()
         queryset = Supplier.objects.filter(
-            whouse__in=whouses, type=Supplier.Type.INTERNAL
+            type=Supplier.Type.INTERNAL
         )
 
         # Apply search if provided

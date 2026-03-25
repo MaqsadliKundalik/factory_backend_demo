@@ -229,40 +229,6 @@ class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
         serializer = OutcomingProductStatsSerializer(data, many=True)
         return Response(serializer.data)
 
-
-class SupplierIncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
-    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
-    def get(self, request):
-        whouse_filter = self.get_whouse_filter(request)
-        if whouse_filter is None:
-            return self.whouse_not_found()
-        df = self.get_date_filters(request)
-        suppliers = Supplier.objects.filter(**whouse_filter)
-        products = Product.objects.filter(**whouse_filter, items__isnull=True)
-        result = []
-        for supplier in suppliers:
-            total = 0
-            product_result = []
-            for product in products:
-                total_income = (
-                    WhouseProductsHistory.objects.filter(
-                        product=product,
-                        supplier=supplier,
-                        status=HistoryStatus.IN,
-                        **whouse_filter,
-                        **df,
-                    ).aggregate(total=Sum("quantity"))["total"]
-                    or 0
-                )
-                total += total_income
-                product_result.append({"product": product.name, "income": total_income})
-            result.append(
-                {"supplier": supplier.name, "total": total, "products": product_result}
-            )
-        serializer = SupplierIncomeProductStatsSerializer(result, many=True)
-        return Response(serializer.data)
-
-
 class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request):
