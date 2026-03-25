@@ -95,8 +95,7 @@ class ClientViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
 
-        whouses = user.whouses.all()
-        queryset = Client.objects.filter(whouse__in=whouses)
+        queryset = Client.objects.all()
 
         # Apply search if provided
         search = request.query_params.get("search")
