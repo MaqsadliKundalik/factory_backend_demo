@@ -162,8 +162,8 @@ class UpdateFCMTokenView(APIView):
         if not fcm_token:
             return Response({'detail': 'fcm_token is required'}, status=400)
 
-        session_id = request.auth.get('session') if isinstance(request.auth, dict) else None
-        role = request.auth.get('role') if isinstance(request.auth, dict) else None
+        session_id = request.auth.get('session') if request.auth else None
+        role = request.auth.get('role') if request.auth else None
         if not session_id:
             return Response({'detail': 'Session not found'}, status=400)
 
