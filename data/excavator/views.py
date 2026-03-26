@@ -26,6 +26,7 @@ from .serializers import (
     ChangeStatusSerializer,
     StartOrderSerializer,
     FinishOrderSerializer,
+    ExcavatorSubOrderListSerializer,
 )
 
 EXCAVATOR_ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
@@ -141,7 +142,7 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
-    serializer_class = ExcavatorSubOrderSerializer
+    serializer_class = ExcavatorSubOrderListSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [
         HasDynamicPermission(crud_perm="EXCAVATORS_PAGE", read_perm="EXCAVATORS_PAGE")

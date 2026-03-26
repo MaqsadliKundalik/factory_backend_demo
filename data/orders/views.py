@@ -23,6 +23,7 @@ from .serialziers import (
     SubOrderSerializer,
     StatusHistorySerializer,
     CompetedStatusSerializer,
+    SubOrderListSerializer,
 )
 from data.files.models import File
 
@@ -214,7 +215,7 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
 
 
 class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
-    serializer_class = SubOrderSerializer
+    serializer_class = SubOrderListSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [
         HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")

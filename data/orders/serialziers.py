@@ -154,6 +154,41 @@ class SubOrderSerializer(serializers.ModelSerializer):
         rep["files"] = FileSerializer(instance.files.all(), many=True).data
         return rep
 
+class SubOrderListSerializer(serializers.ModelSerializer):
+    status_history = StatusHistorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SubOrder
+        fields = [
+            "id",
+            "order",
+            "status",
+            "status_history",
+            "sign",
+            "files",
+        ]
+        read_only_fields = ["id", "sign", "created_at"]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["order"] = {
+            "id": instance.order.id,
+            "display_id": instance.order.display_id,
+            "client": ClientSerializer(instance.order.client).data,
+            "branch": ClientBranchesSerializer(instance.order.branch).data,
+            "whouse": {
+                "id": instance.order.whouse.id,
+                "name": instance.order.whouse.name,
+            },
+            "order_items": OrderItemSerializer(
+                instance.order.order_items.all(), many=True
+            ).data,
+            "status": instance.order.status,
+            "created_at": instance.order.created_at,
+        }
+        rep["sign"] = FileSerializer(instance.sign).data if instance.sign else None
+        rep["files"] = FileSerializer(instance.files.all(), many=True).data
+        return rep
 
 # --- Order serializers ---
 

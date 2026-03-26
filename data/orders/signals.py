@@ -22,15 +22,15 @@ def update_whouse_product_history(sender, instance, created, **kwargs):
             title="SubOrder is created",
             message=f"SubOrder {instance.id} is created",
         )
-    # elif instance.status == SubOrder.Status.IN_PROGRESS:
-    #     instance.order.client.send_sms("SubOrder is in progress")
-    # elif instance.status == SubOrder.Status.ON_WAY:
-    #     instance.order.client.send_sms("SubOrder is on way")
-    # elif instance.status == SubOrder.Status.ARRIVED:
-    #     instance.order.client.send_sms("SubOrder is arrived")
-    # elif instance.status == SubOrder.Status.UNLOADING:
-    #     instance.order.client.send_sms("SubOrder is unloading")
-    # elif instance.status == SubOrder.Status.COMPLETED:
-    #     instance.order.client.send_sms("SubOrder is completed")
+    elif instance.status == SubOrder.Status.IN_PROGRESS:
+        instance.order.client.send_sms(f"Sizning {instance.id} raqamli buyurtmangiz jarayonida")
+    elif instance.status == SubOrder.Status.ON_WAY:
+        instance.order.client.send_sms(f"Sizning {instance.id} raqamli buyurtmangiz yo'lda")
+    elif instance.status == SubOrder.Status.ARRIVED:
+        instance.order.client.send_sms(f"Sizning {instance.id} raqamli buyurtmangiz yetib keldi")
+    elif instance.status == SubOrder.Status.UNLOADING:
+        instance.order.client.send_sms(f"Sizning {instance.id} raqamli buyurtmangiz yuklanmoqda")
+    elif instance.status == SubOrder.Status.COMPLETED:
+        instance.order.client.send_sms(f"Sizning {instance.id} raqamli buyurtmangiz tugallandi")
     
 

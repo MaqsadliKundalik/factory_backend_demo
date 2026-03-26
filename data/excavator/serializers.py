@@ -74,6 +74,71 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
         rep["after_files"] = FileSerializer(instance.after_files.all(), many=True).data
         return rep
 
+class ExcavatorSubOrderListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExcavatorSubOrder
+        fields = [
+            "id",
+            "parent",
+            "status",
+            "status_history",
+            "before_sign",
+            "before_files",
+            "after_sign",
+            "after_files",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "status_history",
+            "created_at",
+            "before_sign",
+            "before_files",
+            "after_sign",
+            "after_files",
+        ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["parent"] = {
+            "id": instance.parent.id,
+            "display_id": instance.parent.display_id,
+            "client_name": instance.parent.client_name,
+            "phone_number": instance.parent.phone_number,
+            "lat": instance.parent.lat,
+            "lon": instance.parent.lon,
+            "address": instance.parent.address,
+            "start_date": instance.parent.start_date,
+            "end_date": instance.parent.end_date,
+            "comment": instance.parent.comment,
+            "whouse": (
+                {"id": instance.parent.whouse.id, "name": instance.parent.whouse.name}
+                if instance.parent.whouse
+                else None
+            ),
+            "payment_status": instance.parent.payment_status,
+            "status": instance.parent.status,
+            "files": FileSerializer(instance.parent.files.all(), many=True).data,
+            "created_at": instance.parent.created_at,
+        }
+        rep["driver"] = (
+            DriverSerializer(instance.driver).data if instance.driver else None
+        )
+        rep["transport"] = (
+            TransportSerializer(instance.transport).data if instance.transport else None
+        )
+        rep["before_sign"] = (
+            FileSerializer(instance.before_sign).data if instance.before_sign else None
+        )
+        rep["before_files"] = FileSerializer(
+            instance.before_files.all(), many=True
+        ).data
+        rep["after_sign"] = (
+            FileSerializer(instance.after_sign).data if instance.after_sign else None
+        )
+        rep["after_files"] = FileSerializer(instance.after_files.all(), many=True).data
+        return rep
+
 
 class ExcavatorOrderSerializer(serializers.ModelSerializer):
     sub_orders = ExcavatorSubOrderSerializer(many=True, read_only=True)
