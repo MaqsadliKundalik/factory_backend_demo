@@ -175,6 +175,9 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             if instance.whouse
             else None
         )
+        rep["sub_orders"] = ExcavatorSubOrderSerializer(
+            instance.sub_orders, many=True
+        ).data
         return rep
 
 
