@@ -142,7 +142,7 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
 class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     queryset = ExcavatorSubOrder.objects.all()
-    serializer_class = ExcavatorSubOrderListSerializer
+    serializer_class = ExcavatorSubOrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [
         HasDynamicPermission(crud_perm="EXCAVATORS_PAGE", read_perm="EXCAVATORS_PAGE")
@@ -171,6 +171,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
     @swagger_auto_schema(manual_parameters=EXCAVATOR_SUBORDER_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
+        self.serializer_class = ExcavatorSubOrderListSerializer
         return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(

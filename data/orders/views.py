@@ -215,7 +215,7 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
 
 
 class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
-    serializer_class = SubOrderListSerializer
+    serializer_class = SubOrderSerializer
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [
         HasDynamicPermission(crud_perm="ORDERS_PAGE", read_perm="ORDERS_PAGE")
@@ -242,6 +242,7 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
     @swagger_auto_schema(manual_parameters=SUBORDER_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
+        self.serializer_class = SubOrderListSerializer
         return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(
