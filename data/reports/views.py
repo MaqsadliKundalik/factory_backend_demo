@@ -11,6 +11,7 @@ from openpyxl.utils.cell import range_boundaries
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from data.orders.models import Order
+from data.excavator.models import ExcavatorOrder
 from data.products.models import WhouseProducts
 
 
@@ -25,6 +26,13 @@ STATUS_UZ = {
     'UNLOADING': 'Tushirilmoqda',
     'COMPLETED': 'Yetkazib berilgan',
     'REJECTED': 'Bekor qilingan',
+    'PAUSED': "To'xtatilgan",
+    'EXPIRED': 'Muddati tugagan',
+}
+
+PAYMENT_STATUS_UZ = {
+    'PENDING': "To'lanmagan",
+    'PAID': "To'langan",
 }
 
 
@@ -515,3 +523,85 @@ class YetkazibBeruvchilarHisobotiExcelView(APIView):
         wb = Workbook()
         fill_yetkazib_beruvchilar_hisoboti(wb.active, list(qs))
         return make_excel_response(wb, 'yetkazib_beruvchilar_hisoboti.xlsx')
+
+
+# ─── Sheet 5: Ekskavator buyurtmalari hisoboti ──────────────────────────────
+
+def fill_excavator_hisoboti(ws, orders):
+    ws.title = "Ekskavator buyurtmalari"
+
+    for i, w in enumerate([27, 120, 80, 70, 70, 70, 80, 80, 100, 80], 1):
+        ws.column_dimensions[get_column_letter(i)].width = px(w)
+
+    ws.merge_cells('A1:J1')
+    ws['A1'].value = f"Ekskavator buyurtmalari bo'yicha hisobot {COMPANY}"
+    ws['A1'].font = Font(name='Calibri', size=8)
+    ws['A1'].alignment = _align()
+
+    headers = [
+        '№', 'Mijoz', 'Telefon', 'Manzil',
+        'Boshlanish', 'Tugash', 'Holati',
+        "To'lov", 'Haydovchi', 'Transport',
+    ]
+    for ci, val in enumerate(headers, 1):
+        c = ws.cell(row=2, column=ci, value=val)
+        c.font = _font()
+        c.alignment = _align()
+        c.border = ALL_BORDER
+
+    row_num = 3
+    for order in orders:
+        sub_orders = list(order.sub_orders.all())
+        if not sub_orders:
+            ws.cell(row=row_num, column=1, value=row_num - 2)
+            ws.cell(row=row_num, column=2, value=order.client_name)
+            ws.cell(row=row_num, column=3, value=order.phone_number)
+            ws.cell(row=row_num, column=4, value=order.address or '')
+            ws.cell(row=row_num, column=5, value=fmt_date(order.start_date))
+            ws.cell(row=row_num, column=6, value=fmt_date(order.end_date))
+            ws.cell(row=row_num, column=7, value=status_uz(order.status))
+            ws.cell(row=row_num, column=8, value=PAYMENT_STATUS_UZ.get(order.payment_status, order.payment_status))
+            ws.cell(row=row_num, column=9, value='')
+            ws.cell(row=row_num, column=10, value='')
+            style_range(ws, row_num, 1, row_num, 10, border=True)
+            row_num += 1
+        else:
+            for so in sub_orders:
+                ws.cell(row=row_num, column=1, value=row_num - 2)
+                ws.cell(row=row_num, column=2, value=order.client_name)
+                ws.cell(row=row_num, column=3, value=order.phone_number)
+                ws.cell(row=row_num, column=4, value=order.address or '')
+                ws.cell(row=row_num, column=5, value=fmt_date(order.start_date))
+                ws.cell(row=row_num, column=6, value=fmt_date(order.end_date))
+                ws.cell(row=row_num, column=7, value=status_uz(order.status))
+                ws.cell(row=row_num, column=8, value=PAYMENT_STATUS_UZ.get(order.payment_status, order.payment_status))
+                ws.cell(row=row_num, column=9, value=so.driver.name if so.driver else '')
+                ws.cell(row=row_num, column=10, value=so.transport.number if so.transport else '')
+                style_range(ws, row_num, 1, row_num, 10, border=True)
+                row_num += 1
+
+    if row_num > 3:
+        ws.merge_cells(f'A{row_num}:H{row_num}')
+        jami_cell = ws.cell(row=row_num, column=1, value=f'JAMI: {row_num - 3} ta')
+        jami_cell.font = _font(bold=True)
+        jami_cell.alignment = _align('right')
+        style_range(ws, row_num, 1, row_num, 10, border=True)
+
+
+class ExcavatorHisobotiExcelView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(read_perm="EXCAVATOR_PAGE")]
+
+    def get(self, request):
+        qs = ExcavatorOrder.objects.prefetch_related(
+            'sub_orders__driver', 'sub_orders__transport',
+        )
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        if start_date:
+            qs = qs.filter(created_at__date__gte=start_date)
+        if end_date:
+            qs = qs.filter(created_at__date__lte=end_date)
+        wb = Workbook()
+        fill_excavator_hisoboti(wb.active, list(qs))
+        return make_excel_response(wb, 'excavator_hisoboti.xlsx')
