@@ -207,6 +207,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "comment",
+            "files",
             "sub_orders",
         ]
         read_only_fields = ["id", "display_id", "start_date", "end_date"]
