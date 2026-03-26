@@ -218,6 +218,19 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
             ExcavatorSubOrder.objects.create(parent=order, **sub_data)
         return order
 
+    def update(self, instance, validated_data):
+        sub_orders_data = validated_data.pop("sub_orders", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if sub_orders_data is not None:
+            instance.sub_orders.all().delete()
+            for sub_data in sub_orders_data:
+                ExcavatorSubOrder.objects.create(parent=instance, **sub_data)
+
+        return instance
+
 
 class ChangeStatusSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=ExcavatorOrder.Status.choices)

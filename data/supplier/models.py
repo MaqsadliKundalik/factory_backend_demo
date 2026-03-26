@@ -35,6 +35,9 @@ class Supplier(BaseModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        unique_together = ["inn_number", "whouse"]
+
 
 class SupplierPhone(BaseModel):
     supplier = models.ForeignKey(
@@ -48,3 +51,7 @@ class SupplierPhone(BaseModel):
 
     def __str__(self):
         return f"{self.phone_number} - {self.name} - {self.role}"
+    
+    class Meta:
+        unique_together = ["supplier", "phone_number"]
+    

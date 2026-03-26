@@ -70,6 +70,9 @@ class ExcavatorOrder(BaseModel):
             f"ExcOrd-{self.display_id:03}" if self.display_id else f"ExcOrd-{self.id}"
         )
 
+    class Meta:
+        unique_together = ["phone_number", "start_date"]
+
 
 class ExcavatorSubOrder(BaseModel):
     class Status(models.TextChoices):
@@ -130,3 +133,6 @@ class ExcavatorSubOrder(BaseModel):
 
     def __str__(self):
         return f"ExcSubOrd-{self.id} for {self.parent}"
+
+    class Meta:
+        unique_together = ["parent", "driver"]

@@ -77,7 +77,6 @@ class Order(BaseModel):
     def __str__(self):
         return f"Ord-{self.display_id:03}" if self.display_id else f"Ord-{self.id}"
 
-
 class SubOrder(BaseModel):
     class Status(models.TextChoices):
         NEW = "NEW", "New"
@@ -118,6 +117,9 @@ class SubOrder(BaseModel):
         )
         return f"SubOrd-{self.id} for {display_name}"
 
+    class Meta:
+        unique_together = ["order", "driver"]
+
 
 class OrderItem(BaseModel):
     order: "Order" = models.ForeignKey(
@@ -138,6 +140,9 @@ class OrderItem(BaseModel):
     def __str__(self):
         return f"OrderItem-{self.id} for {self.order}"
 
+    class Meta:
+        unique_together = ["order", "product", "type", "unit"]
+
 
 class SubOrderItem(BaseModel):
     sub_order: "SubOrder" = models.ForeignKey(
@@ -156,3 +161,6 @@ class SubOrderItem(BaseModel):
 
     def __str__(self):
         return f"SubOrderItem-{self.id} for {self.sub_order}"
+
+    class Meta:
+        unique_together = ["sub_order", "product", "type", "unit"]

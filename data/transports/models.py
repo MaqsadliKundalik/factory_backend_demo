@@ -24,3 +24,6 @@ class Transport(BaseModel):
 
     def __str__(self):
         return self.name + " " + self.number
+    
+    class Meta:
+        unique_together = ["number", "whouse"]

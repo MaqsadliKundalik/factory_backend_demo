@@ -77,3 +77,6 @@ class FactoryUser(BaseModel, AbstractBaseUser):
 
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
+
+    class Meta:
+        unique_together = ["phone_number"]

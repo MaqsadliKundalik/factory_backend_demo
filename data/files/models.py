@@ -26,3 +26,6 @@ class Documents(BaseModel):
     file: "File" = models.ForeignKey("files.File", on_delete=models.CASCADE)
     type = models.CharField(max_length=255, choices=TYPE_CHOICES, default="OTHER")
     object_id = models.UUIDField(null=True, blank=True)
+    
+    class Meta:
+        unique_together = ["file", "type", "object_id"]
