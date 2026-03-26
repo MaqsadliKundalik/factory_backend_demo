@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from data.supplier.models import Supplier
     from data.users.models import FactoryUser
     from data.whouse.models import Whouse
+    from data.orders.models import SubOrderItem
 
 
 class HistoryStatus(models.TextChoices):
@@ -123,6 +124,9 @@ class ProductItem(BaseModel):
 class WhouseProductsHistory(BaseModel):
     wproduct: "WhouseProducts | None" = models.ForeignKey(
         "products.WhouseProducts", on_delete=models.CASCADE, null=True, blank=True
+    )
+    order_item: "SubOrderItem | None" = models.ForeignKey(
+        "orders.SubOrderItem", on_delete=models.CASCADE, null=True, blank=True
     )
     product: "Product | None" = models.ForeignKey(
         "products.Product",

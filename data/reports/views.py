@@ -153,8 +153,6 @@ def fill_yuk_xati(ws, order):
     for i, w in enumerate([20, 72, 46, 90, 72, 85], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
 
-    ws.row_dimensions[7].height = 36
-
     sub_orders = list(order.sub_orders.all())
 
     merge_val(ws, 'A1:G1', 'ЮК ХАТИ', bold=True, bottom=False)
@@ -169,47 +167,57 @@ def fill_yuk_xati(ws, order):
         ws.cell(row=4, column=col, value=val)
     style_range(ws, 4, 1, 4, 7, border=True)
 
-    # Row 5 product data
-    ws.merge_cells('B5:C5')
-    ws.cell(row=5, column=1, value=1)
-    ws.cell(row=5, column=2, value=f"{order.product.name} {order.type.name}")
-    ws.cell(row=5, column=4, value=order.unit.name)
-    ws.cell(row=5, column=5, value=float(order.quantity))
-    price_cell = ws.cell(row=5, column=6, value=float(order.price))
-    price_cell.number_format = '#,##0'
-    total_cell = ws.cell(row=5, column=7, value=float(order.quantity) * float(order.price))
-    total_cell.number_format = '#,##0'
-    style_range(ws, 5, 1, 5, 7, border=True)
+    # Rows 5+: order_items data
+    order_items = list(order.order_items.all())
+    for idx, oi in enumerate(order_items):
+        row = 5 + idx
+        ws.merge_cells(f'B{row}:C{row}')
+        ws.cell(row=row, column=1, value=idx + 1)
+        ws.cell(row=row, column=2, value=f"{oi.product.name} {oi.type.name}")
+        ws.cell(row=row, column=4, value=oi.unit.name)
+        ws.cell(row=row, column=5, value=float(oi.quantity))
+        price_cell = ws.cell(row=row, column=6, value=float(oi.price))
+        price_cell.number_format = '#,##0'
+        total_cell = ws.cell(row=row, column=7, value=float(oi.quantity) * float(oi.price))
+        total_cell.number_format = '#,##0'
+        style_range(ws, row, 1, row, 7, border=True)
 
-    # Row 6: Yetkazib beruvchilar title
-    merge_val(ws, 'A6:G6', 'Yetkazib beruvchilar', bold=True, top=False, bottom=False)
+    items_end = 5 + max(len(order_items), 1) - 1
 
-    # Row 7: sub_orders table headers
+    # Yetkazib beruvchilar title
+    yb_title_row = items_end + 1
+    merge_val(ws, f'A{yb_title_row}:G{yb_title_row}', 'Yetkazib beruvchilar', bold=True, top=False, bottom=False)
+
+    # sub_orders table headers
+    yb_head_row = yb_title_row + 1
+    ws.row_dimensions[yb_head_row].height = 36
     yb_headers = [
         '№', 'avtomobil raqami', 'shafyor', 'yuk miqdori (kub)',
         'заводдан \nчикарилган вакти', 'Махсулот етказиб \nберилган вакти', 'Yuk tushirib \nolingan vaqti',
     ]
     for ci, val in enumerate(yb_headers, 1):
-        c = ws.cell(row=7, column=ci, value=val)
+        c = ws.cell(row=yb_head_row, column=ci, value=val)
         c.font = _font()
         c.alignment = _align(wrap=True)
         c.border = ALL_BORDER
 
-    # Rows 8+: sub_order data
+    # sub_order data rows
+    yb_data_start = yb_head_row + 1
     for i, so in enumerate(sub_orders):
-        row = 8 + i
+        row = yb_data_start + i
         history = so.status_history or []
+        so_qty = sum(float(si.quantity) for si in so.sub_order_items.all())
         ws.cell(row=row, column=1, value=i + 1)
         ws.cell(row=row, column=2, value=so.transport.number if so.transport else '')
         ws.cell(row=row, column=3, value=so.driver.name if so.driver else '')
-        ws.cell(row=row, column=4, value=float(so.quantity))
+        ws.cell(row=row, column=4, value=so_qty)
         ws.cell(row=row, column=5, value=get_history_time(history, 'ON_WAY'))
         ws.cell(row=row, column=6, value=get_history_time(history, 'ARRIVED'))
         ws.cell(row=row, column=7, value=get_history_time(history, 'COMPLETED'))
         style_range(ws, row, 1, row, 7, border=True)
 
     # Qabul qiluvchilar section
-    qb_title_row = 8 + len(sub_orders)
+    qb_title_row = yb_data_start + len(sub_orders)
     qb_head_row = qb_title_row + 1
     qb_data_start = qb_head_row + 1
 
@@ -287,27 +295,40 @@ def fill_ishonch_qogozi(ws, order, sub_order, idx=None):
         c.alignment = _align()
         c.border = ALL_BORDER
 
-    # Row 7 product data
-    ws.cell(row=7, column=1, value=1)
-    ws.cell(row=7, column=2, value=f"{order.product.name} {order.type.name}")
-    ws.cell(row=7, column=3, value=order.unit.name)
-    ws.cell(row=7, column=4, value=float(sub_order.quantity))
-    price_cell = ws.cell(row=7, column=5, value=float(order.price))
-    price_cell.number_format = '#,##0'
-    total_cell = ws.cell(row=7, column=6, value=float(sub_order.quantity) * float(order.price))
-    total_cell.number_format = '#,##0'
-    style_range(ws, 7, 1, 7, 6, border=True)
+    # Rows 7+: sub_order_items data
+    sub_items = list(sub_order.sub_order_items.all())
+    # Build a price lookup from order items: (product_id, type_id, unit_id) -> price
+    price_map = {
+        (oi.product_id, oi.type_id, oi.unit_id): oi.price
+        for oi in order.order_items.all()
+    }
+    for si_idx, si in enumerate(sub_items):
+        row = 7 + si_idx
+        price = float(price_map.get((si.product_id, si.type_id, si.unit_id), 0))
+        ws.cell(row=row, column=1, value=si_idx + 1)
+        ws.cell(row=row, column=2, value=f"{si.product.name} {si.type.name}")
+        ws.cell(row=row, column=3, value=si.unit.name)
+        ws.cell(row=row, column=4, value=float(si.quantity))
+        price_cell = ws.cell(row=row, column=5, value=price)
+        price_cell.number_format = '#,##0'
+        total_cell = ws.cell(row=row, column=6, value=float(si.quantity) * price)
+        total_cell.number_format = '#,##0'
+        style_range(ws, row, 1, row, 6, border=True)
 
-    # Rows 8-9: empty signature rows
-    for r in [8, 9]:
-        ws.cell(row=r, column=1, value=r - 6)
+    items_last_row = 7 + max(len(sub_items), 1) - 1
+
+    # Empty signature rows
+    sig_start = items_last_row + 1
+    for r in [sig_start, sig_start + 1]:
+        ws.cell(row=r, column=1, value=r - sig_start + len(sub_items) + 1)
         style_range(ws, r, 1, r, 6, border=True)
 
-    merge_val(ws, 'A10:F10', PHONES, h='left', top=False, bottom=False)
+    phones_row = sig_start + 2
+    merge_val(ws, f'A{phones_row}:F{phones_row}', PHONES, h='left', top=False, bottom=False)
 
-    # Row 11
-    merge_val(ws, 'A11:B11', 'Topshirdi:', h='left', top=False, right=False)
-    merge_val(ws, 'C11:F11', 'Qabul qildi:', h='left', top=False, left=False)
+    bottom_row = phones_row + 1
+    merge_val(ws, f'A{bottom_row}:B{bottom_row}', 'Topshirdi:', h='left', top=False, right=False)
+    merge_val(ws, f'C{bottom_row}:F{bottom_row}', 'Qabul qildi:', h='left', top=False, left=False)
 
 
 # ─── Sheet 3: Buyurtmalar hisoboti ───────────────────────────────────────────
@@ -330,33 +351,36 @@ def fill_buyurtmalar_hisoboti(ws, orders):
         c.alignment = _align()
         c.border = ALL_BORDER
 
-    for i, order in enumerate(orders):
-        row = i + 3
-        type_name = order.type.name if order.type else ''
-        ws.cell(row=row, column=1, value=i + 1)
-        ws.cell(row=row, column=2, value=order.client.name)
-        ws.cell(row=row, column=3, value=f"{order.product.name} {type_name}".strip())
-        ws.cell(row=row, column=4, value=float(order.quantity))
-        ws.cell(row=row, column=5, value=order.unit.name if order.unit else '')
-        price_c = ws.cell(row=row, column=6, value=float(order.price))
-        price_c.number_format = '#,##0'
-        total_c = ws.cell(row=row, column=7, value=float(order.quantity) * float(order.price))
-        total_c.number_format = '#,##0'
-        ws.cell(row=row, column=8, value=fmt_date(order.created_at))
-        ws.cell(row=row, column=9, value=status_uz(order.status))
-        style_range(ws, row, 1, row, 9, border=True)
+    row_num = 3
+    grand_total = 0
+    for order in orders:
+        for oi in order.order_items.all():
+            type_name = oi.type.name if oi.type else ''
+            ws.cell(row=row_num, column=1, value=row_num - 2)
+            ws.cell(row=row_num, column=2, value=order.client.name)
+            ws.cell(row=row_num, column=3, value=f"{oi.product.name} {type_name}".strip())
+            ws.cell(row=row_num, column=4, value=float(oi.quantity))
+            ws.cell(row=row_num, column=5, value=oi.unit.name if oi.unit else '')
+            price_c = ws.cell(row=row_num, column=6, value=float(oi.price))
+            price_c.number_format = '#,##0'
+            line_total = float(oi.quantity) * float(oi.price)
+            total_c = ws.cell(row=row_num, column=7, value=line_total)
+            total_c.number_format = '#,##0'
+            ws.cell(row=row_num, column=8, value=fmt_date(order.created_at))
+            ws.cell(row=row_num, column=9, value=status_uz(order.status))
+            style_range(ws, row_num, 1, row_num, 9, border=True)
+            grand_total += line_total
+            row_num += 1
 
-    if orders:
-        total_row = len(orders) + 3
-        ws.merge_cells(f'A{total_row}:F{total_row}')
-        jami_cell = ws.cell(row=total_row, column=1, value='JAMI:')
+    if row_num > 3:
+        ws.merge_cells(f'A{row_num}:F{row_num}')
+        jami_cell = ws.cell(row=row_num, column=1, value='JAMI:')
         jami_cell.font = _font(bold=True)
         jami_cell.alignment = _align('right')
-        grand_total = sum(float(o.quantity) * float(o.price) for o in orders)
-        gtotal_c = ws.cell(row=total_row, column=7, value=grand_total)
+        gtotal_c = ws.cell(row=row_num, column=7, value=grand_total)
         gtotal_c.number_format = '#,##0'
         gtotal_c.font = _font(bold=True)
-        style_range(ws, total_row, 1, total_row, 9, border=True)
+        style_range(ws, row_num, 1, row_num, 9, border=True)
 
 
 # ─── Sheet 4: Yetkazib beruvchilar hisoboti ──────────────────────────────────
@@ -408,8 +432,14 @@ class YukXatiExcelView(APIView):
     def get(self, request, pk):
         order = (
             Order.objects
-            .select_related('client', 'branch', 'product', 'type', 'unit')
-            .prefetch_related('sub_orders__driver', 'sub_orders__transport')
+            .select_related('client', 'branch')
+            .prefetch_related(
+                'order_items__product', 'order_items__type', 'order_items__unit',
+                'sub_orders__driver', 'sub_orders__transport',
+                'sub_orders__sub_order_items__product',
+                'sub_orders__sub_order_items__type',
+                'sub_orders__sub_order_items__unit',
+            )
             .filter(id=pk)
             .first()
         )
@@ -427,8 +457,14 @@ class IshonchQogoziExcelView(APIView):
     def get(self, request, pk):
         order = (
             Order.objects
-            .select_related('client', 'branch', 'product', 'type', 'unit')
-            .prefetch_related('sub_orders__driver', 'sub_orders__transport')
+            .select_related('client', 'branch')
+            .prefetch_related(
+                'order_items__product', 'order_items__type', 'order_items__unit',
+                'sub_orders__driver', 'sub_orders__transport',
+                'sub_orders__sub_order_items__product',
+                'sub_orders__sub_order_items__type',
+                'sub_orders__sub_order_items__unit',
+            )
             .filter(id=pk)
             .first()
         )
@@ -448,7 +484,9 @@ class BuyurtmalarHisobotiExcelView(APIView):
     permission_classes = [HasDynamicPermission(read_perm="ORDERS_PAGE")]
 
     def get(self, request):
-        qs = Order.objects.select_related('client', 'product', 'type', 'unit')
+        qs = Order.objects.select_related('client').prefetch_related(
+            'order_items__product', 'order_items__type', 'order_items__unit',
+        )
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         if start_date:
