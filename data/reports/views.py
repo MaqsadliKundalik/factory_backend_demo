@@ -590,7 +590,7 @@ def fill_excavator_hisoboti(ws, orders):
 
 class ExcavatorHisobotiExcelView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
-    permission_classes = [HasDynamicPermission(read_perm="EXCAVATOR_PAGE", create_perm="EXCAVATOR_CREATE")]
+    permission_classes = [HasDynamicPermission(read_perm="EXCAVATOR_PAGE", crud_perm="EXCAVATOR_CREATE")]
 
     def get(self, request):
         qs = ExcavatorOrder.objects.prefetch_related(
