@@ -210,7 +210,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
             "files",
             "sub_orders",
         ]
-        read_only_fields = ["id", "display_id", "start_date", "end_date"]
+        read_only_fields = ["id", "display_id"]
 
     def create(self, validated_data):
         sub_orders_data = validated_data.pop("sub_orders", [])
