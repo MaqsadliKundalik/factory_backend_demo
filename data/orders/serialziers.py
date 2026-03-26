@@ -164,7 +164,6 @@ class SubOrderListSerializer(serializers.ModelSerializer):
             "id",
             "order",
             "status",
-            "status_history",
             "sign",
             "files",
         ]

@@ -81,7 +81,6 @@ class ExcavatorSubOrderListSerializer(serializers.ModelSerializer):
             "id",
             "parent",
             "status",
-            "status_history",
             "before_sign",
             "before_files",
             "after_sign",
@@ -90,7 +89,6 @@ class ExcavatorSubOrderListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
-            "status_history",
             "created_at",
             "before_sign",
             "before_files",
