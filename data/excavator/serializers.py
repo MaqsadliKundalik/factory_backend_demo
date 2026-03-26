@@ -214,16 +214,22 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         sub_orders_data = validated_data.pop("sub_orders", [])
+        files_data = validated_data.pop("files", [])
         order = ExcavatorOrder.objects.create(**validated_data)
+        if files_data:
+            order.files.set(files_data)
         for sub_data in sub_orders_data:
             ExcavatorSubOrder.objects.create(parent=order, **sub_data)
         return order
 
     def update(self, instance, validated_data):
         sub_orders_data = validated_data.pop("sub_orders", None)
+        files_data = validated_data.pop("files", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        if files_data is not None:
+            instance.files.set(files_data)
 
         if sub_orders_data is not None:
             instance.sub_orders.all().delete()
