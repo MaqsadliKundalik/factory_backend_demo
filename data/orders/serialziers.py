@@ -154,6 +154,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
         rep["files"] = FileSerializer(instance.files.all(), many=True).data
         return rep
 
+
 class SubOrderListSerializer(serializers.ModelSerializer):
     status_history = StatusHistorySerializer(many=True, read_only=True)
 
@@ -190,6 +191,7 @@ class SubOrderListSerializer(serializers.ModelSerializer):
         rep["files"] = FileSerializer(instance.files.all(), many=True).data
         return rep
 
+
 # --- Order serializers ---
 
 
@@ -220,6 +222,18 @@ class OrderSerializer(serializers.ModelSerializer):
         rep["branch"] = ClientBranchesSerializer(instance.branch).data
         rep["whouse"] = {"id": instance.whouse.id, "name": instance.whouse.name}
         return rep
+
+
+class RejectOrderItemSerializer(serializers.Serializer):
+    order_item_id = serializers.UUIDField()
+    quantity = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+
+class RejectOrderSerializer(serializers.Serializer):
+    order_items = RejectOrderItemSerializer(many=True, required=True)
+    rejector_role = serializers.ChoiceField(
+        choices=["CLIENT", "OPERATOR", "MANAGER"], required=True
+    )
 
 
 class OrderWriteSerializer(serializers.ModelSerializer):

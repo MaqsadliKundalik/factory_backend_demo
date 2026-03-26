@@ -1,3 +1,4 @@
+from ast import List
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
@@ -16,7 +17,7 @@ from apps.common.permissions import HasDynamicPermission
 from apps.common.mixins import PermissionMetaMixin
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
 
-from .models import Order, SubOrder
+from .models import Order, OrderItem, SubOrder, SubOrderItem
 from .serialziers import (
     OrderSerializer,
     OrderWriteSerializer,
@@ -24,6 +25,7 @@ from .serialziers import (
     StatusHistorySerializer,
     CompetedStatusSerializer,
     SubOrderListSerializer,
+    RejectOrderSerializer,
 )
 from data.files.models import File
 
@@ -168,30 +170,18 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         return Response(OrderSerializer(order).data)
 
     @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["rejector_role"],
-            properties={
-                "rejector_role": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Rejector role: CLIENT or FACTORY",
-                    enum=["CLIENT", "FACTORY"],
-                ),
-            },
-        ),
+        request_body=RejectOrderSerializer,
         responses={200: OrderSerializer},
     )
     @action(detail=True, methods=["post"], url_path="reject")
+    @transaction.atomic
     def reject(self, request, *args, **kwargs):
         order = self.get_object()
-        rejector_role = request.data.get("rejector_role")
 
-        valid_roles = list(Order.Rejector.values)
-        if rejector_role not in valid_roles:
-            return Response(
-                {"rejector_role": f"Must be one of: {', '.join(valid_roles)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        serializer = RejectOrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        rejector_role = serializer.validated_data["rejector_role"]
+        order_items_data = serializer.validated_data["order_items"]
 
         user = (
             request.driver
@@ -200,16 +190,58 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
             or request.manager
         )
 
-        order.status = Order.Status.REJECTED
+        # Set rejector info
         order.rejector_role = rejector_role
-        order.rejector_id = user.id if rejector_role != Order.Rejector.CLIENT else order.client.id
-        order.save()
+        order.rejector_id = order.client.id if rejector_role == Order.Rejector.CLIENT else user.id
 
-        SubOrder.objects.filter(
-            order=order
-        ).exclude(
+        # Prefetch order items and sub_order_items to avoid N+1
+        item_ids = [item["order_item_id"] for item in order_items_data]
+        order_items_map = {
+            oi.id: oi for oi in OrderItem.objects.filter(id__in=item_ids, order=order)
+        }
+
+        sub_orders = list(
+            order.sub_orders.select_related().prefetch_related("sub_order_items")
+        )
+
+        # Update order_item quantities and matching sub_order_items
+        sub_order_items_to_update = []
+        order_items_to_update = []
+
+        for item_data in order_items_data:
+            order_item = order_items_map.get(item_data["order_item_id"])
+            if not order_item:
+                continue
+
+            quantity = item_data["quantity"]
+            order_item.quantity = max(0, order_item.quantity - quantity)
+            order_items_to_update.append(order_item)
+
+            for sub_order in sub_orders:
+                for soi in sub_order.sub_order_items.all():
+                    if (soi.product_id == order_item.product_id
+                            and soi.type_id == order_item.type_id
+                            and soi.unit_id == order_item.unit_id):
+                        soi.quantity = max(0, soi.quantity - quantity)
+                        sub_order_items_to_update.append(soi)
+
+        # Bulk update quantities
+        if order_items_to_update:
+            OrderItem.objects.bulk_update(order_items_to_update, ["quantity"])
+        if sub_order_items_to_update:
+            SubOrderItem.objects.bulk_update(sub_order_items_to_update, ["quantity"])
+
+        # Reject non-completed suborders
+        order.sub_orders.exclude(
             status=SubOrder.Status.COMPLETED
         ).update(status=SubOrder.Status.REJECTED)
+
+        # If all suborders are rejected or completed — set order status
+        remaining = order.sub_orders.exclude(
+            status__in=[SubOrder.Status.REJECTED, SubOrder.Status.COMPLETED]
+        ).exists()
+        order.status = Order.Status.REJECTED if not remaining else order.status
+        order.save(update_fields=["status", "rejector_role", "rejector_id"])
 
         return Response(OrderSerializer(order).data)
 
