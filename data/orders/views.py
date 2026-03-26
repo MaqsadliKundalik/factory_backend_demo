@@ -124,6 +124,8 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = OrderFilter
     search_fields = ["display_id", "client__name"]
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (

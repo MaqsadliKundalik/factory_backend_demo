@@ -115,6 +115,8 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ExcavatorOrderFilter
     search_fields = ["display_id", "client_name", "phone_number"]
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:

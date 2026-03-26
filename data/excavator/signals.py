@@ -16,15 +16,18 @@ def update_whouse_product_history(sender, instance, created, **kwargs):
             title="ExcavatorSubOrder is created",
             message=f"ExcavatorSubOrder {instance.display_id} is created",
         )
-    elif instance.status == ExcavatorSubOrder.Status.IN_PROGRESS:
-        instance.order.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz jarayonida")
-    elif instance.status == ExcavatorSubOrder.Status.PAUSED:
-        instance.order.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz vaqtinchalik to'xtatildi")
-    elif instance.status == ExcavatorSubOrder.Status.COMPLETED:
-        instance.order.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz tugallandi")
-    elif instance.status == ExcavatorSubOrder.Status.EXPIRED:
-        instance.order.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz muddati tugadi")
-    elif instance.status == ExcavatorSubOrder.Status.REJECTED:
-        instance.order.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz rad etildi")
+    
+@receiver(post_save, sender=ExcavatorOrder)
+def update_whouse_product_history(sender, instance, created, **kwargs):
+    if instance.status == ExcavatorOrder.Status.IN_PROGRESS:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz jarayonida")
+    elif instance.status == ExcavatorOrder.Status.PAUSED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz vaqtinchalik to'xtatildi")
+    elif instance.status == ExcavatorOrder.Status.COMPLETED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz tugallandi")
+    elif instance.status == ExcavatorOrder.Status.EXPIRED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz muddati tugadi")
+    elif instance.status == ExcavatorOrder.Status.REJECTED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz rad etildi")
     
 
