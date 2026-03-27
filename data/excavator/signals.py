@@ -21,9 +21,7 @@ def update_whouse_product_history(sender, instance, created, **kwargs):
 @receiver(post_save, sender=ExcavatorOrder)
 def update_whouse_product_history(sender, instance, created, **kwargs):
     pass
-    # if instance.status == ExcavatorOrder.Status.IN_PROGRESS:
-    #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz jarayonida")
-    # elif instance.status == ExcavatorOrder.Status.PAUSED:
+    # if instance.status == ExcavatorOrder.Status.PAUSED:
     #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz vaqtinchalik to'xtatildi")
     # elif instance.status == ExcavatorOrder.Status.COMPLETED:
     #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz tugallandi")

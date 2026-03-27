@@ -22,8 +22,6 @@ class Order(BaseModel):
     """
         NEW - Buyurtma yaratilgach shu statusda bo’ladi
 
-    IN_PROGRESS - JArayon boshlandi. Ya’ni buyurtmadagi mahsulot tayyorlana boshladi.
-
     ON_WAY - haydovchi yo’lga chiqqach buyurtmani shu statusga o’tkazadi
 
     ARRIVED - Haydovchi manzilga yetib kelgach buyurtmani shu holatga o’tkazadi
@@ -35,7 +33,6 @@ class Order(BaseModel):
 
     class Status(models.TextChoices):
         NEW = "NEW", "New"
-        IN_PROGRESS = "IN_PROGRESS", "In Progress"
         ON_WAY = "ON_WAY", "On Way"
         ARRIVED = "ARRIVED", "Arrived"
         UNLOADING = "UNLOADING", "Unloading"
@@ -80,7 +77,6 @@ class Order(BaseModel):
 class SubOrder(BaseModel):
     class Status(models.TextChoices):
         NEW = "NEW", "New"
-        IN_PROGRESS = "IN_PROGRESS", "In Progress"
         ON_WAY = "ON_WAY", "On Way"
         ARRIVED = "ARRIVED", "Arrived"
         UNLOADING = "UNLOADING", "Unloading"

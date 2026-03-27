@@ -96,7 +96,7 @@ def _rand_coords():
 
 def _build_status_history(statuses_chain, start_dt):
     """
-    statuses_chain — list of statuses in order, e.g. ['NEW', 'IN_PROGRESS', 'ON_WAY', 'COMPLETED']
+    statuses_chain — list of statuses in order, e.g. ['NEW', 'ON_WAY', 'COMPLETED']
     Returns a JSONField-compatible list with timestamp entries.
     Each status lasts between 5 and 240 minutes.
     """
@@ -113,20 +113,18 @@ def _build_status_history(statuses_chain, start_dt):
 
 ORDER_STATUS_CHAINS = {
     'NEW':       ['NEW'],
-    'IN_PROGRESS': ['NEW', 'IN_PROGRESS'],
-    'ON_WAY':    ['NEW', 'IN_PROGRESS', 'ON_WAY'],
-    'ARRIVED':   ['NEW', 'IN_PROGRESS', 'ON_WAY', 'ARRIVED'],
-    'UNLOADING': ['NEW', 'IN_PROGRESS', 'ON_WAY', 'ARRIVED', 'UNLOADING'],
-    'COMPLETED': ['NEW', 'IN_PROGRESS', 'ON_WAY', 'ARRIVED', 'UNLOADING', 'COMPLETED'],
+    'ON_WAY':    ['NEW', 'ON_WAY'],
+    'ARRIVED':   ['NEW', 'ON_WAY', 'ARRIVED'],
+    'UNLOADING': ['NEW', 'ON_WAY', 'ARRIVED', 'UNLOADING'],
+    'COMPLETED': ['NEW', 'ON_WAY', 'ARRIVED', 'UNLOADING', 'COMPLETED'],
     'REJECTED':  ['NEW', 'REJECTED'],
 }
 
 EXC_STATUS_CHAINS = {
     'NEW':         ['NEW'],
-    'IN_PROGRESS': ['NEW', 'IN_PROGRESS'],
-    'PAUSED':      ['NEW', 'IN_PROGRESS', 'PAUSED'],
-    'COMPLETED':   ['NEW', 'IN_PROGRESS', 'COMPLETED'],
-    'EXPIRED':     ['NEW', 'IN_PROGRESS', 'EXPIRED'],
+    'PAUSED':      ['NEW', 'PAUSED'],
+    'COMPLETED':   ['NEW', 'COMPLETED'],
+    'EXPIRED':     ['NEW', 'EXPIRED'],
 }
 
 
@@ -384,13 +382,13 @@ class Command(BaseCommand):
                        whouses, drivers, transports,
                        count, start_dt, end_dt):
         statuses = [
-            Order.Status.NEW, Order.Status.IN_PROGRESS, Order.Status.ON_WAY,
+            Order.Status.NEW, Order.Status.ON_WAY,
             Order.Status.ARRIVED, Order.Status.UNLOADING, Order.Status.COMPLETED,
             Order.Status.COMPLETED, Order.Status.COMPLETED,  # weight COMPLETED more
             Order.Status.REJECTED,
         ]
         sub_statuses = [
-            SubOrder.Status.NEW, SubOrder.Status.IN_PROGRESS, SubOrder.Status.ON_WAY,
+            SubOrder.Status.NEW, SubOrder.Status.ON_WAY,
             SubOrder.Status.ARRIVED, SubOrder.Status.UNLOADING, SubOrder.Status.COMPLETED,
             SubOrder.Status.COMPLETED, SubOrder.Status.COMPLETED,
         ]
@@ -513,7 +511,7 @@ class Command(BaseCommand):
     def _create_excavator_orders(self, ExcavatorOrder, ExcavatorSubOrder,
                                  whouses, drivers, transports, count, start_dt, end_dt):
         statuses = [
-            ExcavatorOrder.Status.NEW, ExcavatorOrder.Status.IN_PROGRESS,
+            ExcavatorOrder.Status.NEW,
             ExcavatorOrder.Status.PAUSED, ExcavatorOrder.Status.COMPLETED,
             ExcavatorOrder.Status.COMPLETED,  # weight COMPLETED
             ExcavatorOrder.Status.EXPIRED,
@@ -524,7 +522,7 @@ class Command(BaseCommand):
             ExcavatorOrder.PaymentStatus.PAID,
         ]
         sub_statuses = [
-            ExcavatorSubOrder.Status.NEW, ExcavatorSubOrder.Status.IN_PROGRESS,
+            ExcavatorSubOrder.Status.NEW,
             ExcavatorSubOrder.Status.PAUSED, ExcavatorSubOrder.Status.COMPLETED,
             ExcavatorSubOrder.Status.COMPLETED,
         ]

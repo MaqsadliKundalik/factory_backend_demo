@@ -240,7 +240,6 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         status_counts = {
             "total": qs.count(),
             "new": qs.filter(status=Order.Status.NEW).count(),
-            "in_progress": qs.filter(status=Order.Status.IN_PROGRESS).count(),
             "on_way": qs.filter(status=Order.Status.ON_WAY).count(),
             "arrived": qs.filter(status=Order.Status.ARRIVED).count(),
             "unloading": qs.filter(status=Order.Status.UNLOADING).count(),
@@ -258,7 +257,6 @@ class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         status_durations = {
             "total": sub_orders.count(),
             "new": avg("NEW"),
-            "in_progress": avg("IN_PROGRESS"),
             "on_way": avg("ON_WAY"),
             "arrived": avg("ARRIVED"),
             "unloading": avg("UNLOADING"),
@@ -282,7 +280,6 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         status_counts = {
             "total": qs.count(),
             "new": qs.filter(status=ExcavatorOrder.Status.NEW).count(),
-            "in_progress": qs.filter(status=ExcavatorOrder.Status.IN_PROGRESS).count(),
             "paused": qs.filter(status=ExcavatorOrder.Status.PAUSED).count(),
             "completed": qs.filter(status=ExcavatorOrder.Status.COMPLETED).count(),
             "expired": qs.filter(status=ExcavatorOrder.Status.EXPIRED).count(),
@@ -298,7 +295,6 @@ class ExcavatorOrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
         status_durations = {
             "total": sub_orders.count(),
             "new": avg("NEW"),
-            "in_progress": avg("IN_PROGRESS"),
             "paused": avg("PAUSED"),
             "completed": avg("COMPLETED"),
             "expired": avg("EXPIRED"),

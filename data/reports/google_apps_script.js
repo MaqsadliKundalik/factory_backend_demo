@@ -103,7 +103,6 @@ function apiGetAll(path, params) {
 // ============================================================
 const STATUS_UZ = {
   NEW:         'Yangi',
-  IN_PROGRESS: 'Jarayonda',
   ON_WAY:      "Yo'lda",
   ARRIVED:     'Yetib keldi',
   UNLOADING:   'Tushirilmoqda',

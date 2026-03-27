@@ -19,7 +19,6 @@ class TransportSerializer(serializers.ModelSerializer):
         exists: bool = instance.sub_orders.filter(
             status__in=[
                 SubOrder.Status.NEW,
-                SubOrder.Status.IN_PROGRESS,
                 SubOrder.Status.ARRIVED,
                 SubOrder.Status.ON_WAY,
                 SubOrder.Status.UNLOADING,

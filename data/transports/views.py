@@ -123,7 +123,6 @@ class TransportSelectView(APIView):
             queryset = queryset.exclude(
                 sub_orders__status__in=[
                     SubOrder.Status.NEW,
-                    SubOrder.Status.IN_PROGRESS,
                     SubOrder.Status.ARRIVED,
                     SubOrder.Status.ON_WAY,
                     SubOrder.Status.UNLOADING,
