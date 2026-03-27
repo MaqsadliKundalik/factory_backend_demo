@@ -262,3 +262,6 @@ class FinishOrderSerializer(serializers.Serializer):
 class RejectOrderSerializer(serializers.Serializer):    
     rejector_role = serializers.ChoiceField(choices=["excavator", "manager"])
     rejector_id = serializers.UUIDField()
+    
+    class Meta:
+        ref_name = 'excavator_reject_order'

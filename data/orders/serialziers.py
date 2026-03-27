@@ -231,6 +231,9 @@ class RejectOrderSerializer(serializers.Serializer):
     rejector_role = serializers.ChoiceField(
         choices=["CLIENT", "OPERATOR", "MANAGER"], required=True
     )
+    
+    class Meta:
+        ref_name = 'orders_reject_order'
 
 
 class OrderWriteSerializer(serializers.ModelSerializer):
