@@ -10,6 +10,10 @@ if TYPE_CHECKING:
 class File(BaseModel):
 
     file = models.FileField(upload_to="files/")
+    
+    def swagger_schema_field_type(self):
+        from drf_yasg.openapi import openapi
+        return openapi.TYPE_FILE
 
 
 class Documents(BaseModel):

@@ -115,7 +115,7 @@ class TransportSelectView(APIView):
             return Response({"detail": "Not authenticated"}, status=401)
 
         whouses = user.whouses.all()
-        queryset = Transport.objects.filter(whouse__in=whouses)
+        queryset = Transport.objects.all()
 
         search = request.query_params.get("search")
 
