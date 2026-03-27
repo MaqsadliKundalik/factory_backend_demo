@@ -234,14 +234,15 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
             SubOrderItem.objects.bulk_update(sub_order_items_to_update, ["quantity"])
 
         # Reject non-completed suborders
-        order.sub_orders.exclude(
+        for sub_order in order.sub_orders.exclude(
             status=SubOrder.Status.COMPLETED
-        ).update(status=SubOrder.Status.REJECTED)
+        ):
+            if all(soi.quantity == 0 for soi in sub_order.sub_order_items.all()):
+                sub_order.status = SubOrder.Status.REJECTED
+                sub_order.save(update_fields=["status"])
 
         # If all suborders are rejected or completed — set order status
-        remaining = order.sub_orders.exclude(
-            status__in=[SubOrder.Status.REJECTED, SubOrder.Status.COMPLETED]
-        ).exists()
+        remaining = all(so.status == SubOrder.Status.REJECTED for so in order.sub_orders.all())
         order.status = Order.Status.REJECTED if not remaining else order.status
         order.save(update_fields=["status", "rejector_role", "rejector_id"])
 
