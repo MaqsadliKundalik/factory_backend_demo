@@ -23,6 +23,11 @@ class ExcavatorOrder(BaseModel):
     class PaymentStatus(models.TextChoices):
         PENDING = "PENDING", "Pending"
         PAID = "PAID", "Paid"
+        
+    class Rejector(models.TextChoices):
+        CLIENT = "CLIENT", "Client"
+        OPERATOR = "OPERATOR", "Operator"
+        MANAGER = "MANAGER", "Manager"
 
     display_id = models.PositiveIntegerField(unique=True, editable=False, null=True)
 
@@ -37,6 +42,9 @@ class ExcavatorOrder(BaseModel):
     end_date = models.DateField(null=True, blank=True)
 
     comment = models.TextField(null=True, blank=True)
+    
+    rejector_role = models.CharField(max_length=20, null=True, blank=True)
+    rejector_id = models.IntegerField(null=True, blank=True)
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     payment_status = models.CharField(

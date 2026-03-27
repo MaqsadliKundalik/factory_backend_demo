@@ -15,7 +15,8 @@ from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from apps.common.mixins import PermissionMetaMixin
 from apps.common.filters import BaseDateFilterSet, DATE_FILTER_PARAMS
-
+from data.clients.models import Client
+from data.users.models import FactoryUser
 from data.files.models import File
 
 from .models import ExcavatorOrder, ExcavatorSubOrder
@@ -27,6 +28,7 @@ from .serializers import (
     StartOrderSerializer,
     FinishOrderSerializer,
     ExcavatorSubOrderListSerializer,
+    RejectOrderSerializer,
 )
 
 EXCAVATOR_ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
@@ -133,11 +135,36 @@ class ExcavatorOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, pk=None):
         order = self.get_object()
+
+        serializer = RejectOrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        rejector_role = serializer.validated_data["rejector_role"]
+        rejector_id = serializer.validated_data["rejector_id"]
+        user = None
+        if rejector_role == ExcavatorOrder.Rejector.CLIENT:
+            try:
+                user = Client.objects.get(id=rejector_id)
+            except Client.DoesNotExist:
+                return Response(
+                    {"detail": "Client not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            try:
+                user = FactoryUser.objects.get(id=rejector_id)
+            except FactoryUser.DoesNotExist:
+                return Response(
+                    {"detail": "Factory user not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
         sub_orders = order.sub_orders.all()
         for sub_order in sub_orders:
             sub_order.status = ExcavatorSubOrder.Status.REJECTED
             sub_order.save()
         order.status = ExcavatorOrder.Status.REJECTED
+        order.rejector_role = rejector_role
+        order.rejector_id = rejector_id
         order.save()
         return Response({"detail": "Order rejected"}, status=status.HTTP_200_OK)
 

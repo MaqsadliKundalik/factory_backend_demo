@@ -160,6 +160,8 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "sub_orders",
+            "rejector_role",
+            "rejector_id"
             "created_at",
             "whouse",
         ]
@@ -256,3 +258,7 @@ class FinishOrderSerializer(serializers.Serializer):
         child=serializers.UUIDField(), required=False, default=list
     )
     timestamp = serializers.DateTimeField()
+
+class RejectOrderSerializer(serializers.Serializer):    
+    rejector_role = serializers.ChoiceField(choices=["excavator", "manager"])
+    rejector_id = serializers.UUIDField()
