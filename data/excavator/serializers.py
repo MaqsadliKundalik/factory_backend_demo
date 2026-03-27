@@ -161,7 +161,7 @@ class ExcavatorOrderSerializer(serializers.ModelSerializer):
             "end_date",
             "sub_orders",
             "rejector_role",
-            "rejector_id"
+            "rejector_id",
             "created_at",
             "whouse",
         ]
