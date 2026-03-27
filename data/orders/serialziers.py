@@ -156,8 +156,6 @@ class SubOrderSerializer(serializers.ModelSerializer):
 
 
 class SubOrderListSerializer(serializers.ModelSerializer):
-    status_history = StatusHistorySerializer(many=True, read_only=True)
-
     class Meta:
         model = SubOrder
         fields = [
