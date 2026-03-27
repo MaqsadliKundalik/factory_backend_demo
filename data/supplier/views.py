@@ -130,6 +130,8 @@ class SupplierSelectView(APIView):
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
 
+        queryset = Supplier.objects.all()
+
         # Apply search if provided
         search = request.query_params.get("search")
         if search:
