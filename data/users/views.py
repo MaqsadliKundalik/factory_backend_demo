@@ -18,10 +18,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from apps.common.filters import BaseDateFilterSet
 import logging
+from drf_yasg import openapi
 
 logger = logging.getLogger(__name__)
 
-TRANSPORT_FILTER_PARAMS = [
+USER_FILTER_PARAMS = [
     openapi.Parameter(
         "role",
         openapi.IN_QUERY,
@@ -116,7 +117,7 @@ class UserSelectView(APIView):
     @swagger_auto_schema(
         operation_summary="Select users (id and name only)",
         responses={200: SelectFactoryUserSerializer(many=True)},
-        manual_parameters=TRANSPORT_FILTER_PARAMS,
+        manual_parameters=USER_FILTER_PARAMS,
     )
     def get(self, request):
         role = request.query_params.get("role")
