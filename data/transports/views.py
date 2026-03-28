@@ -33,6 +33,13 @@ TRANSPORT_FILTER_PARAMS = [
         type=openapi.TYPE_STRING,
         description="Filter by car type",
     ),
+    openapi.Parameter(
+        "whouse",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        format=openapi.FORMAT_UUID,
+        description="Filter by whouse",
+    ),
 ]
 
 
@@ -103,6 +110,7 @@ class TransportSelectView(APIView):
         has_order = request.query_params.get("hasOrder")
         transport_type = request.query_params.get("type")
         car_type = request.query_params.get("car_type")
+        whouse = request.query_params.get("whouse")
 
         user = (
             self.request.driver
@@ -113,10 +121,7 @@ class TransportSelectView(APIView):
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
 
-        whouses = user.whouses.all()
-        queryset = Transport.objects.filter(whouse__in=whouses)
-
-        search = request.query_params.get("search")
+        queryset = Transport.objects.all()
 
         if has_order:
             queryset = queryset.exclude(
@@ -131,6 +136,8 @@ class TransportSelectView(APIView):
             queryset = queryset.filter(car_type=car_type)
         if transport_type:
             queryset = queryset.filter(type=transport_type)
+        if whouse:
+            queryset = queryset.filter(whouse_id=whouse)
 
         data = queryset.values("id", "name", "number", "car_type")
         return Response(list(data))

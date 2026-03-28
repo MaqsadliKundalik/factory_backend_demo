@@ -33,7 +33,14 @@ DRIVER_FILTER_PARAMS = [
         openapi.IN_QUERY,
         type=openapi.TYPE_STRING,
         description="Filter by type",
-    )
+    ),
+    openapi.Parameter(
+        "whouse",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        format=openapi.FORMAT_UUID,
+        description="Filter by whouse",
+    ),
 ]
 
 
@@ -100,6 +107,7 @@ class DriverSelectView(APIView):
     def get(self, request):
         has_order = request.query_params.get("hasOrder")
         driver_type = request.query_params.get("type")
+        whouse = request.query_params.get("whouse")
 
         user = (
             self.request.driver
@@ -110,8 +118,7 @@ class DriverSelectView(APIView):
         if not user.is_authenticated:
             return Response({"detail": "Not authenticated"}, status=401)
 
-        whouses = user.whouses.all()
-        queryset = Driver.objects.filter(whouse__in=whouses)
+        queryset = Driver.objects.all()
 
         search = request.query_params.get("search")
 
@@ -126,6 +133,8 @@ class DriverSelectView(APIView):
             )
         if driver_type:
             queryset = queryset.filter(type=driver_type)
+        if whouse:
+            queryset = queryset.filter(whouse_id=whouse)
 
         data = queryset.values("id", "name", "phone_number")
         return Response(list(data))
