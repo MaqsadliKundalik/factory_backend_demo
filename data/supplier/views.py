@@ -53,6 +53,7 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = SupplierFilter
     search_fields = ["name", "inn_number"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -103,6 +104,7 @@ class SupplierSelectView(APIView):
     permission_classes = [
         HasDynamicPermission(crud_perm="CLIENTS_PAGE", read_perm="CLIENTS_PAGE")
     ]
+    ordering = ["-created_at"]
 
     @swagger_auto_schema(
         operation_summary="Select suppliers (id and name only)",

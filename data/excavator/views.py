@@ -192,6 +192,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ExcavatorSubOrderFilter
     search_fields = ["driver__name", "transport__number"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (

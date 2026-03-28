@@ -67,6 +67,7 @@ class DriverViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = DriverFilter
     search_fields = ["name", "phone_number"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -98,6 +99,7 @@ class DriverSelectView(APIView):
     permission_classes = [
         HasDynamicPermission(crud_perm="DRIVERS_PAGE", read_perm="DRIVERS_PAGE")
     ]
+    ordering = ["-created_at"]
 
     @swagger_auto_schema(
         operation_summary="Select drivers (id and name only)",

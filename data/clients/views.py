@@ -51,6 +51,7 @@ class ClientViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ClientFilter
     search_fields = ["name", "phone_number"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -117,6 +118,7 @@ class ClientBranchesViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ClientBranchesFilter
     search_fields = ["name", "address"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (

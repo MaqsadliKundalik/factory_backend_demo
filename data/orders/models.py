@@ -115,6 +115,7 @@ class SubOrder(BaseModel):
 
     class Meta:
         unique_together = ["order", "driver"]
+        ordering = ["-created_at"]
 
 
 class OrderItem(BaseModel):

@@ -45,6 +45,7 @@ class FactoryUserResetPasswordViewSet(ViewSet):
         HasDynamicPermission(crud_perm="USERS_PAGE", read_perm="USERS_PAGE")
     ]
     serializer_class = FactoryUserResetpasswordSerializer
+    ordering = ["-created_at"]
 
     @swagger_auto_schema(
         operation_summary="Reset password",
@@ -85,6 +86,7 @@ class FactoryUserViewSet(DateFilterSchemaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = FactoryUserFilter
     search_fields = ["name", "phone_number"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -113,6 +115,7 @@ class UserSelectView(APIView):
     permission_classes = [
         HasDynamicPermission(crud_perm="USERS_PAGE", read_perm="USERS_PAGE")
     ]
+    ordering = ["-created_at"]
 
     @swagger_auto_schema(
         operation_summary="Select users (id and name only)",

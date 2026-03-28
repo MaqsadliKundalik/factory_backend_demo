@@ -116,6 +116,7 @@ class WhouseProductsHistoryViewSet(
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = WhouseProductsHistoryFilter
     search_fields = ["product__name"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -156,6 +157,7 @@ class ProductTypeViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSe
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ProductTypeFilter
     search_fields = ["name"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -195,6 +197,7 @@ class ProductUnitViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSe
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ProductUnitFilter
     search_fields = ["name"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -237,6 +240,7 @@ class ProductItemViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ProductItemFilter
     search_fields = ["name"]
+    ordering = ["-created_at"]
 
 
 class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
@@ -247,6 +251,7 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
         HasDynamicPermission(crud_perm="PRODUCTS_PAGE", read_perm="PRODUCTS_PAGE")
     ]
     pagination_class = StandardResultsSetPagination
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -337,6 +342,7 @@ class WhouseProductsViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelVie
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = WhouseProductsFilter
     search_fields = ["product__name"]
+    ordering = ["-created_at"]
 
     @swagger_auto_schema(manual_parameters=WHOUSE_PRODUCTS_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
@@ -411,6 +417,7 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = WhouseProductsFilter
     search_fields = ["product__name"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (

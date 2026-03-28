@@ -66,6 +66,7 @@ class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet)
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = TransportFilter
     search_fields = ["name", "number"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
@@ -100,6 +101,7 @@ class TransportSelectView(APIView):
     permission_classes = [
         HasDynamicPermission(crud_perm="TRANSPORTS_PAGE", read_perm="TRANSPORTS_PAGE")
     ]
+    ordering = ["-created_at"]
 
     @swagger_auto_schema(
         operation_summary="Select transports (id and name only)",

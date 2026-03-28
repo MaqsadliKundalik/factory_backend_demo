@@ -283,6 +283,7 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = SubOrderFilter
     search_fields = ["order__display_id", "driver__name", "transport__model"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         user = (
