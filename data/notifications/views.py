@@ -49,8 +49,6 @@ class NotificationViewSet(
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = NotificationFilter
     search_fields = ["title", "message"]
-    ordering_fields = ["created_at"]
-    ordering = ["-created_at"]
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):

@@ -59,7 +59,6 @@ class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet)
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = TransportFilter
     search_fields = ["name", "number"]
-    ordering_fields = ["created_at", "updated_at"]
 
     def get_queryset(self):
         user = (

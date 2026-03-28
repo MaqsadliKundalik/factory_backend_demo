@@ -60,7 +60,6 @@ class DriverViewSet(PermissionMetaMixin, ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = DriverFilter
     search_fields = ["name", "phone_number"]
-    ordering_fields = ["created_at", "updated_at"]
 
     def get_queryset(self):
         user = (
