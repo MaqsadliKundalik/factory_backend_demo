@@ -215,17 +215,35 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
             if not order_item:
                 continue
 
-            quantity = item_data["quantity"]
-            order_item.quantity = max(0, order_item.quantity - quantity)
+            quantity_to_deduct = item_data["quantity"]
+            order_item.quantity = max(0, order_item.quantity - quantity_to_deduct)
             order_items_to_update.append(order_item)
 
+            # Find matching suborder items and deduct quantity in order
+            remaining_quantity = quantity_to_deduct
+            
             for sub_order in sub_orders:
-                for soi in sub_order.sub_order_items.all():
+                if sub_order.status == SubOrder.Status.COMPLETED or remaining_quantity <= 0:
+                    continue
+                    
+                # Find all matching suborder items in this suborder
+                matching_items = [
+                    soi for soi in sub_order.sub_order_items.all()
                     if (soi.product_id == order_item.product_id
-                            and soi.type_id == order_item.type_id
-                            and soi.unit_id == order_item.unit_id):
-                        soi.quantity = max(0, soi.quantity - quantity)
-                        sub_order_items_to_update.append(soi)
+                        and soi.type_id == order_item.type_id
+                        and soi.unit_id == order_item.unit_id
+                        and soi.quantity > 0)
+                ]
+                
+                # Deduct from matching items in this suborder
+                for matching_soi in matching_items:
+                    if remaining_quantity <= 0:
+                        break
+                    
+                    deduct_amount = min(remaining_quantity, matching_soi.quantity)
+                    matching_soi.quantity = max(0, matching_soi.quantity - deduct_amount)
+                    sub_order_items_to_update.append(matching_soi)
+                    remaining_quantity -= deduct_amount
 
         # Bulk update quantities
         if order_items_to_update:
@@ -237,13 +255,19 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         for sub_order in order.sub_orders.exclude(
             status=SubOrder.Status.COMPLETED
         ):
-            if all(soi.quantity == 0 for soi in sub_order.sub_order_items.all()):
+            # Check if all items in this suborder have quantity 0
+            all_items_zero = all(soi.quantity == 0 for soi in sub_order.sub_order_items.all())
+            if all_items_zero:
                 sub_order.status = SubOrder.Status.REJECTED
                 sub_order.save(update_fields=["status"])
 
         # If all suborders are rejected or completed — set order status
-        remaining = all(so.status == SubOrder.Status.REJECTED for so in order.sub_orders.all())
-        order.status = Order.Status.REJECTED if not remaining else order.status
+        all_suborders_rejected_or_completed = all(
+            so.status in [SubOrder.Status.REJECTED, SubOrder.Status.COMPLETED] 
+            for so in order.sub_orders.all()
+        )
+        if all_suborders_rejected_or_completed:
+            order.status = Order.Status.REJECTED
         order.save(update_fields=["status", "rejector_role", "rejector_id"])
 
         return Response(OrderSerializer(order).data)
