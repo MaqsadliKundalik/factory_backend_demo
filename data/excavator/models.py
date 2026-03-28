@@ -144,3 +144,4 @@ class ExcavatorSubOrder(BaseModel):
 
     class Meta:
         unique_together = ["parent", "driver"]
+        ordering = ["-created_at"]

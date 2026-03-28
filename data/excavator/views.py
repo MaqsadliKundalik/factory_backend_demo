@@ -200,14 +200,15 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             or self.request.operator
             or self.request.manager
         )
+        if self.request.driver:
+            return ExcavatorSubOrder.objects.filter(driver=self.request.driver)
+
         if getattr(self, "swagger_fake_view", False) or not user.is_authenticated:
             return ExcavatorSubOrder.objects.none()
         if hasattr(user, "whouses") and user.whouses.exists():
             return ExcavatorSubOrder.objects.filter(
                 parent__whouse__in=user.whouses.all()
             )
-        if self.request.driver:
-            return ExcavatorSubOrder.objects.filter(driver=self.request.driver)
         return ExcavatorSubOrder.objects.all()
 
     @swagger_auto_schema(manual_parameters=EXCAVATOR_SUBORDER_FILTER_PARAMS)

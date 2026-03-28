@@ -291,12 +291,12 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             or self.request.operator
             or self.request.manager
         )
+        if self.request.driver:
+            return SubOrder.objects.filter(driver=self.request.driver)
         if getattr(self, "swagger_fake_view", False) or not user.is_authenticated:
             return SubOrder.objects.none()
         if hasattr(user, "whouses") and user.whouses.exists():
             return SubOrder.objects.filter(order__whouse__in=user.whouses.all())
-        if self.request.driver:
-            return SubOrder.objects.filter(driver=self.request.driver)
         return SubOrder.objects.all()
 
     @swagger_auto_schema(manual_parameters=SUBORDER_FILTER_PARAMS)
