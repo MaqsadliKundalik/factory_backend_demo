@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class ExcavatorOrder(BaseModel):
     class Status(models.TextChoices):
         NEW = "NEW", "New"
-        ON_WAY = "ON_WAY", "On Way"
+        IN_PROGRESS = "IN_PROGRESS", "In progress"
         PAUSED = "PAUSED", "Paused"
         COMPLETED = "COMPLETED", "Completed"
         EXPIRED = "EXPIRED", "Expired"
@@ -85,7 +85,7 @@ class ExcavatorOrder(BaseModel):
 class ExcavatorSubOrder(BaseModel):
     class Status(models.TextChoices):
         NEW = "NEW", "New"
-        ON_WAY = "ON_WAY", "On Way"
+        IN_PROGRESS = "IN_PROGRESS", "In progress"
         PAUSED = "PAUSED", "Paused"
         COMPLETED = "COMPLETED", "Completed"
         EXPIRED = "EXPIRED", "Expired"

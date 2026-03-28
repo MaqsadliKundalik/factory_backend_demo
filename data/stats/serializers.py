@@ -62,6 +62,7 @@ class ExcavatorOrderStatusStatsSerializer(serializers.Serializer):
 
 class ExcavatorStatusDurationSerializer(serializers.Serializer):
     new = serializers.FloatField()
+    in_progress = serializers.FloatField()
     paused = serializers.FloatField()
     completed = serializers.FloatField()
     expired = serializers.FloatField()

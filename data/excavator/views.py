@@ -273,21 +273,21 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         instance.status_history.append(
             {
                 "old_status": instance.status,
-                "new_status": ExcavatorSubOrder.Status.ON_WAY,
+                "new_status": ExcavatorSubOrder.Status.IN_PROGRESS,
                 "changed_at": str(timestamp),
                 "changed_by": str(user.id),
                 "changed_by_name": getattr(user, "name", str(user)),
             }
         )
-        instance.status = ExcavatorSubOrder.Status.ON_WAY
+        instance.status = ExcavatorSubOrder.Status.IN_PROGRESS
         instance.save()
 
         parent = instance.parent
         sibling_statuses = list(parent.sub_orders.values_list("status", flat=True))
         if sibling_statuses and all(
-            s == ExcavatorSubOrder.Status.ON_WAY for s in sibling_statuses
+            s == ExcavatorSubOrder.Status.IN_PROGRESS for s in sibling_statuses
         ):
-            parent.status = ExcavatorSubOrder.Status.ON_WAY
+            parent.status = ExcavatorSubOrder.Status.IN_PROGRESS
             parent.save(update_fields=["status"])
 
         return Response({"status": instance.status})
