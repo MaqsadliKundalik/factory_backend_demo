@@ -25,9 +25,6 @@ from .serializers import (
 
 SUPPLIER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
     openapi.Parameter(
-        "whouse", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Warehouse ID"
-    ),
-    openapi.Parameter(
         "type", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Supplier type"
     ),
 ]
@@ -42,7 +39,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class SupplierFilter(BaseDateFilterSet):
     class Meta:
         model = Supplier
-        fields = ["whouse", "name", "inn_number", "type"]
+        fields = ["name", "inn_number", "type"]
 
 
 class SupplierViewSet(PermissionMetaMixin, ModelViewSet):

@@ -92,10 +92,8 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
             "inn_number",
             "phone_numbers",
             "photo",
-            "whouse",
             "type",
         ]
-        extra_kwargs = {"whouse": {"required": False}}
         read_only_fields = ["id"]
 
     def validate(self, attrs):
@@ -104,21 +102,10 @@ class SupplierBulkSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"inn_number": "Internal uchun majburiy."}
                 )
-            if not attrs.get("whouse"):
-                raise serializers.ValidationError(
-                    {"whouse": "Internal uchun majburiy."}
-                )
         return attrs
 
     def create(self, validated_data):
         phone_numbers_data = validated_data.pop("phone_numbers", [])
-
-        # Handle whouse fallback
-        if not validated_data.get("whouse"):
-            user = self.context["request"].user
-            whouse = user.whouses.first()
-            if whouse:
-                validated_data["whouse"] = whouse
 
         supplier = Supplier.objects.create(**validated_data)
 
