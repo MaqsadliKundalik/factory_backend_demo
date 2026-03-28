@@ -338,4 +338,3 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
 
         return Response({"status": instance.status})
 
-        return Response({"status": instance.status})
