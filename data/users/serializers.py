@@ -120,3 +120,9 @@ class FactoryUserResetpasswordSerializer(serializers.Serializer):
 # For backward compatibility if needed, but pointing to FactoryUser
 class UnifiedUserSerializer(FactoryUserSerializer):
     pass
+
+class SelectFactoryUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FactoryUser
+        fields = ["id", "name", "role"]
+        read_only_fields = ["id", "name", "role"]

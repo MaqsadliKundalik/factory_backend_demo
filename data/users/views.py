@@ -3,7 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
-from .serializers import FactoryUserSerializer, FactoryUserResetpasswordSerializer
+from .serializers import (
+    FactoryUserSerializer,
+    FactoryUserResetpasswordSerializer,
+    SelectFactoryUserSerializer,
+)
 from data.users.models import FactoryUser
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
@@ -17,6 +21,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+TRANSPORT_FILTER_PARAMS = [
+    openapi.Parameter(
+        "role",
+        openapi.IN_QUERY,
+        description="Filter by role",
+        type=openapi.TYPE_STRING,
+        required=False,
+    ),
+]
 
 class UserListPagination(PageNumberPagination):
     page_size = 10
@@ -92,3 +105,36 @@ class FactoryUserViewSet(DateFilterSchemaMixin, ModelViewSet):
         if whouse_id:
             queryset = queryset.filter(whouses__id=whouse_id)
         return queryset
+
+
+class UserSelectView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [
+        HasDynamicPermission(crud_perm="USERS_PAGE", read_perm="USERS_PAGE")
+    ]
+
+    @swagger_auto_schema(
+        operation_summary="Select users (id and name only)",
+        responses={200: SelectFactoryUserSerializer(many=True)},
+        manual_parameters=TRANSPORT_FILTER_PARAMS,
+    )
+    def get(self, request):
+        role = request.query_params.get("role")
+
+        user = (
+            self.request.driver
+            or self.request.guard
+            or self.request.operator
+            or self.request.manager
+        )
+        if not user.is_authenticated:
+            return Response({"detail": "Not authenticated"}, status=401)
+
+    
+        queryset = FactoryUser.objects.all()
+
+        if role:
+            queryset = queryset.filter(role=role)
+
+        data = queryset.values("id", "name", "role")
+        return Response(list(data))
