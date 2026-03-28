@@ -64,8 +64,6 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
         if getattr(self, "swagger_fake_view", False) or not user.is_authenticated:
             return Supplier.objects.none()
 
-        if hasattr(user, "whouses") and user.whouses.exists():
-            return Supplier.objects.filter(whouse__in=user.whouses.all())
         return Supplier.objects.all()
 
     def perform_create(self, serializer):
@@ -75,12 +73,6 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
             or self.request.operator
             or self.request.manager
         )
-        whouse_id = self.request.data.get("whouse")
-        if whouse_id:
-            serializer.save(whouse_id=whouse_id)
-        else:
-            whouse = user.whouses.first()
-            serializer.save(whouse=whouse)
 
 
 class SupplierAndPhoneCreateView(APIView):

@@ -14,21 +14,16 @@ class Supplier(BaseModel):
     inn_number = models.CharField(max_length=9, null=True, blank=True)
     photo = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
 
-    whouse = models.ForeignKey(
-        "factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True
-    )
 
     def clean(self):
         if self.type == self.Type.INTERNAL:
             errors = {}
             if not self.inn_number:
                 errors["inn_number"] = "Internal supplier uchun inn_number majburiy."
-            if not self.whouse_id:
-                errors["whouse"] = "Internal supplier uchun whouse majburiy."
             if errors:
                 raise ValidationError(errors)
 
-    list_display = ["name", "inn_number", "whouse", "files"]
+    list_display = ["name", "inn_number", "type", "files"]
 
     orders: "models.QuerySet[Order]"
 
@@ -36,7 +31,7 @@ class Supplier(BaseModel):
         return self.name
 
     class Meta:
-        unique_together = ["inn_number", "whouse"]
+        unique_together = ["inn_number", "type"]
 
 
 class SupplierPhone(BaseModel):
