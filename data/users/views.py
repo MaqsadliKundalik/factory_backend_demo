@@ -18,6 +18,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from apps.common.filters import BaseDateFilterSet
 import logging
+from rest_framework.views import APIView
 from drf_yasg import openapi
 
 logger = logging.getLogger(__name__)
