@@ -308,8 +308,12 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             instance.after_sign_id = sign
 
         file_ids = serializer.validated_data.get("files", [])
+        print(f"[DEBUG finish] file_ids from request: {file_ids}")
+        print(f"[DEBUG finish] instance.id: {instance.id}")
         if file_ids:
+            print(f"[DEBUG finish] Before set - after_files: {list(instance.after_files.values_list('id', flat=True))}")
             instance.after_files.set(file_ids)
+            print(f"[DEBUG finish] After set - after_files: {list(instance.after_files.values_list('id', flat=True))}")
 
         instance.status_history = instance.status_history or []
         instance.status_history.append(
@@ -331,5 +335,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         ):
             parent.status = ExcavatorSubOrder.Status.COMPLETED
             parent.save(update_fields=["status"])
+
+        return Response({"status": instance.status})
 
         return Response({"status": instance.status})
