@@ -44,10 +44,7 @@ class SupplierSerializer(serializers.ModelSerializer):
         representation["phone_numbers"] = SupplierPhoneSerializer(
             instance.phones.all(), many=True
         ).data
-        representation["whouse"] = {
-            "id": instance.whouse.id,
-            "name": instance.whouse.name,
-        }
+
         return representation
 
     def validate(self, attrs):
@@ -56,10 +53,7 @@ class SupplierSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"inn_number": "Internal uchun majburiy."}
                 )
-            if not attrs.get("whouse"):
-                raise serializers.ValidationError(
-                    {"whouse": "Internal uchun majburiy."}
-                )
+
         return attrs
 
     def update(self, instance, validated_data):
