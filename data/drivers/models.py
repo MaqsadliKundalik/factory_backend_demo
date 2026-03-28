@@ -40,17 +40,17 @@ class Driver(BaseModel):
                 raise ValidationError(errors)
 
     # Permission fields for compatibility with HasDynamicPermission
-    MAIN_PAGE = models.BooleanField(default=False)
-    PRODUCTS_PAGE = models.BooleanField(default=False)
-    ORDERS_PAGE = models.BooleanField(default=False)
-    TRANSPORTS_PAGE = models.BooleanField(default=False)
+    MAIN_PAGE = models.BooleanField(default=True)
+    PRODUCTS_PAGE = models.BooleanField(default=True)
+    ORDERS_PAGE = models.BooleanField(default=True)
+    TRANSPORTS_PAGE = models.BooleanField(default=True)
     WHEREHOUSES_PAGE = models.BooleanField(default=False)
-    CLIENTS_PAGE = models.BooleanField(default=False)
+    CLIENTS_PAGE = models.BooleanField(default=True)
     USERS_PAGE = models.BooleanField(default=False)
-    READY_PRODUCTS_PAGE = models.BooleanField(default=False)
-    DRIVERS_PAGE = models.BooleanField(default=False)
+    READY_PRODUCTS_PAGE = models.BooleanField(default=True)
+    DRIVERS_PAGE = models.BooleanField(default=True)
     SUPPLIERS_PAGE = models.BooleanField(default=False)
-    EXCAVATORS_PAGE = models.BooleanField(default=False)
+    EXCAVATORS_PAGE = models.BooleanField(default=True)
 
     @property
     def whouses(self):
