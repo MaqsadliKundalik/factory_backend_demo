@@ -97,9 +97,21 @@ class ExcavatorSubOrderFilter(BaseDateFilterSet):
 
     def filter_in_progress(self, queryset, name, value):
         if value is True:
-            return queryset.exclude(status=ExcavatorSubOrder.Status.COMPLETED)
+            return queryset.exclude(
+                status__in=[
+                    ExcavatorSubOrder.Status.COMPLETED,
+                    ExcavatorSubOrder.Status.REJECTED,
+                    ExcavatorSubOrder.Status.EXPIRED,
+                ]
+            )
         elif value is False:
-            return queryset.filter(status=ExcavatorSubOrder.Status.COMPLETED)
+            return queryset.filter(
+                status__in=[
+                    ExcavatorSubOrder.Status.COMPLETED,
+                    ExcavatorSubOrder.Status.REJECTED,
+                    ExcavatorSubOrder.Status.EXPIRED,
+                ]
+            )
         return queryset
 
     class Meta:

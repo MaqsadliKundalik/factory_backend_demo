@@ -105,9 +105,9 @@ class SubOrderFilter(BaseDateFilterSet):
 
     def filter_in_progress(self, queryset, name, value):
         if value is True:
-            return queryset.exclude(status=SubOrder.Status.COMPLETED)
+            return queryset.exclude(status__in=[SubOrder.Status.COMPLETED, SubOrder.Status.REJECTED])
         elif value is False:
-            return queryset.filter(status=SubOrder.Status.COMPLETED)
+            return queryset.filter(status__in=[SubOrder.Status.COMPLETED, SubOrder.Status.REJECTED])
         return queryset
 
     class Meta:
