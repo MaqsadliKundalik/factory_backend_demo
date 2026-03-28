@@ -260,7 +260,7 @@ class FinishOrderSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
 
 class RejectOrderSerializer(serializers.Serializer):    
-    rejector_role = serializers.ChoiceField(choices=["excavator", "manager"])
+    rejector_role = serializers.ChoiceField(choices=ExcavatorOrder.Rejector.choices)
     rejector_id = serializers.UUIDField()
     
     class Meta:
