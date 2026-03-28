@@ -1,4 +1,5 @@
 from datetime import date as date_type, datetime
+from django.utils import timezone
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -95,6 +96,13 @@ def calculate_status_durations(sub_orders):
             try:
                 t1 = datetime.fromisoformat(str(entry["timestamp"]))
                 t2 = datetime.fromisoformat(str(next_entry["timestamp"]))
+                
+                # Make both datetimes timezone-aware
+                if t1.tzinfo is None:
+                    t1 = timezone.make_aware(t1)
+                if t2.tzinfo is None:
+                    t2 = timezone.make_aware(t2)
+                
                 seconds = (t2 - t1).total_seconds()
                 if seconds >= 0:
                     duration_totals[status_key] = (
