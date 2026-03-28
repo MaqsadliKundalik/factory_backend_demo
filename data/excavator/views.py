@@ -206,8 +206,8 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             return ExcavatorSubOrder.objects.filter(
                 parent__whouse__in=user.whouses.all()
             )
-        if user.__class__.__name__ == "Driver":
-            return ExcavatorSubOrder.objects.filter(driver=user)
+        if self.request.driver:
+            return ExcavatorSubOrder.objects.filter(driver=self.request.driver)
         return ExcavatorSubOrder.objects.all()
 
     @swagger_auto_schema(manual_parameters=EXCAVATOR_SUBORDER_FILTER_PARAMS)

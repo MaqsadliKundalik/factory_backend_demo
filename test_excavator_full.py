@@ -45,7 +45,7 @@ def login():
     return {"Authorization": f"Bearer {access_token}"}
 
 
-def test_excavator_suborder_start(auth_headers):
+def test_excavator_suborder_start(auth_headers, with_files=True):
     """Test ExcavatorSubOrder start endpoint with files"""
     print("\n" + "="*60)
     print("TESTING: ExcavatorSubOrder START endpoint with files")
@@ -84,13 +84,26 @@ def test_excavator_suborder_start(auth_headers):
     print(f"   before_files count: {len(target_suborder.get('before_files', []))}")
     print(f"   after_files count: {len(target_suborder.get('after_files', []))}")
 
-    # Call start endpoint (without files for now)
-    print(f"\n2. Calling START endpoint...")
+    # Use real file IDs from server
+    file_ids = []
+    if with_files:
+        print(f"\n2. Using real file IDs from server...")
+        # Real file IDs from the server
+        file_ids = [
+            "6a3bf1b1-9ccd-49b8-ac06-b21ca2b7e4bb",  # signature_1774700069505.png
+            "2ed0c9c6-b860-4d18-87d8-1f78a7d02572",  # 60dca8d4-4463-40d8-a969-988f5eb24c675745634691874728042.jpg
+        ]
+        print(f"   ✅ Using {len(file_ids)} files for before_files")
+
+    # Call start endpoint
+    print(f"\n3. Calling START endpoint...")
     start_url = f"{BASE_URL}/excavator-order/sub-orders/{sub_order_id}/start/"
 
     payload = {
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+    if file_ids:
+        payload["files"] = file_ids
 
     print(f"   URL: {start_url}")
     print(f"   Payload: {json.dumps(payload, indent=2)}")
@@ -137,7 +150,7 @@ def test_excavator_suborder_start(auth_headers):
         return False
 
 
-def test_excavator_suborder_finish(auth_headers):
+def test_excavator_suborder_finish(auth_headers, with_files=True):
     """Test ExcavatorSubOrder finish endpoint with files"""
     print("\n" + "="*60)
     print("TESTING: ExcavatorSubOrder FINISH endpoint with files")
@@ -176,13 +189,26 @@ def test_excavator_suborder_finish(auth_headers):
     print(f"   before_files count: {len(target_suborder.get('before_files', []))}")
     print(f"   after_files count: {len(target_suborder.get('after_files', []))}")
 
-    # Call finish endpoint (without files for now)
-    print(f"\n2. Calling FINISH endpoint...")
+    # Use real file IDs from server
+    file_ids = []
+    if with_files:
+        print(f"\n2. Using real file IDs from server...")
+        # Real file IDs from the server
+        file_ids = [
+            "6a3bf1b1-9ccd-49b8-ac06-b21ca2b7e4bb",  # signature_1774700069505.png
+            "2ed0c9c6-b860-4d18-87d8-1f78a7d02572",  # 60dca8d4-4463-40d8-a969-988f5eb24c675745634691874728042.jpg
+        ]
+        print(f"   ✅ Using {len(file_ids)} files for after_files")
+
+    # Call finish endpoint
+    print(f"\n3. Calling FINISH endpoint...")
     finish_url = f"{BASE_URL}/excavator-order/sub-orders/{sub_order_id}/finish/"
 
     payload = {
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+    if file_ids:
+        payload["files"] = file_ids
 
     print(f"   URL: {finish_url}")
     print(f"   Payload: {json.dumps(payload, indent=2)}")

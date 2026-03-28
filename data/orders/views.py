@@ -295,8 +295,8 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
             return SubOrder.objects.none()
         if hasattr(user, "whouses") and user.whouses.exists():
             return SubOrder.objects.filter(order__whouse__in=user.whouses.all())
-        if user.__class__.__name__ == "Driver":
-            return SubOrder.objects.filter(driver=user)
+        if self.request.driver:
+            return SubOrder.objects.filter(driver=self.request.driver)
         return SubOrder.objects.all()
 
     @swagger_auto_schema(manual_parameters=SUBORDER_FILTER_PARAMS)
