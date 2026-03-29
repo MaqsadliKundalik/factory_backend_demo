@@ -99,6 +99,7 @@ class SubOrderInlineSerializer(serializers.ModelSerializer):
             "sign",
             "files",
             "sub_order_items",
+            "created_at",
         ]
         read_only_fields = ["status", "sign"]
 
@@ -128,6 +129,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
             "status_history",
             "sign",
             "files",
+            "created_at",
         ]
         read_only_fields = ["id", "sign", "created_at"]
 
@@ -164,6 +166,7 @@ class SubOrderListSerializer(serializers.ModelSerializer):
             "status",
             "sign",
             "files",
+            "created_at",
         ]
         read_only_fields = ["id", "sign", "created_at"]
 

@@ -37,13 +37,40 @@ class OrderStatusStatsSerializer(serializers.Serializer):
 
 
 class StatusDurationSerializer(serializers.Serializer):
-    new = serializers.FloatField()
-    on_way = serializers.FloatField()
-    arrived = serializers.FloatField()
-    unloading = serializers.FloatField()
-    completed = serializers.FloatField()
-    rejected = serializers.FloatField()
+    new = serializers.SerializerMethodField()
+    on_way = serializers.SerializerMethodField()
+    arrived = serializers.SerializerMethodField()
+    unloading = serializers.SerializerMethodField()
+    completed = serializers.SerializerMethodField()
+    rejected = serializers.SerializerMethodField()
     total = serializers.IntegerField()
+
+    def _format_duration(self, seconds):
+        """Convert seconds to HH:MM:SS format"""
+        if not seconds or seconds < 0:
+            return "00:00:00"
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+
+    def get_new(self, obj):
+        return self._format_duration(obj.get('new', 0))
+
+    def get_on_way(self, obj):
+        return self._format_duration(obj.get('on_way', 0))
+
+    def get_arrived(self, obj):
+        return self._format_duration(obj.get('arrived', 0))
+
+    def get_unloading(self, obj):
+        return self._format_duration(obj.get('unloading', 0))
+
+    def get_completed(self, obj):
+        return self._format_duration(obj.get('completed', 0))
+
+    def get_rejected(self, obj):
+        return self._format_duration(obj.get('rejected', 0))
 
 
 class OrderStatsSerializer(serializers.Serializer):
@@ -61,13 +88,40 @@ class ExcavatorOrderStatusStatsSerializer(serializers.Serializer):
 
 
 class ExcavatorStatusDurationSerializer(serializers.Serializer):
-    new = serializers.FloatField()
-    in_progress = serializers.FloatField()
-    paused = serializers.FloatField()
-    completed = serializers.FloatField()
-    expired = serializers.FloatField()
-    rejected = serializers.FloatField()
+    new = serializers.SerializerMethodField()
+    in_progress = serializers.SerializerMethodField()
+    paused = serializers.SerializerMethodField()
+    completed = serializers.SerializerMethodField()
+    expired = serializers.SerializerMethodField()
+    rejected = serializers.SerializerMethodField()
     total = serializers.IntegerField()
+
+    def _format_duration(self, seconds):
+        """Convert seconds to HH:MM:SS format"""
+        if not seconds or seconds < 0:
+            return "00:00:00"
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+
+    def get_new(self, obj):
+        return self._format_duration(obj.get('new', 0))
+
+    def get_in_progress(self, obj):
+        return self._format_duration(obj.get('in_progress', 0))
+
+    def get_paused(self, obj):
+        return self._format_duration(obj.get('paused', 0))
+
+    def get_completed(self, obj):
+        return self._format_duration(obj.get('completed', 0))
+
+    def get_expired(self, obj):
+        return self._format_duration(obj.get('expired', 0))
+
+    def get_rejected(self, obj):
+        return self._format_duration(obj.get('rejected', 0))
 
 
 class ExcavatorOrderStatsSerializer(serializers.Serializer):
