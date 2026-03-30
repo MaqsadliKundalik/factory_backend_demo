@@ -1,4 +1,5 @@
 from django.utils import timezone
+from json import loads, JSONDecodeError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
@@ -72,6 +73,46 @@ EXCAVATOR_SUBORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
         description="Filter: true for active, false for completed",
     ),
 ]
+
+
+def _normalize_file_ids(data):
+    file_ids = []
+
+    if hasattr(data, "getlist"):
+        file_ids.extend(data.getlist("files"))
+        file_ids.extend(data.getlist("files[]"))
+
+    direct_value = data.get("files")
+    bracket_value = data.get("files[]")
+
+    for value in [direct_value, bracket_value]:
+        if not value:
+            continue
+        if isinstance(value, list):
+            file_ids.extend(value)
+            continue
+        if isinstance(value, str):
+            stripped_value = value.strip()
+            if stripped_value.startswith("[") and stripped_value.endswith("]"):
+                try:
+                    parsed_value = loads(stripped_value)
+                    if isinstance(parsed_value, list):
+                        file_ids.extend(parsed_value)
+                        continue
+                except JSONDecodeError:
+                    pass
+        file_ids.append(value)
+
+    normalized_ids = []
+    seen = set()
+    for file_id in file_ids:
+        normalized_value = str(file_id).strip()
+        if not normalized_value or normalized_value in seen:
+            continue
+        seen.add(normalized_value)
+        normalized_ids.append(normalized_value)
+
+    return normalized_ids
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -257,7 +298,9 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @action(detail=True, methods=["post"], url_path="start")
     def start(self, request, pk=None):
         instance = self.get_object()
-        serializer = StartOrderSerializer(data=request.data)
+        payload = request.data.copy()
+        payload.setlist("files", _normalize_file_ids(request.data))
+        serializer = StartOrderSerializer(data=payload)
         serializer.is_valid(raise_exception=True)
 
         user = request.driver or request.guard or request.operator or request.manager
@@ -305,7 +348,9 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @action(detail=True, methods=["post"], url_path="finish")
     def finish(self, request, pk=None):
         instance = self.get_object()
-        serializer = FinishOrderSerializer(data=request.data)
+        payload = request.data.copy()
+        payload.setlist("files", _normalize_file_ids(request.data))
+        serializer = FinishOrderSerializer(data=payload)
         serializer.is_valid(raise_exception=True)
         timestamp = serializer.validated_data.get("timestamp")
 
