@@ -10,9 +10,20 @@ class SimpleCountStatsSerializer(serializers.Serializer):
     orders = serializers.IntegerField()
 
 
+class ProductTypeUnitStatsSerializer(serializers.Serializer):
+    type = serializers.CharField(allow_null=True)
+    unit = serializers.CharField(allow_null=True)
+    income = serializers.FloatField()
+    outcoming = serializers.FloatField()
+    total = serializers.FloatField()
+
+
 class IncomeProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
-    income = serializers.IntegerField()
+    income = serializers.FloatField()
+    outcoming = serializers.FloatField()
+    total = serializers.FloatField()
+    breakdown = ProductTypeUnitStatsSerializer(many=True)
 
 
 class SupplierIncomeProductStatsSerializer(serializers.Serializer):
@@ -23,7 +34,10 @@ class SupplierIncomeProductStatsSerializer(serializers.Serializer):
 
 class OutcomingProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
-    outcoming = serializers.IntegerField()
+    income = serializers.FloatField()
+    outcoming = serializers.FloatField()
+    total = serializers.FloatField()
+    breakdown = ProductTypeUnitStatsSerializer(many=True)
 
 
 class OrderStatusStatsSerializer(serializers.Serializer):

@@ -359,6 +359,7 @@ class Command(BaseCommand):
                 # History IN record
                 hist = WhouseProductsHistory.objects.create(
                     product=product,
+                    product_type=ptype,
                     whouse=whouse,
                     quantity=qty,
                     supplier=supplier,
@@ -493,6 +494,7 @@ class Command(BaseCommand):
             hist_batch.append(WhouseProductsHistory(
                 whouse=order.whouse,
                 product=order_items[0].product if order_items else None,
+                product_type=order_items[0].type if order_items else None,
                 quantity=sub_qty,
                 status=HistoryStatus.OUT,
             ))

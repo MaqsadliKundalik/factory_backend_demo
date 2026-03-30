@@ -135,6 +135,9 @@ class WhouseProductsHistory(BaseModel):
         null=True,
         blank=True,
     )
+    product_type: "ProductType | None" = models.ForeignKey(
+        ProductType, on_delete=models.CASCADE, null=True, blank=True
+    )
     whouse: "Whouse | None" = models.ForeignKey(
         "factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True
     )

@@ -22,6 +22,7 @@ def create_whouse_product_history(sender, instance, created, **kwargs):
     WhouseProductsHistory.objects.create(
         whouse=instance.whouse,
         product=instance.product,
+        product_type=instance.product_type,
         quantity=instance.quantity,
         supplier=instance.supplier,
         status=HistoryStatus.IN,
@@ -41,6 +42,7 @@ def create_whouse_product_history(sender, instance, created, **kwargs):
             WhouseProductsHistory.objects.create(
                 product=item.raw_material,
                 whouse=instance.whouse,
+                product_type=item.type,
                 quantity=needed_raw_material,
                 status=HistoryStatus.OUT,
             )
@@ -52,6 +54,7 @@ def update_whouse_product_history_extra(sender, instance, **kwargs):
         WhouseProductsHistory.objects.create(
             whouse=instance.whouse,
             product=instance.product,
+            product_type=instance.product_type,
             quantity=instance.quantity,
             supplier=instance.supplier,
             status=HistoryStatus.IN,
@@ -78,6 +81,7 @@ def create_product_item_history(sender, instance, created, **kwargs):
     WhouseProductsHistory.objects.create(
         whouse=instance.raw_material.whouse,
         product=instance.raw_material,
+        product_type=instance.type,
         quantity=instance.quantity,
         status=HistoryStatus.OUT,
     )

@@ -34,6 +34,6 @@ class ProductItemAdmin(admin.ModelAdmin):
 
 @admin.register(WhouseProductsHistory)
 class WhouseProductsHistoryAdmin(admin.ModelAdmin):
-    list_display = ('product', 'whouse', 'quantity', 'status')
-    list_filter = ('whouse', 'status')
-    search_fields = ('product__name', 'whouse__name')
+    list_display = ('product', 'product_type', 'whouse', 'quantity', 'status')
+    list_filter = ('whouse', 'product_type', 'status')
+    search_fields = ('product__name', 'product_type__name', 'whouse__name')

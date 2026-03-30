@@ -1,4 +1,5 @@
 from datetime import date as date_type, datetime
+from decimal import Decimal
 from django.utils import timezone
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
@@ -77,6 +78,100 @@ INCOME_PRODUCT_FILTER_PARAMS = DATE_RANGE_PARAMS + [
         description="Supplier ID",
     ),
 ]
+
+
+def _to_float(value):
+    if value is None:
+        return 0.0
+    if isinstance(value, Decimal):
+        return float(value)
+    return float(value)
+
+
+def _build_product_stats(income_rows, outcoming_rows):
+    product_map = {}
+
+    for row in income_rows:
+        product_name = row["product__name"]
+        type_name = row["product_type__name"]
+        unit_name = row["product__unit__name"]
+        income_value = _to_float(row["income"])
+
+        product_entry = product_map.setdefault(
+            product_name,
+            {
+                "product": product_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "total": 0.0,
+                "breakdown": {},
+            },
+        )
+        breakdown_key = (type_name, unit_name)
+        breakdown_entry = product_entry["breakdown"].setdefault(
+            breakdown_key,
+            {
+                "type": type_name,
+                "unit": unit_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "total": 0.0,
+            },
+        )
+
+        product_entry["income"] += income_value
+        breakdown_entry["income"] += income_value
+
+    for row in outcoming_rows:
+        product_name = row["product__name"]
+        type_name = row["type__name"]
+        unit_name = row["unit__name"]
+        outcoming_value = _to_float(row["outcoming"])
+
+        product_entry = product_map.setdefault(
+            product_name,
+            {
+                "product": product_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "total": 0.0,
+                "breakdown": {},
+            },
+        )
+        breakdown_key = (type_name, unit_name)
+        breakdown_entry = product_entry["breakdown"].setdefault(
+            breakdown_key,
+            {
+                "type": type_name,
+                "unit": unit_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "total": 0.0,
+            },
+        )
+
+        product_entry["outcoming"] += outcoming_value
+        breakdown_entry["outcoming"] += outcoming_value
+
+    data = []
+    for product_name in sorted(product_map.keys()):
+        product_entry = product_map[product_name]
+        breakdown = []
+        for breakdown_key in sorted(
+            product_entry["breakdown"].keys(),
+            key=lambda item: ((item[0] or ""), (item[1] or "")),
+        ):
+            breakdown_entry = product_entry["breakdown"][breakdown_key]
+            breakdown_entry["total"] = (
+                breakdown_entry["income"] - breakdown_entry["outcoming"]
+            )
+            breakdown.append(breakdown_entry)
+
+        product_entry["total"] = product_entry["income"] - product_entry["outcoming"]
+        product_entry["breakdown"] = breakdown
+        data.append(product_entry)
+
+    return data
 
 
 def calculate_status_durations(sub_orders):
@@ -196,16 +291,34 @@ class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
         supplier_id = request.query_params.get("supplier")
         if supplier_id:
             filters["supplier__id"] = supplier_id
-        result = (
+        income_rows = (
             WhouseProductsHistory.objects.filter(**filters)
-            .values("product__name")
+            .values("product__name", "product_type__name", "product__unit__name")
             .annotate(income=Sum("quantity"))
-            .order_by("product__name")
+            .order_by("product__name", "product_type__name", "product__unit__name")
         )
-        data = [
-            {"product": row["product__name"], "income": row["income"]}
-            for row in result
+        outcoming_rows = []
+        if whouse_filter:
+            outcoming_filters = {"order__whouse": whouse_filter["whouse"]}
+        else:
+            outcoming_filters = {}
+        outcoming_filters.update(self.get_date_filters(request, prefix="order__"))
+        outcoming_rows = (
+            OrderItem.objects.filter(**outcoming_filters)
+            .values("product__name", "type__name", "unit__name")
+            .annotate(outcoming=Sum("quantity"))
+            .order_by("product__name", "type__name", "unit__name")
+        )
+        normalized_income_rows = [
+            {
+                "product__name": row["product__name"],
+                "product_type__name": row["product_type__name"],
+                "product__unit__name": row["product__unit__name"],
+                "income": row["income"],
+            }
+            for row in income_rows
         ]
+        data = _build_product_stats(normalized_income_rows, outcoming_rows)
         serializer = IncomeProductStatsSerializer(data, many=True)
         return Response(serializer.data)
 
@@ -224,18 +337,35 @@ class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
         client_id = request.query_params.get("client")
         if client_id:
             filters["order__client__id"] = client_id
-        result = (
+        outcoming_rows = (
             OrderItem.objects.filter(**filters)
-            .values("product__name")
+            .values("product__name", "type__name", "unit__name")
             .annotate(outcoming=Sum("quantity"))
-            .order_by("product__name")
+            .order_by("product__name", "type__name", "unit__name")
         )
-        data = [
-            {"product": row["product__name"], "outcoming": row["outcoming"]}
-            for row in result
+        income_filters = {"status": HistoryStatus.IN}
+        if whouse_filter:
+            income_filters["whouse"] = whouse_filter["whouse"]
+        income_filters.update(self.get_date_filters(request))
+        income_rows = (
+            WhouseProductsHistory.objects.filter(**income_filters)
+            .values("product__name", "product_type__name", "product__unit__name")
+            .annotate(income=Sum("quantity"))
+            .order_by("product__name", "product_type__name", "product__unit__name")
+        )
+        normalized_income_rows = [
+            {
+                "product__name": row["product__name"],
+                "product_type__name": row["product_type__name"],
+                "product__unit__name": row["product__unit__name"],
+                "income": row["income"],
+            }
+            for row in income_rows
         ]
+        data = _build_product_stats(normalized_income_rows, outcoming_rows)
         serializer = OutcomingProductStatsSerializer(data, many=True)
         return Response(serializer.data)
+
 
 class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
     @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)

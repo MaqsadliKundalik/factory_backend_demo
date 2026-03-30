@@ -14,6 +14,7 @@ def create_suborder_notification_and_history(sender, instance, created, **kwargs
                 order_item=item,
                 whouse=instance.order.whouse,
                 product=item.product,
+                product_type=item.type,
                 quantity=item.quantity,
                 status="OUT",
             )
@@ -32,6 +33,7 @@ def create_suborder_notification_and_history(sender, instance, created, **kwargs
                 defaults={
                     "whouse": instance.order.whouse,
                     "product": item.product,
+                    "product_type": item.type,
                     "quantity": item.quantity,
                     "status": "OUT",
                 },

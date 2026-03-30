@@ -156,6 +156,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class WhouseProductsHistorySerializer(serializers.ModelSerializer):
     whouse = serializers.PrimaryKeyRelatedField(read_only=True)
     product = serializers.PrimaryKeyRelatedField(read_only=True)
+    product_type = serializers.PrimaryKeyRelatedField(read_only=True)
     supplier = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -164,6 +165,7 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
             "id",
             "whouse",
             "product",
+            "product_type",
             "supplier",
             "quantity",
             "status",
