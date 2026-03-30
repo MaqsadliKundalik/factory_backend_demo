@@ -135,7 +135,6 @@ class TransportSelectView(APIView):
             )
             queryset = queryset.exclude(
                 excavator_sub_orders__status__in=[
-                    ExcavatorSubOrder.Status.ARRIVED,
                     ExcavatorSubOrder.Status.PAUSED,
                     ExcavatorSubOrder.Status.IN_PROGRESS,
                 ]
