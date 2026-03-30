@@ -10,13 +10,7 @@ def create_whouse_product_history(sender, instance, created, **kwargs):
     if not created:
         return
     
-    if instance.status == WhouseProducts.Status.PENDING:
-        Notification.objects.create(
-            to_role="whouse_manager",
-            from_role="guard",
-            title="New product added",
-            message=f"New product {instance.product.name} added to whouse {instance.whouse.name}",
-        )
+
 
     # Asosiy mahsulot tarixini yaratish
     WhouseProductsHistory.objects.create(

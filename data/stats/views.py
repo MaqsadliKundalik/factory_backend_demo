@@ -318,16 +318,6 @@ class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
             .order_by("product__name", "type__name", "unit__name")
         )
 
-    def build_product_stats_response(self, request):
-        whouse_filter = self.get_whouse_filter(request)
-        if whouse_filter is None:
-            return self.whouse_not_found()
-
-        income_rows = self.get_income_rows(request, whouse_filter)
-        outcoming_rows = self.get_outcoming_rows(request, whouse_filter)
-        return income_rows, outcoming_rows
-
-
 class IncomeProductStatsView(ProductStatsBaseView):
     enable_supplier_filter = True
     serializer_class = IncomeProductStatsSerializer

@@ -3,20 +3,34 @@ from django.dispatch import receiver
 from .models import ExcavatorOrder, ExcavatorSubOrder
 from data.products.models import WhouseProductsHistory
 from data.drivers.models import Driver
-from data.notifications.models import Notification
+from data.notifications.models import Notification, NotificationTargetObject
 
 
 
 @receiver(post_save, sender=ExcavatorSubOrder)
-def create_excavator_suborder_notification(sender, instance, created, **kwargs):
+def create_excavator_suborder_notification(sender, instance: ExcavatorSubOrder, created, **kwargs):
     if created and instance.status == ExcavatorSubOrder.Status.NEW and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
         Notification.objects.create(
             from_role="admin",
             to_role="driver",
             to_user_id=instance.driver.id,
-            title="ExcavatorSubOrder is created",
-            message=f"ExcavatorSubOrder {instance.id} is created",
+            title="Новый заказ",
+            message=f"Вам назначен новый заказ №{instance.parent.display_id}.",
+            target_type=NotificationTargetObject.EXCAVATOR_SUB_ORDER,
+            excavator_obj=instance,
         )
+    
+    elif created and instance.status == ExcavatorSubOrder.Status.REJECTED and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
+        Notification.objects.create(
+            from_role="admin",
+            to_role="driver",
+            to_user_id=instance.driver.id,
+            title="Заказ отклонён",
+            message=f"Заказ №{instance.parent.display_id} был отклонён.",
+            target_type=NotificationTargetObject.EXCAVATOR_SUB_ORDER,
+            excavator_obj=instance,
+        )
+
     
 @receiver(post_save, sender=ExcavatorOrder)
 def create_excavator_order_notification(sender, instance, created, **kwargs):
