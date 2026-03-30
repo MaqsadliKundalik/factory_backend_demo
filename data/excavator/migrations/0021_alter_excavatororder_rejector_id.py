@@ -10,7 +10,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='excavatororder',
+            name='rejector_id',
+        ),
+        migrations.AddField(
             model_name='excavatororder',
             name='rejector_id',
             field=models.UUIDField(blank=True, null=True),

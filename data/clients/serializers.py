@@ -20,6 +20,10 @@ class ClientBranchesBulkSerializer(serializers.Serializer):
     longitude = serializers.FloatField(required=True)
     latitude = serializers.FloatField(required=True)
 
+class ClientPhoneBulkSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+    role = serializers.CharField(required=True)
 
 class ClientPhoneSerializer(serializers.ModelSerializer):
     class Meta:
@@ -88,7 +92,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
 class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
     branches = ClientBranchesBulkSerializer(many=True, required=False)
-    phone_numbers = ClientPhoneSerializer(many=True, required=False)
+    phone_numbers = ClientPhoneBulkSerializer(many=True, required=False)
 
     class Meta:
         model = Client

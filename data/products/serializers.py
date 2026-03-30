@@ -174,7 +174,6 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
 
 class ProductItemWriteSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
-    quantity_per_product = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
     class Meta:
         model = ProductItem
@@ -185,7 +184,6 @@ class ProductItemWriteSerializer(serializers.ModelSerializer):
             "type",
             "unit",
             "quantity",
-            "quantity_per_product",
         ]
         read_only_fields = ["id"]
 
