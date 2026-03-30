@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework.routers import SimpleRouter
 from .views import FactoryUserResetPasswordViewSet, FactoryUserViewSet, UserSelectView
 
@@ -8,6 +9,7 @@ router.register(
     basename="factory-user-reset-password",
 )
 router.register("", FactoryUserViewSet, basename="factory-user")
-router.register("select", UserSelectView, basename="factory-user-select")
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("select/", UserSelectView.as_view(), name="factory-user-select"),
+] + router.urls
