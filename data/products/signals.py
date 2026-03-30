@@ -37,9 +37,6 @@ def create_whouse_product_history(sender, instance, created, **kwargs):
                 continue
                 
             needed_raw_material = (instance.quantity / item.quantity_per_product) * item.quantity
-                        
-            item.raw_material.quantity -= needed_raw_material
-            item.raw_material.save()
             
             WhouseProductsHistory.objects.create(
                 product=item.raw_material,
