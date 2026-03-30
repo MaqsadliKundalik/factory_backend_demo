@@ -313,7 +313,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         user = request.driver or request.guard or request.operator or request.manager
-        sign = serializer.validated_data.get("sign")
+        sign = serializer.validated_data.get("sign_id")
         timestamp = serializer.validated_data.get("timestamp")
 
         if sign:
@@ -363,7 +363,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         timestamp = serializer.validated_data.get("timestamp")
 
         user = request.driver or request.guard or request.operator or request.manager
-        sign = serializer.validated_data.get("sign")
+        sign = serializer.validated_data.get("sign_id")
         if sign:
             instance.after_sign_id = sign
 
