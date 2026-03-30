@@ -24,10 +24,22 @@ class IncomeProductTypeUnitStatsSerializer(serializers.Serializer):
     income = serializers.FloatField()
 
 
+class OutcomingProductTypeUnitStatsSerializer(serializers.Serializer):
+    type = serializers.CharField(allow_blank=True)
+    unit = serializers.CharField(allow_blank=True)
+    outcoming = serializers.FloatField()
+
+
 class IncomeProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
     income = serializers.FloatField()
     breakdown = IncomeProductTypeUnitStatsSerializer(many=True)
+
+
+class OutcomingProductStatsSerializer(serializers.Serializer):
+    product = serializers.CharField()
+    outcoming = serializers.FloatField()
+    breakdown = OutcomingProductTypeUnitStatsSerializer(many=True)
 
 
 class ProductStatsSerializer(serializers.Serializer):
