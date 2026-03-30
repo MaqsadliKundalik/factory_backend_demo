@@ -15,7 +15,7 @@ def create_excavator_suborder_notification(sender, instance, created, **kwargs):
             to_role="driver",
             to_user_id=instance.driver.id,
             title="ExcavatorSubOrder is created",
-            message=f"ExcavatorSubOrder {instance.display_id} is created",
+            message=f"ExcavatorSubOrder {instance.id} is created",
         )
     
 @receiver(post_save, sender=ExcavatorOrder)

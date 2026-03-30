@@ -23,7 +23,7 @@ def create_suborder_notification_and_history(sender, instance, created, **kwargs
             to_role="driver",
             to_user_id=instance.driver.id,
             title="Order is created",
-            message=f"Order {instance.display_id} is created",
+            message=f"SubOrder {instance.id} is created",
         )
     else:
         for item in instance.sub_order_items.all():
