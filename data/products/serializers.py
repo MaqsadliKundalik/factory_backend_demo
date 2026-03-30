@@ -180,7 +180,6 @@ class ProductItemWriteSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "raw_material",
-            "product",
             "type",
             "unit",
             "quantity",
