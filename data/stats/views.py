@@ -278,12 +278,10 @@ class CountStatsView(DateRangeFilterMixin, WhouseViewMixin):
         )
 
 
-class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
-    @swagger_auto_schema(manual_parameters=INCOME_PRODUCT_FILTER_PARAMS)
-    def get(self, request):
-        whouse_filter = self.get_whouse_filter(request)
-        if whouse_filter is None:
-            return self.whouse_not_found()
+class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
+    serializer_class = None
+
+    def get_income_rows(self, request, whouse_filter):
         filters = {"status": HistoryStatus.IN}
         if whouse_filter:
             filters["whouse"] = whouse_filter["whouse"]
@@ -291,80 +289,54 @@ class IncomeProductStatsView(DateRangeFilterMixin, WhouseViewMixin):
         supplier_id = request.query_params.get("supplier")
         if supplier_id:
             filters["supplier__id"] = supplier_id
-        income_rows = (
+        return (
             WhouseProductsHistory.objects.filter(**filters)
             .values("product__name", "product_type__name", "product__unit__name")
             .annotate(income=Sum("quantity"))
             .order_by("product__name", "product_type__name", "product__unit__name")
         )
-        outcoming_rows = []
-        if whouse_filter:
-            outcoming_filters = {"order__whouse": whouse_filter["whouse"]}
-        else:
-            outcoming_filters = {}
-        outcoming_filters.update(self.get_date_filters(request, prefix="order__"))
-        outcoming_rows = (
-            OrderItem.objects.filter(**outcoming_filters)
-            .values("product__name", "type__name", "unit__name")
-            .annotate(outcoming=Sum("quantity"))
-            .order_by("product__name", "type__name", "unit__name")
-        )
-        normalized_income_rows = [
-            {
-                "product__name": row["product__name"],
-                "product_type__name": row["product_type__name"],
-                "product__unit__name": row["product__unit__name"],
-                "income": row["income"],
-            }
-            for row in income_rows
-        ]
-        data = _build_product_stats(normalized_income_rows, outcoming_rows)
-        serializer = IncomeProductStatsSerializer(data, many=True)
-        return Response(serializer.data)
 
-
-class OutcomingProductStatsView(OutcomingProductFilterMixin, WhouseViewMixin):
-    @swagger_auto_schema(manual_parameters=OUTCOMING_PRODUCT_FILTER_PARAMS)
-    def get(self, request):
-        whouse_filter = self.get_whouse_filter(request)
-        if whouse_filter is None:
-            return self.whouse_not_found()
+    def get_outcoming_rows(self, request, whouse_filter):
         filters = {}
         if whouse_filter:
             filters["order__whouse"] = whouse_filter["whouse"]
-        date_filters = self.get_date_filters(request, prefix="order__")
-        filters.update(date_filters)
+        filters.update(self.get_date_filters(request, prefix="order__"))
         client_id = request.query_params.get("client")
         if client_id:
             filters["order__client__id"] = client_id
-        outcoming_rows = (
+        return (
             OrderItem.objects.filter(**filters)
             .values("product__name", "type__name", "unit__name")
             .annotate(outcoming=Sum("quantity"))
             .order_by("product__name", "type__name", "unit__name")
         )
-        income_filters = {"status": HistoryStatus.IN}
-        if whouse_filter:
-            income_filters["whouse"] = whouse_filter["whouse"]
-        income_filters.update(self.get_date_filters(request))
-        income_rows = (
-            WhouseProductsHistory.objects.filter(**income_filters)
-            .values("product__name", "product_type__name", "product__unit__name")
-            .annotate(income=Sum("quantity"))
-            .order_by("product__name", "product_type__name", "product__unit__name")
-        )
-        normalized_income_rows = [
-            {
-                "product__name": row["product__name"],
-                "product_type__name": row["product_type__name"],
-                "product__unit__name": row["product__unit__name"],
-                "income": row["income"],
-            }
-            for row in income_rows
-        ]
-        data = _build_product_stats(normalized_income_rows, outcoming_rows)
-        serializer = OutcomingProductStatsSerializer(data, many=True)
+
+    def build_product_stats_response(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
+
+        income_rows = self.get_income_rows(request, whouse_filter)
+        outcoming_rows = self.get_outcoming_rows(request, whouse_filter)
+        data = _build_product_stats(income_rows, outcoming_rows)
+        serializer = self.serializer_class(data, many=True)
         return Response(serializer.data)
+
+
+class IncomeProductStatsView(ProductStatsBaseView):
+    serializer_class = IncomeProductStatsSerializer
+
+    @swagger_auto_schema(manual_parameters=INCOME_PRODUCT_FILTER_PARAMS)
+    def get(self, request):
+        return self.build_product_stats_response(request)
+
+
+class OutcomingProductStatsView(ProductStatsBaseView, OutcomingProductFilterMixin):
+    serializer_class = OutcomingProductStatsSerializer
+
+    @swagger_auto_schema(manual_parameters=OUTCOMING_PRODUCT_FILTER_PARAMS)
+    def get(self, request):
+        return self.build_product_stats_response(request)
 
 
 class OrderStatusStatsView(DateRangeFilterMixin, WhouseViewMixin):
