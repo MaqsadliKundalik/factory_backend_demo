@@ -92,9 +92,9 @@ def _build_product_stats(income_rows, outcoming_rows):
     product_map = {}
 
     for row in income_rows:
-        product_name = row["product__name"]
-        type_name = row["product_type__name"]
-        unit_name = row["product__unit__name"]
+        product_name = row["product__name"] or ""
+        type_name = row["product_type__name"] or ""
+        unit_name = row["product__unit__name"] or ""
         income_value = _to_float(row["income"])
 
         product_entry = product_map.setdefault(
@@ -123,9 +123,9 @@ def _build_product_stats(income_rows, outcoming_rows):
         breakdown_entry["income"] += income_value
 
     for row in outcoming_rows:
-        product_name = row["product__name"]
-        type_name = row["type__name"]
-        unit_name = row["unit__name"]
+        product_name = row["product__name"] or ""
+        type_name = row["type__name"] or ""
+        unit_name = row["unit__name"] or ""
         outcoming_value = _to_float(row["outcoming"])
 
         product_entry = product_map.setdefault(
@@ -154,7 +154,7 @@ def _build_product_stats(income_rows, outcoming_rows):
         breakdown_entry["outcoming"] += outcoming_value
 
     data = []
-    for product_name in sorted(product_map.keys()):
+    for product_name in sorted(product_map.keys(), key=lambda item: item or ""):
         product_entry = product_map[product_name]
         breakdown = []
         for breakdown_key in sorted(
