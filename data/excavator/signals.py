@@ -8,8 +8,8 @@ from data.notifications.models import Notification
 
 
 @receiver(post_save, sender=ExcavatorSubOrder)
-def update_whouse_product_history(sender, instance, created, **kwargs):
-    if created and instance.status == ExcavatorSubOrder.Status.NEW and instance.driver.type == Driver.Type.INTERNAL:
+def create_excavator_suborder_notification(sender, instance, created, **kwargs):
+    if created and instance.status == ExcavatorSubOrder.Status.NEW and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
         Notification.objects.create(
             from_role="admin",
             to_role="driver",
@@ -19,7 +19,7 @@ def update_whouse_product_history(sender, instance, created, **kwargs):
         )
     
 @receiver(post_save, sender=ExcavatorOrder)
-def update_whouse_product_history(sender, instance, created, **kwargs):
+def create_excavator_order_notification(sender, instance, created, **kwargs):
     pass
     # if instance.status == ExcavatorOrder.Status.PAUSED:
     #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz vaqtinchalik to'xtatildi")

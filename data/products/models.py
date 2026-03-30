@@ -48,6 +48,8 @@ class Product(BaseModel):
         "factory_whouse.Whouse", on_delete=models.CASCADE, null=True, blank=True
     )
 
+    items = "QuerySet[ProductItem]"
+
     def __str__(self):
         return self.name
 
@@ -95,11 +97,11 @@ class WhouseProducts(BaseModel):
 
 class ProductItem(BaseModel):
     product: Product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="items"
+        "products.Product", on_delete=models.CASCADE, related_name="items"
     )
     raw_material: "WhouseProducts | None" = models.ForeignKey(
         "products.WhouseProducts",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="used_in",
         null=True,
         blank=True,
@@ -119,6 +121,7 @@ class ProductItem(BaseModel):
         blank=True,
     )
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    quantity_per_product = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
 
 class WhouseProductsHistory(BaseModel):

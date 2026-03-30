@@ -17,7 +17,15 @@ from .models import (
 class ProductItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductItem
-        fields = ["id", "raw_material", "product", "type", "unit", "quantity"]
+        fields = [
+            "id",
+            "raw_material",
+            "product",
+            "type",
+            "unit",
+            "quantity",
+            "quantity_per_product",
+        ]
         read_only_fields = ["id"]
 
     def to_representation(self, instance):
@@ -163,7 +171,15 @@ class ProductItemWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductItem
-        fields = ["id", "raw_material", "product", "type", "unit", "quantity"]
+        fields = [
+            "id",
+            "raw_material",
+            "product",
+            "type",
+            "unit",
+            "quantity",
+            "quantity_per_product",
+        ]
         read_only_fields = ["id"]
 
 
@@ -250,3 +266,4 @@ class SelectWhouseProductSerializer(serializers.ModelSerializer):
         model = WhouseProducts
         fields = ["id", "product_name"]
         read_only_fields = ["id"]
+    

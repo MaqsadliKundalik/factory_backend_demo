@@ -7,8 +7,8 @@ from data.notifications.models import Notification
 
 
 @receiver(post_save, sender=SubOrder)
-def update_whouse_product_history(sender, instance, created, **kwargs):
-    if created and instance.status == SubOrder.Status.NEW and instance.driver.type == Driver.Type.INTERNAL:
+def create_suborder_notification_and_history(sender, instance, created, **kwargs):
+    if created and instance.status == SubOrder.Status.NEW and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
         for item in instance.sub_order_items.all():
             WhouseProductsHistory.objects.create(
                 order_item=item,
@@ -23,7 +23,7 @@ def update_whouse_product_history(sender, instance, created, **kwargs):
             to_role="driver",
             to_user_id=instance.driver.id,
             title="Order is created",
-            message=f"Order {instance.id} is created",
+            message=f"Order {instance.display_id} is created",
         )
     else:
         for item in instance.sub_order_items.all():
