@@ -21,6 +21,11 @@ class StatusHistorySerializer(serializers.Serializer):
                 "status": instance.get("status", ""),
                 "timestamp": instance.get("timestamp"),
             }
+        if isinstance(instance, str):
+            return {
+                "status": instance,
+                "timestamp": None,
+            }
         return super().to_representation(instance)
 
 

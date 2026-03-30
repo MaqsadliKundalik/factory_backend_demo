@@ -40,6 +40,12 @@ class ProductItemSerializer(serializers.ModelSerializer):
                 if instance.product
                 else None
             )
+        if instance.raw_material:
+            repr["raw_material"] = (
+                {"id": instance.raw_material.id, "name": instance.raw_material.name}
+                if instance.raw_material
+                else None
+            )
         return repr
 
 
@@ -168,6 +174,7 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
 
 class ProductItemWriteSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    quantity_per_product = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
     class Meta:
         model = ProductItem
@@ -185,11 +192,11 @@ class ProductItemWriteSerializer(serializers.ModelSerializer):
 
 class ProductAndItemCreateSerializer(serializers.ModelSerializer):
     items = ProductItemWriteSerializer(many=True, required=True)
-    quantity = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    quantity_per_product = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
 
     class Meta:
         model = Product
-        fields = ["id", "name", "types", "unit", "whouse", "items", "quantity"]
+        fields = ["id", "name", "types", "unit", "whouse", "items", "quantity_per_product"]
         read_only_fields = ["id"]
 
     def to_representation(self, instance):
@@ -205,7 +212,7 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         types = validated_data.pop("types", [])
         items = validated_data.pop("items", [])
-        quantity = validated_data.pop("quantity", 0)
+        quantity_per_product = validated_data.pop("quantity_per_product", 0)
 
         # Determine warehouse
         whouse = validated_data.get("whouse")
@@ -221,6 +228,7 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
 
         for item in items:
             item.pop("product", None)
+            item["quantity_per_product"] = quantity_per_product
             ProductItem.objects.create(product=instance, **item)
 
         return instance
@@ -229,7 +237,7 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         types = validated_data.pop("types", None)
         items = validated_data.pop("items", None)
-        quantity = validated_data.pop("quantity", None)
+        quantity_per_product = validated_data.pop("quantity_per_product", None)
 
         # Determine warehouse
         whouse = validated_data.get("whouse")
@@ -254,6 +262,8 @@ class ProductAndItemCreateSerializer(serializers.ModelSerializer):
                 instance.items.all().delete()
                 for item in items:
                     item.pop("product", None)
+                    if quantity_per_product is not None:
+                        item["quantity_per_product"] = quantity_per_product
                     ProductItem.objects.create(product=instance, **item)
 
         return instance

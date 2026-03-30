@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ProductType, ProductUnit, Product, WhouseProducts, ProductItem
+from .models import ProductType, ProductUnit, Product, WhouseProducts, ProductItem, WhouseProductsHistory
 
 @admin.register(ProductType)
 class ProductTypeAdmin(admin.ModelAdmin):
@@ -31,3 +31,9 @@ class ProductItemAdmin(admin.ModelAdmin):
     list_display = ('product', 'type', 'unit', 'quantity')
     list_filter = ('type', 'unit')
     search_fields = ('product__name', 'type__name', 'unit__name')
+
+@admin.register(WhouseProductsHistory)
+class WhouseProductsHistoryAdmin(admin.ModelAdmin):
+    list_display = ('product', 'whouse', 'quantity', 'status')
+    list_filter = ('whouse', 'status')
+    search_fields = ('product__name', 'whouse__name')

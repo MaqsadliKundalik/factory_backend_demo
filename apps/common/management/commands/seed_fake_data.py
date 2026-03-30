@@ -358,7 +358,6 @@ class Command(BaseCommand):
                 )
                 # History IN record
                 hist = WhouseProductsHistory.objects.create(
-                    wproduct=wp,
                     product=product,
                     whouse=whouse,
                     quantity=qty,

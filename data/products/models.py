@@ -99,8 +99,8 @@ class ProductItem(BaseModel):
     product: Product = models.ForeignKey(
         "products.Product", on_delete=models.CASCADE, related_name="items"
     )
-    raw_material: "WhouseProducts | None" = models.ForeignKey(
-        "products.WhouseProducts",
+    raw_material: "Product | None" = models.ForeignKey(
+        "products.Product",
         on_delete=models.PROTECT,
         related_name="used_in",
         null=True,
@@ -125,9 +125,6 @@ class ProductItem(BaseModel):
 
 
 class WhouseProductsHistory(BaseModel):
-    wproduct: "WhouseProducts | None" = models.ForeignKey(
-        "products.WhouseProducts", on_delete=models.CASCADE, null=True, blank=True
-    )
     order_item: "SubOrderItem | None" = models.ForeignKey(
         "orders.SubOrderItem", on_delete=models.CASCADE, null=True, blank=True
     )
