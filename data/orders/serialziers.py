@@ -171,6 +171,7 @@ class SubOrderListSerializer(serializers.ModelSerializer):
             "status",
             "sign",
             "files",
+            "status_history",
             "created_at",
         ]
         read_only_fields = ["id", "sign", "created_at"]

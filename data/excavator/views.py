@@ -81,11 +81,15 @@ def _normalize_file_ids(data):
     if hasattr(data, "getlist"):
         file_ids.extend(data.getlist("files"))
         file_ids.extend(data.getlist("files[]"))
+        file_ids.extend(data.getlist("file_ids"))
+        file_ids.extend(data.getlist("file_ids[]"))
 
     direct_value = data.get("files")
     bracket_value = data.get("files[]")
+    direct_ids_value = data.get("file_ids")
+    bracket_ids_value = data.get("file_ids[]")
 
-    for value in [direct_value, bracket_value]:
+    for value in [direct_value, bracket_value, direct_ids_value, bracket_ids_value]:
         if not value:
             continue
         if isinstance(value, list):

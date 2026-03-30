@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from data.orders.serialziers import StatusHistorySerializer
 from .models import ExcavatorOrder, ExcavatorSubOrder
 from data.files.serializers import FileSerializer
 from data.transports.serializers import TransportSerializer
@@ -85,6 +87,7 @@ class ExcavatorSubOrderListSerializer(serializers.ModelSerializer):
             "before_files",
             "after_sign",
             "after_files",
+            "status_history",
             "created_at",
         ]
         read_only_fields = [
@@ -94,6 +97,7 @@ class ExcavatorSubOrderListSerializer(serializers.ModelSerializer):
             "before_files",
             "after_sign",
             "after_files",
+            "status_history",
         ]
 
     def to_representation(self, instance):
