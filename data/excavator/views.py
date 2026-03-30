@@ -119,6 +119,12 @@ def _normalize_file_ids(data):
     return normalized_ids
 
 
+def _build_action_payload(data):
+    payload = dict(data.copy())
+    payload["files"] = _normalize_file_ids(data)
+    return payload
+
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
@@ -302,8 +308,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @action(detail=True, methods=["post"], url_path="start")
     def start(self, request, pk=None):
         instance = self.get_object()
-        payload = request.data.copy()
-        payload.setlist("files", _normalize_file_ids(request.data))
+        payload = _build_action_payload(request.data)
         serializer = StartOrderSerializer(data=payload)
         serializer.is_valid(raise_exception=True)
 
@@ -352,8 +357,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
     @action(detail=True, methods=["post"], url_path="finish")
     def finish(self, request, pk=None):
         instance = self.get_object()
-        payload = request.data.copy()
-        payload.setlist("files", _normalize_file_ids(request.data))
+        payload = _build_action_payload(request.data)
         serializer = FinishOrderSerializer(data=payload)
         serializer.is_valid(raise_exception=True)
         timestamp = serializer.validated_data.get("timestamp")

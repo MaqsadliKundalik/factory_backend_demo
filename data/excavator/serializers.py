@@ -204,6 +204,7 @@ class ExcavatorOrderCreateSerializer(serializers.ModelSerializer):
             "display_id",
             "client_name",
             "phone_number",
+            "payment_status",
             "lat",
             "lon",
             "address",
