@@ -173,7 +173,6 @@ class WhouseProductsHistorySerializer(serializers.ModelSerializer):
 
 
 class ProductItemWriteSerializer(serializers.ModelSerializer):
-    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
 
     class Meta:
         model = ProductItem
