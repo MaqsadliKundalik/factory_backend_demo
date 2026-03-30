@@ -44,7 +44,7 @@ class ExcavatorOrder(BaseModel):
     comment = models.TextField(null=True, blank=True)
     
     rejector_role = models.CharField(max_length=20, null=True, blank=True)
-    rejector_id = models.IntegerField(null=True, blank=True)
+    rejector_id = models.UUIDField(null=True, blank=True)
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     payment_status = models.CharField(
