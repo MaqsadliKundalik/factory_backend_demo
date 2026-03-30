@@ -128,10 +128,16 @@ class TransportSelectView(APIView):
         if has_order:
             queryset = queryset.exclude(
                 sub_orders__status__in=[
-                    SubOrder.Status.NEW,
                     SubOrder.Status.ARRIVED,
                     SubOrder.Status.ON_WAY,
                     SubOrder.Status.UNLOADING,
+                ]
+            )
+            queryset = queryset.exclude(
+                excavator_sub_orders__status__in=[
+                    ExcavatorSubOrder.Status.ARRIVED,
+                    ExcavatorSubOrder.Status.PAUSED,
+                    ExcavatorSubOrder.Status.IN_PROGRESS,
                 ]
             )
         if car_type:

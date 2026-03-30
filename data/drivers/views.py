@@ -7,6 +7,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from data.drivers.models import Driver
 from data.orders.models import Order, SubOrder
+from data.excavator.models import ExcavatorOrder, ExcavatorSubOrder
+
 from data.drivers.serializers import (
     DriverSerializer,
     DriverPasswordChangeSerializer,
@@ -127,10 +129,16 @@ class DriverSelectView(APIView):
         if has_order:
             queryset = queryset.exclude(
                 sub_orders__status__in=[
-                    SubOrder.Status.NEW,
                     SubOrder.Status.ARRIVED,
                     SubOrder.Status.ON_WAY,
                     SubOrder.Status.UNLOADING,
+                ]
+            )
+            queryset = queryset.exclude(
+                excavator_sub_orders__status__in=[
+                    ExcavatorSubOrder.Status.ARRIVED,
+                    ExcavatorSubOrder.Status.PAUSED,
+                    ExcavatorSubOrder.Status.IN_PROGRESS,
                 ]
             )
         if driver_type:

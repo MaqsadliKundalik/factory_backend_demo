@@ -11,17 +11,47 @@ from drf_yasg import openapi
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.mixins import DateFilterSchemaMixin
 from apps.common.filters import BaseDateFilterSet
+from data.drivers.models import Driver
 from .models import Notification
 from .serializers import NotificationSerializer
 
 
+def _get_actor(request):
+    return (
+        getattr(request, "driver", None)
+        or getattr(request, "guard", None)
+        or getattr(request, "operator", None)
+        or getattr(request, "manager", None)
+        or getattr(request, "user", None)
+    )
+
+
 def _get_role(request):
-    """Auth qilingan userning rolini oladi (FactoryUser yoki Driver)."""
-    return getattr(
-        request.driver or request.guard or request.operator or request.manager,
-        "role",
-        None,
-    ) or (request.auth.get("role") if isinstance(request.auth, dict) else None)
+    actor = _get_actor(request)
+    if isinstance(actor, Driver):
+        return "driver"
+
+    actor_role = getattr(actor, "role", None)
+    if actor_role:
+        return actor_role
+
+    auth = getattr(request, "auth", None)
+    if isinstance(auth, dict):
+        return auth.get("role")
+
+    return None
+
+
+def _get_actor_id(request):
+    actor = _get_actor(request)
+    if actor and getattr(actor, "id", None):
+        return str(actor.id)
+
+    auth = getattr(request, "auth", None)
+    if isinstance(auth, dict) and auth.get("user_id"):
+        return str(auth["user_id"])
+
+    return None
 
 
 class NotificationPagination(PageNumberPagination):
@@ -55,16 +85,10 @@ class NotificationViewSet(
             return Notification.objects.none()
 
         role = _get_role(self.request)
-        if not role:
+        user_id = _get_actor_id(self.request)
+        if not role or not user_id:
             return Notification.objects.none()
 
-        user = (
-            self.request.driver
-            or self.request.guard
-            or self.request.operator
-            or self.request.manager
-        )
-        user_id = str(user.id)
         # Faqat menga yuborilgan (to_user_id=mening_id) yoki hammaga yuborilgan (to_user_id=None)
         from django.db.models import Q
 
@@ -87,15 +111,14 @@ class NotificationViewSet(
     @action(detail=False, methods=["post"], url_path="mark-all-read")
     def mark_all_read(self, request):
         role = _get_role(request)
-        if not role:
+        user_id = _get_actor_id(request)
+        if not role or not user_id:
             return Response(
                 {"error": "Роль не определена"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         from django.db.models import Q
 
-        user = request.driver or request.guard or request.operator or request.manager
-        user_id = str(user.id)
         updated = (
             Notification.objects.filter(to_role=role, is_read=False)
             .filter(Q(to_user_id__isnull=True) | Q(to_user_id=user_id))
@@ -131,12 +154,11 @@ class NotificationViewSet(
     @action(detail=False, methods=["get"], url_path="unread-count")
     def unread_count(self, request):
         role = _get_role(request)
-        if not role:
+        user_id = _get_actor_id(request)
+        if not role or not user_id:
             return Response({"unread_count": 0})
         from django.db.models import Q
 
-        user = request.driver or request.guard or request.operator or request.manager
-        user_id = str(user.id)
         count = (
             Notification.objects.filter(to_role=role, is_read=False)
             .filter(Q(to_user_id__isnull=True) | Q(to_user_id=user_id))
