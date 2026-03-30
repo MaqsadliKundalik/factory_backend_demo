@@ -340,7 +340,7 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         )
         instance.status = ExcavatorSubOrder.Status.IN_PROGRESS
         instance.save()
-        
+
         parent = instance.parent
         sibling_statuses = list(parent.sub_orders.values_list("status", flat=True))
         if sibling_statuses and all(
@@ -396,8 +396,6 @@ class ExcavatorSubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         ):
             parent.status = ExcavatorSubOrder.Status.COMPLETED
             parent.save(update_fields=["status"])
-        instance.status = ExcavatorSubOrder.Status.COMPLETED
-        instance.save()
 
         return Response({"status": instance.status})
 
