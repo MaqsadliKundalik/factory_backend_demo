@@ -11,14 +11,26 @@ class SimpleCountStatsSerializer(serializers.Serializer):
 
 
 class ProductTypeUnitStatsSerializer(serializers.Serializer):
-    type = serializers.CharField(allow_null=True)
-    unit = serializers.CharField(allow_null=True)
+    type = serializers.CharField(allow_blank=True)
+    unit = serializers.CharField(allow_blank=True)
     income = serializers.FloatField()
     outcoming = serializers.FloatField()
     total = serializers.FloatField()
 
 
+class IncomeProductTypeUnitStatsSerializer(serializers.Serializer):
+    type = serializers.CharField(allow_blank=True)
+    unit = serializers.CharField(allow_blank=True)
+    income = serializers.FloatField()
+
+
 class IncomeProductStatsSerializer(serializers.Serializer):
+    product = serializers.CharField()
+    income = serializers.FloatField()
+    breakdown = IncomeProductTypeUnitStatsSerializer(many=True)
+
+
+class ProductStatsSerializer(serializers.Serializer):
     product = serializers.CharField()
     income = serializers.FloatField()
     outcoming = serializers.FloatField()
@@ -30,14 +42,6 @@ class SupplierIncomeProductStatsSerializer(serializers.Serializer):
     supplier = serializers.CharField()
     total = serializers.FloatField()
     products = IncomeProductStatsSerializer(many=True)
-
-
-class OutcomingProductStatsSerializer(serializers.Serializer):
-    product = serializers.CharField()
-    income = serializers.FloatField()
-    outcoming = serializers.FloatField()
-    total = serializers.FloatField()
-    breakdown = ProductTypeUnitStatsSerializer(many=True)
 
 
 class OrderStatusStatsSerializer(serializers.Serializer):

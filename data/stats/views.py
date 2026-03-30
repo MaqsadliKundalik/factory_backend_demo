@@ -7,8 +7,8 @@ from drf_yasg import openapi
 from data.stats.serializers import (
     SimpleCountStatsSerializer,
     IncomeProductStatsSerializer,
+    ProductStatsSerializer,
     SupplierIncomeProductStatsSerializer,
-    OutcomingProductStatsSerializer,
     OrderStatusStatsSerializer,
     StatusDurationSerializer,
     ExcavatorOrderStatusStatsSerializer,
@@ -174,6 +174,52 @@ def _build_product_stats(income_rows, outcoming_rows):
     return data
 
 
+def _build_income_product_stats(income_rows):
+    product_map = {}
+
+    for row in income_rows:
+        product_name = row["product__name"] or ""
+        type_name = row["product_type__name"] or ""
+        unit_name = row["product__unit__name"] or ""
+        income_value = _to_float(row["income"])
+
+        product_entry = product_map.setdefault(
+            product_name,
+            {
+                "product": product_name,
+                "income": 0.0,
+                "breakdown": {},
+            },
+        )
+        breakdown_key = (type_name, unit_name)
+        breakdown_entry = product_entry["breakdown"].setdefault(
+            breakdown_key,
+            {
+                "type": type_name,
+                "unit": unit_name,
+                "income": 0.0,
+            },
+        )
+
+        product_entry["income"] += income_value
+        breakdown_entry["income"] += income_value
+
+    data = []
+    for product_name in sorted(product_map.keys(), key=lambda item: item or ""):
+        product_entry = product_map[product_name]
+        breakdown = []
+        for breakdown_key in sorted(
+            product_entry["breakdown"].keys(),
+            key=lambda item: ((item[0] or ""), (item[1] or "")),
+        ):
+            breakdown.append(product_entry["breakdown"][breakdown_key])
+
+        product_entry["breakdown"] = breakdown
+        data.append(product_entry)
+
+    return data
+
+
 def calculate_status_durations(sub_orders):
     duration_totals = {}
     duration_counts = {}
@@ -279,7 +325,9 @@ class CountStatsView(DateRangeFilterMixin, WhouseViewMixin):
 
 
 class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
-    serializer_class = None
+    serializer_class = ProductStatsSerializer
+    enable_supplier_filter = False
+    enable_client_filter = False
 
     def get_income_rows(self, request, whouse_filter):
         filters = {"status": HistoryStatus.IN}
@@ -287,7 +335,7 @@ class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
             filters["whouse"] = whouse_filter["whouse"]
         filters.update(self.get_date_filters(request))
         supplier_id = request.query_params.get("supplier")
-        if supplier_id:
+        if self.enable_supplier_filter and supplier_id:
             filters["supplier__id"] = supplier_id
         return (
             WhouseProductsHistory.objects.filter(**filters)
@@ -302,7 +350,7 @@ class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
             filters["order__whouse"] = whouse_filter["whouse"]
         filters.update(self.get_date_filters(request, prefix="order__"))
         client_id = request.query_params.get("client")
-        if client_id:
+        if self.enable_client_filter and client_id:
             filters["order__client__id"] = client_id
         return (
             OrderItem.objects.filter(**filters)
@@ -324,15 +372,23 @@ class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
 
 
 class IncomeProductStatsView(ProductStatsBaseView):
+    enable_supplier_filter = True
     serializer_class = IncomeProductStatsSerializer
 
     @swagger_auto_schema(manual_parameters=INCOME_PRODUCT_FILTER_PARAMS)
     def get(self, request):
-        return self.build_product_stats_response(request)
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
+
+        income_rows = self.get_income_rows(request, whouse_filter)
+        data = _build_income_product_stats(income_rows)
+        serializer = self.serializer_class(data, many=True)
+        return Response(serializer.data)
 
 
-class OutcomingProductStatsView(ProductStatsBaseView, OutcomingProductFilterMixin):
-    serializer_class = OutcomingProductStatsSerializer
+class OutcomingProductStatsView(ProductStatsBaseView):
+    enable_client_filter = True
 
     @swagger_auto_schema(manual_parameters=OUTCOMING_PRODUCT_FILTER_PARAMS)
     def get(self, request):

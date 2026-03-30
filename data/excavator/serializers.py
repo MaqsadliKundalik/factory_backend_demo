@@ -251,7 +251,7 @@ class ChangeStatusSerializer(serializers.Serializer):
 
 class StartOrderSerializer(serializers.Serializer):
     sign_id = serializers.UUIDField(required=False)
-    file_ids = serializers.ListField(
+    files = serializers.ListField(
         child=serializers.UUIDField(), required=False, default=list
     )
     timestamp = serializers.DateTimeField()
@@ -259,7 +259,7 @@ class StartOrderSerializer(serializers.Serializer):
 
 class FinishOrderSerializer(serializers.Serializer):
     sign_id = serializers.UUIDField(required=False)
-    file_ids = serializers.ListField(
+    file = serializers.ListField(
         child=serializers.UUIDField(), required=False, default=list
     )
     timestamp = serializers.DateTimeField()
