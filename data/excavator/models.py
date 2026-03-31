@@ -73,6 +73,7 @@ class ExcavatorOrder(BaseModel):
         status = sayqal.status_sms(res.transactionid, res.smsid)
         if status.status == 5:
             print("Unsupported template\n\n{msg}".format(msg=message))
+        print("\n\n\n{msg}\n\n\n".format(msg=message))
     def save(self, *args, **kwargs):
         if not self.display_id:
             last_order = ExcavatorOrder.all_objects.all().order_by("display_id").last()
