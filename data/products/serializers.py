@@ -92,7 +92,11 @@ class WhouseProductsSerializer(serializers.ModelSerializer):
         if instance.supplier:
             repr["supplier"] = SupplierSerializer(instance.supplier).data
 
-        repr["whouse"] = {"id": instance.whouse.id, "name": instance.whouse.name}
+        repr["whouse"] = (
+            {"id": instance.whouse.id, "name": instance.whouse.name}
+            if instance.whouse
+            else None
+        )
         repr["files"] = FileSerializer(instance.files.all(), many=True).data
         return repr
 
