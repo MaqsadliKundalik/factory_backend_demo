@@ -37,7 +37,7 @@ class Client(BaseModel):
             status = sayqal.status_sms(res.transactionid, res.smsid)
             if status.status == 5:
                 print("Unsupported template\n\n{msg}".format(msg=message))
-            print("\n\n\n{msg}\n\n\n".format(msg=message))
+        print("\n\n\n{status}\n\n{msg}\n\n\n".format(status=status.status, msg=message))
 
 
 class ClientBranches(BaseModel):
