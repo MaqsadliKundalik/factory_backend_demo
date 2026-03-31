@@ -71,7 +71,7 @@ class ExcavatorOrder(BaseModel):
     def send_sms(self, message: str):
         res = sayqal.send_sms(self.phone_number, message)
         status = sayqal.status_sms(res.transactionid, res.smsid)
-        if status.status == 5:
+        if status.status == 5: 
             print("Unsupported template\n\n{msg}".format(msg=message))
         print("\n\n\n{msg}\n\n\n".format(msg=message))
     def save(self, *args, **kwargs):
