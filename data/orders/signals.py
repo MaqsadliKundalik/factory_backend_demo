@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Order)
 def order_signals(sender, instance: Order, created, **kwargs):
-    print("Sending sms")
+    print(f"Sending sms {instance.status}")
 
     if created and instance.status == Order.Status.NEW:
         instance.client.send_sms(
@@ -89,7 +89,7 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
                     "status": "OUT",
                 },
             )
-    print("Sending sms")
+    print(f"Sending sms {instance.status}")
 
     if instance.status == SubOrder.Status.ON_WAY:
         instance.order.client.send_sms(
