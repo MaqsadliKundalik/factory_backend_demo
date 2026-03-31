@@ -1,15 +1,24 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import logging
 from .models import ExcavatorOrder, ExcavatorSubOrder
 from data.products.models import WhouseProductsHistory
 from data.drivers.models import Driver
 from data.notifications.models import Notification, NotificationTargetObject
+
+logger = logging.getLogger(__name__)
 
 
 
 @receiver(post_save, sender=ExcavatorSubOrder)
 def create_excavator_suborder_notification(sender, instance: ExcavatorSubOrder, created, **kwargs):
     if created and instance.status == ExcavatorSubOrder.Status.NEW and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
+        logger.info(
+            "Creating NEW ExcavatorSubOrder notification for suborder_id=%s driver_id=%s parent_order_id=%s",
+            instance.id,
+            instance.driver.id,
+            instance.parent_id,
+        )
         Notification.objects.create(
             from_role="admin",
             to_role="driver",
@@ -21,6 +30,12 @@ def create_excavator_suborder_notification(sender, instance: ExcavatorSubOrder, 
         )
     
     elif created and instance.status == ExcavatorSubOrder.Status.REJECTED and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
+        logger.info(
+            "Creating REJECTED ExcavatorSubOrder notification for suborder_id=%s driver_id=%s parent_order_id=%s",
+            instance.id,
+            instance.driver.id,
+            instance.parent_id,
+        )
         Notification.objects.create(
             from_role="admin",
             to_role="driver",

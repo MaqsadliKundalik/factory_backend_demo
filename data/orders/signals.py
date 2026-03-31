@@ -1,14 +1,23 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import logging
 from .models import SubOrder
 from data.drivers.models import Driver
 from data.products.models import WhouseProductsHistory
 from data.notifications.models import Notification, NotificationTargetObject
 
+logger = logging.getLogger(__name__)
+
 
 @receiver(post_save, sender=SubOrder)
 def create_suborder_notification_and_history(sender, instance: SubOrder, created, **kwargs):
     if created and instance.status == SubOrder.Status.NEW and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
+        logger.info(
+            "Creating NEW SubOrder notification for suborder_id=%s driver_id=%s order_id=%s",
+            instance.id,
+            instance.driver.id,
+            instance.order_id,
+        )
         for item in instance.sub_order_items.all():
             WhouseProductsHistory.objects.create(
                 order_item=item,
@@ -30,6 +39,13 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
         )
     else:
         if instance.status == SubOrder.Status.REJECTED and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
+            logger.info(
+                "Creating REJECTED SubOrder notification for suborder_id=%s driver_id=%s order_id=%s created=%s",
+                instance.id,
+                instance.driver.id,
+                instance.order_id,
+                created,
+            )
             Notification.objects.create(
                 from_role="admin",
                 to_role="driver",

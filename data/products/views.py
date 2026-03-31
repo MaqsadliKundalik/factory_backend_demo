@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from django.db import transaction
+import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -43,6 +44,8 @@ from .serializers import (
     SelectProductSerializer,
     ProductItemSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 WHOUSE_PRODUCTS_FILTER_PARAMS = DATE_FILTER_PARAMS + [
@@ -445,6 +448,11 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
             instance.supplier_id = supplier_id
         instance.save()
 
+        logger.info(
+            "Creating product CONFIRMED notification for whouse_product_id=%s product_id=%s to_role=guard",
+            instance.id,
+            instance.product_id,
+        )
         Notification.objects.create(
             to_role="guard",
             from_role="whouse_manager",
@@ -465,6 +473,11 @@ class WhouseProductsActionViewSet(PermissionMetaMixin, viewsets.GenericViewSet):
             instance.supplier_id = supplier_id
         instance.save()
         instance.refresh_from_db()
+        logger.info(
+            "Creating product REJECTED notification for whouse_product_id=%s product_id=%s to_role=guard",
+            instance.id,
+            instance.product_id,
+        )
         Notification.objects.create(
             to_role="guard",
             from_role="whouse_manager",
