@@ -172,8 +172,7 @@ class ProductTypeViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSe
         if getattr(self, "swagger_fake_view", False) or not user.is_authenticated:
             return ProductType.objects.none()
 
-        whouses = user.whouses.all()
-        return ProductType.objects.filter(whouse__in=whouses)
+        return ProductType.objects.all()
 
     def perform_create(self, serializer):
         user = (
@@ -317,7 +316,7 @@ class ProductViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet):
             return Response({"detail": "Not authenticated"}, status=401)
 
         whouses = user.whouses.all()
-        queryset = Product.objects.filter(whouse__in=whouses)
+        queryset = Product.objects.all()
         is_ready = self.request.query_params.get("is_ready_product")
         if is_ready is not None:
             if is_ready.lower() == "true":
