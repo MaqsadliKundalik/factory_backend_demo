@@ -359,11 +359,12 @@ class SubOrderViewSet(PermissionMetaMixin, ModelViewSet):
         if file_ids:
             instance.files.set(file_ids)
 
+        instance.save()
+
         order = instance.order
         sibling_statuses = list(order.sub_orders.values_list("status", flat=True))
         if sibling_statuses and all(s == new_status for s in sibling_statuses):
             order.status = new_status
             order.save(update_fields=["status"])
 
-        instance.save()
         return Response({"status": "Success"}, status=status.HTTP_200_OK)
