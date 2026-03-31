@@ -18,17 +18,21 @@ def get_firebase_app():
     cred_path = os.environ.get('FIREBASE_CREDENTIALS_PATH')
 
     if not cred_json and not cred_path:
-        logger.warning("Firebase credentials not configured. Push notifications will be skipped.")
+        logger.warning(
+            "Firebase credentials not configured. Set FIREBASE_CREDENTIALS or FIREBASE_CREDENTIALS_PATH. Push notifications will be skipped."
+        )
         return None
 
     try:
         if cred_json:
             cred = credentials.Certificate(json.loads(cred_json))
+            logger.info("Initializing Firebase app using FIREBASE_CREDENTIALS env var")
         else:
             cred = credentials.Certificate(cred_path)
+            logger.info("Initializing Firebase app using FIREBASE_CREDENTIALS_PATH=%s", cred_path)
         _app = firebase_admin.initialize_app(cred)
     except Exception as e:
-        logger.error(f"Firebase initialization failed: {e}")
+        logger.exception("Firebase initialization failed: %s", e)
         return None
 
     return _app
