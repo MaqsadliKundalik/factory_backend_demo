@@ -6,6 +6,7 @@ from data.drivers.models import Driver
 from data.products.models import WhouseProductsHistory
 from data.notifications.models import Notification, NotificationTargetObject
 from data.reports.services import generate_yuk_xati_short_url
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,11 @@ def order_signals(sender, instance: Order, created, **kwargs):
     print(f"Sending sms {instance.status}")
 
     if created and instance.status == Order.Status.NEW:
+        while True:
+            if not instance.order_items.exists():
+                time.sleep(1)
+                continue
+            break
         instance.client.send_sms(
             "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.\n\nДетали заказа:\n".format(id=instance.display_id)
             + "\n".join(["- {item.product.name} ({item.quantity})".format(item=item) for item in instance.order_items.all()])
