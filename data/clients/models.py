@@ -33,7 +33,9 @@ class Client(BaseModel):
 
     def send_sms(self, message: str):
         for phone in self.phones.all():
-            sayqal.send_sms(phone.phone_number, message)
+            res = sayqal.send_sms(phone.phone_number, message)
+            status = sayqal.status_sms(res.transactionid, res.smsid)
+            print(status)
 
 
 class ClientBranches(BaseModel):

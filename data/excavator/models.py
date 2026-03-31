@@ -1,3 +1,4 @@
+import stat
 from django.db import models, transaction
 from django.db.models import Max
 from django.core.serializers.json import DjangoJSONEncoder
@@ -68,8 +69,9 @@ class ExcavatorOrder(BaseModel):
     )
 
     def send_sms(self, message: str):
-        sayqal.send_sms(self.phone_number, message)
-
+        res = sayqal.send_sms(self.phone_number, message)
+        status = sayqal.status_sms(res.transactionid, res.smsid)
+        print(status)
     def save(self, *args, **kwargs):
         if not self.display_id:
             last_order = ExcavatorOrder.all_objects.all().order_by("display_id").last()
