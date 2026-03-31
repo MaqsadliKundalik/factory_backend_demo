@@ -25,10 +25,12 @@ def order_signals(sender, instance: Order, created, **kwargs):
         )
 
     if instance.status == Order.Status.COMPLETED:
+        print("Tayyorlanmoqda")
         sms_message = "Уважаемый клиент, ваш заказ №{instance.display_id} был успешно завершён.".format(instance=instance)
         yuk_xati_url = generate_yuk_xati_short_url(instance.id)
         if yuk_xati_url:
             sms_message += "\n\nТоварно-транспортная накладная: {yuk_xati_url}".format(yuk_xati_url=yuk_xati_url)
+        print("Tayor\n\n{msg}".format(msg=sms_message))       
         instance.client.send_sms(sms_message)
 
 
