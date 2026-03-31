@@ -51,12 +51,12 @@ def create_excavator_suborder_notification(sender, instance: ExcavatorSubOrder, 
 def create_excavator_order_notification(sender, instance, created, **kwargs):
     print("Sending sms")
     if instance.status == ExcavatorOrder.Status.NEW:
-        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был успешно оформлен.".format(id=instance.id))
+        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был успешно оформлен.".format(id=instance.display_id))
     elif instance.status == ExcavatorOrder.Status.PAUSED:
-        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был временно приостановлен.".format(id=instance.id))
+        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был временно приостановлен.".format(id=instance.display_id))
     elif instance.status == ExcavatorOrder.Status.COMPLETED:
-        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был успешно завершён.".format(id=instance.id))
+        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был успешно завершён.".format(id=instance.display_id))
     elif instance.status == ExcavatorOrder.Status.EXPIRED:
-        instance.send_sms("Уважаемый клиент, срок исполнения заказа №{id} истёк.".format(id=instance.id))
+        instance.send_sms("Уважаемый клиент, срок исполнения заказа №{id} истёк.".format(id=instance.display_id))
     elif instance.status == ExcavatorOrder.Status.REJECTED:
-        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был отклонён.".format(id=instance.id))
+        instance.send_sms("Уважаемый клиент, ваш заказ №{id} был отклонён.".format(id=instance.display_id))
