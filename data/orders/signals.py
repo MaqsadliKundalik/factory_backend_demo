@@ -29,7 +29,7 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
             order_obj=instance,
         )
     else:
-        if created and instance.status == SubOrder.Status.REJECTED and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
+        if instance.status == SubOrder.Status.REJECTED and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
             Notification.objects.create(
                 from_role="admin",
                 to_role="driver",
