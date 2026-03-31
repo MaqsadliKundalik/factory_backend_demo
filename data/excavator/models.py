@@ -3,6 +3,9 @@ from django.db.models import Max
 from django.core.serializers.json import DjangoJSONEncoder
 from apps.common.models import BaseModel
 from typing import TYPE_CHECKING
+from utils.sayqal import SayqalSms
+
+
 
 if TYPE_CHECKING:
     from data.whouse.models import Whouse
@@ -10,6 +13,7 @@ if TYPE_CHECKING:
     from data.transports.models import Transport
     from data.files.models import File
 
+sayqal = SayqalSms()
 
 class ExcavatorOrder(BaseModel):
     class Status(models.TextChoices):
@@ -62,6 +66,9 @@ class ExcavatorOrder(BaseModel):
         null=True,
         blank=True,
     )
+
+    def send_sms(self, message: str):
+        sayqal.send_sms(self.phone_number, message)
 
     def save(self, *args, **kwargs):
         if not self.display_id:

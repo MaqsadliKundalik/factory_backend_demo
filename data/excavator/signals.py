@@ -50,10 +50,10 @@ def create_excavator_suborder_notification(sender, instance: ExcavatorSubOrder, 
 @receiver(post_save, sender=ExcavatorOrder)
 def create_excavator_order_notification(sender, instance, created, **kwargs):
     if instance.status == ExcavatorOrder.Status.PAUSED:
-        instance.client.send_sms(f"Уважаемый клиент, ваш заказ №{instance.display_id} был временно приостановлен.")
+        instance.send_sms(f"Уважаемый клиент, ваш заказ №{instance.display_id} был временно приостановлен.")
     elif instance.status == ExcavatorOrder.Status.COMPLETED:
-        instance.client.send_sms(f"Уважаемый клиент, ваш заказ №{instance.display_id} был успешно завершён.")
+        instance.send_sms(f"Уважаемый клиент, ваш заказ №{instance.display_id} был успешно завершён.")
     elif instance.status == ExcavatorOrder.Status.EXPIRED:
-        instance.client.send_sms(f"Уважаемый клиент, срок исполнения заказа №{instance.display_id} истёк.")
+        instance.send_sms(f"Уважаемый клиент, срок исполнения заказа №{instance.display_id} истёк.")
     elif instance.status == ExcavatorOrder.Status.REJECTED:
-        instance.client.send_sms(f"Уважаемый клиент, ваш заказ №{instance.display_id} был отклонён.")
+        instance.send_sms(f"Уважаемый клиент, ваш заказ №{instance.display_id} был отклонён.")
