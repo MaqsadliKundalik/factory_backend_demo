@@ -71,6 +71,10 @@ class DriverViewSet(PermissionMetaMixin, ModelViewSet):
     search_fields = ["name", "phone_number"]
     ordering = ["-created_at"]
 
+    @swagger_auto_schema(manual_parameters=DRIVER_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
     def get_queryset(self):
         user = (
             self.request.driver

@@ -69,6 +69,11 @@ class TransportViewSet(DateFilterSchemaMixin, PermissionMetaMixin, ModelViewSet)
     search_fields = ["name", "number"]
     ordering = ["-created_at"]
 
+    @swagger_auto_schema(manual_parameters=TRANSPORT_FILTER_PARAMS)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
     def get_queryset(self):
         user = (
             self.request.driver
