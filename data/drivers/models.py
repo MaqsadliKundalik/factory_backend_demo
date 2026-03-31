@@ -81,6 +81,8 @@ class Driver(BaseModel):
         super().save(*args, **kwargs)
 
     def check_password(self, raw_password):
+        if not self.password:
+            return False
         return check_password(raw_password, self.password)
 
     def __str__(self):
