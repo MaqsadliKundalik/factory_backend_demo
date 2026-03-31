@@ -15,14 +15,8 @@ def order_signals(sender, instance: Order, created, **kwargs):
     print(f"Sending sms {instance.status}")
 
     if created and instance.status == Order.Status.NEW:
-        while True:
-            if not instance.order_items.exists():
-                time.sleep(1)
-                continue
-            break
         instance.client.send_sms(
-            "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.\n\nДетали заказа:\n".format(id=instance.display_id)
-            + "\n".join(["- {item.product.name} ({item.quantity})".format(item=item) for item in instance.order_items.all()])
+            "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.".format(id=instance.display_id)
         )
     
     if instance.status == Order.Status.REJECTED:
