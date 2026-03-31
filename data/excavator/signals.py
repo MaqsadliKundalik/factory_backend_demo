@@ -49,6 +49,7 @@ def create_excavator_suborder_notification(sender, instance: ExcavatorSubOrder, 
     
 @receiver(post_save, sender=ExcavatorOrder)
 def create_excavator_order_notification(sender, instance, created, **kwargs):
+    print("Sending sms")
     if instance.status == ExcavatorOrder.Status.PAUSED:
         instance.send_sms(f"Уважаемый клиент, ваш заказ №{instance.display_id} был временно приостановлен.")
     elif instance.status == ExcavatorOrder.Status.COMPLETED:
