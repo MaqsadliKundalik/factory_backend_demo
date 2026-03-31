@@ -49,14 +49,13 @@ def create_excavator_suborder_notification(sender, instance: ExcavatorSubOrder, 
     
 @receiver(post_save, sender=ExcavatorOrder)
 def create_excavator_order_notification(sender, instance, created, **kwargs):
-    pass
-    # if instance.status == ExcavatorOrder.Status.PAUSED:
-    #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz vaqtinchalik to'xtatildi")
-    # elif instance.status == ExcavatorOrder.Status.COMPLETED:
-    #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz tugallandi")
-    # elif instance.status == ExcavatorOrder.Status.EXPIRED:
-    #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz muddati tugadi")
-    # elif instance.status == ExcavatorOrder.Status.REJECTED:
-    #     instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz rad etildi")
+    if instance.status == ExcavatorOrder.Status.PAUSED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz vaqtinchalik to'xtatildi")
+    elif instance.status == ExcavatorOrder.Status.COMPLETED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz tugallandi")
+    elif instance.status == ExcavatorOrder.Status.EXPIRED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz muddati tugadi")
+    elif instance.status == ExcavatorOrder.Status.REJECTED:
+        instance.client.send_sms(f"Sizning {instance.display_id} raqamli buyurtmangiz rad etildi")
     
 

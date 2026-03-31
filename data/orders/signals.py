@@ -67,10 +67,10 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
                 },
             )
 
-    # if instance.status == SubOrder.Status.ON_WAY:
-    #     instance.order.client.send_sms(
-    #         f"Sizning {instance.id} raqamli buyurtmangizdan quyidagilar yo'lga chiqdi.\n\n"
-    #         + "\n".join([f"- {item.product.name} ({item.quantity})" for item in instance.sub_order_items.all()])
-    #     )
+    if instance.status == SubOrder.Status.ON_WAY:
+        instance.order.client.send_sms(
+            f"Sizning {instance.id} raqamli buyurtmangizdan quyidagilar yo'lga chiqdi.\n\n"
+            + "\n".join([f"- {item.product.name} ({item.quantity})" for item in instance.sub_order_items.all()])
+        )
 
  
