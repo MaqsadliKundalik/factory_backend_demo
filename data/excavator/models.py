@@ -71,7 +71,8 @@ class ExcavatorOrder(BaseModel):
     def send_sms(self, message: str):
         res = sayqal.send_sms(self.phone_number, message)
         status = sayqal.status_sms(res.transactionid, res.smsid)
-        print(status)
+        if status.status == 5:
+            print("Unsupported template\n\n{msg}".format(msg=message))
     def save(self, *args, **kwargs):
         if not self.display_id:
             last_order = ExcavatorOrder.all_objects.all().order_by("display_id").last()

@@ -35,7 +35,8 @@ class Client(BaseModel):
         for phone in self.phones.all():
             res = sayqal.send_sms(phone.phone_number, message)
             status = sayqal.status_sms(res.transactionid, res.smsid)
-            print(status)
+            if status.status == 5:
+                print("Unsupported template\n\n{msg}".format(msg=message))
 
 
 class ClientBranches(BaseModel):

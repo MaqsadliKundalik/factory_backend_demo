@@ -15,20 +15,20 @@ def order_signals(sender, instance: Order, created, **kwargs):
 
     if created and instance.status == Order.Status.NEW:
         instance.client.send_sms(
-            f"Уважаемый клиент, ваш заказ №{instance.display_id} был успешно оформлен.\n\nДетали заказа:\n"
-            + "\n".join([f"- {item.product.name} ({item.quantity})" for item in instance.order_items.all()])
+            "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.\n\nДетали заказа:\n".format(id=instance.display_id)
+            + "\n".join(["- {item.product.name} ({item.quantity})".format(item=item) for item in instance.order_items.all()])
         )
     
     if instance.status == Order.Status.REJECTED:
         instance.client.send_sms(
-            f"Уважаемый клиент, ваш заказ №{instance.display_id} был отменён."
+            "Уважаемый клиент, ваш заказ №{instance.display_id} был отменён.".format(instance=instance)
         )
 
     if instance.status == Order.Status.COMPLETED:
-        sms_message = f"Уважаемый клиент, ваш заказ №{instance.display_id} был успешно завершён."
+        sms_message = "Уважаемый клиент, ваш заказ №{instance.display_id} был успешно завершён.".format(instance=instance)
         yuk_xati_url = generate_yuk_xati_short_url(instance.id)
         if yuk_xati_url:
-            sms_message += f"\n\nТоварно-транспортная накладная: {yuk_xati_url}"
+            sms_message += "\n\nТоварно-транспортная накладная: {yuk_xati_url}".format(yuk_xati_url=yuk_xati_url)
         instance.client.send_sms(sms_message)
 
 
@@ -93,16 +93,16 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
 
     if instance.status == SubOrder.Status.ON_WAY:
         instance.order.client.send_sms(
-            f"Уважаемый клиент, по вашему заказу №{instance.order.display_id} следующие товары были отправлены на доставку.\n\n"
-            + "\n".join([f"- {item.product.name} ({item.quantity})" for item in instance.sub_order_items.all()])
+            "Уважаемый клиент, по вашему заказу №{instance.order.display_id} следующие товары были отправлены на доставку.\n\n".format(instance=instance)
+            + "\n".join(["- {item.product.name} ({item.quantity})".format(item=item) for item in instance.sub_order_items.all()])
         )
     elif instance.status == SubOrder.Status.ARRIVED:
         instance.order.client.send_sms(
-            f"Уважаемый клиент, по вашему заказу №{instance.order.display_id} следующие товары были доставлены по адресу назначения.\n\n"
-            + "\n".join([f"- {item.product.name} ({item.quantity})" for item in instance.sub_order_items.all()])
+            "Уважаемый клиент, по вашему заказу №{instance.order.display_id} следующие товары были доставлены по адресу назначения.\n\n".format(instance=instance)
+            + "\n".join(["- {item.product.name} ({item.quantity})".format(item=item) for item in instance.sub_order_items.all()])
         )
     elif instance.status == SubOrder.Status.UNLOADING:
         instance.order.client.send_sms(
-            f"Уважаемый клиент, по вашему заказу №{instance.order.display_id} началась разгрузка следующих товаров.\n\n"
-            + "\n".join([f"- {item.product.name} ({item.quantity})" for item in instance.sub_order_items.all()])
+            "Уважаемый клиент, по вашему заказу №{instance.order.display_id} началась разгрузка следующих товаров.\n\n".format(instance=instance)
+            + "\n".join(["- {item.product.name} ({item.quantity})".format(item=item) for item in instance.sub_order_items.all()])
         )
