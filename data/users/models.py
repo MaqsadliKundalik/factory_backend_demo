@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.hashers import make_password, check_password
 from typing import TYPE_CHECKING
 from apps.common.models import BaseModel
 from data.session.models import FactoryUserSession
@@ -68,6 +69,19 @@ class FactoryUser(BaseModel, AbstractBaseUser):
 
     def new_session(self):
         return FactoryUserSession.for_factory_user(self)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def save(self, *args, **kwargs):
+        if self.password and not self.password.startswith(
+            ("pbkdf2_sha256$", "bcrypt$", "argon2$")
+        ):
+            self.set_password(self.password)
+        super().save(*args, **kwargs)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
 
     @property
     def guard(self):
