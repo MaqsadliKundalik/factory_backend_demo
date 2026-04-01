@@ -7,7 +7,7 @@ from app.settings import BASE_URL
 class ClientBranchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientBranches
-        fields = ["id", "client", "name", "address", "longitude", "latitude", "company", "bank_name", "account_number", "mfo", "oked", "inn", "director"]
+        fields = ["id", "client", "name", "address", "longitude", "latitude", "bank_name", "account_number", "mfo", "oked", "inn", "director"]
         extra_kwargs = {
             "id": {"read_only": False, "required": False},
             "client": {"read_only": False, "required": False},
