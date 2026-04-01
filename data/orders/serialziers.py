@@ -199,8 +199,6 @@ class SubOrderListSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     display_id = serializers.ReadOnlyField(source="get_display_id")
-    sub_orders = SubOrderInlineSerializer(many=True, read_only=True)
-    order_items = OrderItemSerializer(many=True, read_only=True)
     completion_percentage = serializers.SerializerMethodField()
 
     class Meta:
