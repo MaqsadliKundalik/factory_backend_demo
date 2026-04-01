@@ -89,57 +89,14 @@ class NotificationViewSet(
         if not role or not user_id:
             return Notification.objects.none()
 
-        # Faqat menga yuborilgan (to_user_id=mening_id) yoki hammaga yuborilgan (to_user_id=None)
         from django.db.models import Q
-
+        Notification.objects.filter(to_role=role, is_read=False).filter(
+            Q(to_user_id__isnull=True) | Q(to_user_id=user_id)
+        ).update(is_read=True)
+        
         return Notification.objects.filter(to_role=role).filter(
             Q(to_user_id__isnull=True) | Q(to_user_id=user_id)
         )
-
-    @swagger_auto_schema(
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
-        responses={
-            200: openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "message": openapi.Schema(type=openapi.TYPE_STRING),
-                    "count": openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
-                },
-            )
-        },
-    )
-    @action(detail=False, methods=["post"], url_path="mark-all-read")
-    def mark_all_read(self, request):
-        role = _get_role(request)
-        user_id = _get_actor_id(request)
-        if not role or not user_id:
-            return Response(
-                {"error": "Роль не определена"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        from django.db.models import Q
-
-        updated = (
-            Notification.objects.filter(to_role=role, is_read=False)
-            .filter(Q(to_user_id__isnull=True) | Q(to_user_id=user_id))
-            .update(is_read=True)
-        )
-        return Response(
-            {"message": "Все уведомления отмечены как прочитанные", "count": updated},
-            status=status.HTTP_200_OK,
-        )
-
-    @swagger_auto_schema(
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
-        responses={200: NotificationSerializer()},
-    )
-    @action(detail=True, methods=["post"], url_path="mark-as-read")
-    def mark_as_read(self, request, pk=None):
-        notification = self.get_object()
-        if not notification.is_read:
-            notification.is_read = True
-            notification.save(update_fields=["is_read"])
-        return Response(NotificationSerializer(notification).data)
 
     @swagger_auto_schema(
         responses={
