@@ -7,7 +7,7 @@ from app.settings import BASE_URL
 class ClientBranchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientBranches
-        fields = ["id", "client", "name", "address", "longitude", "latitude", "bank_name", "account_number", "mfo", "oked", "inn", "director"]
+        fields = ["id", "client", "name", "address", "longitude", "latitude", "bank_name", "account_number", "mfo", "oked", "director"]
         extra_kwargs = {
             "id": {"read_only": False, "required": False},
             "client": {"read_only": False, "required": False},
@@ -23,7 +23,6 @@ class ClientBranchesBulkSerializer(serializers.Serializer):
     account_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     mfo = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     oked = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    inn = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     director = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     contract = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
@@ -57,7 +56,6 @@ class ClientSerializer(serializers.ModelSerializer):
             "account_number",
             "mfo",
             "oked",
-            "inn",
             "director",
             "contract",
             "branches",
@@ -120,7 +118,6 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             "account_number",
             "mfo",
             "oked",
-            "inn",
             "director",
             "contract",
             "phone_numbers",
