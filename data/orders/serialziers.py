@@ -61,6 +61,30 @@ class OrderItemWriteSerializer(serializers.ModelSerializer):
         fields = ["id", "product", "type", "unit", "quantity", "price"]
 
 
+class OrderSummarySerializer(serializers.ModelSerializer):
+    display_id = serializers.ReadOnlyField(source="get_display_id")
+    client = ClientSerializer(read_only=True)
+    branch = ClientBranchesSerializer(read_only=True)
+    order_items = OrderItemSerializer(many=True, read_only=True)
+    whouse = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "display_id",
+            "client",
+            "branch",
+            "whouse",
+            "order_items",
+            "status",
+            "created_at",
+        ]
+
+    def get_whouse(self, instance):
+        return {"id": instance.whouse.id, "name": instance.whouse.name}
+
+
 # --- SubOrderItem serializers ---
 
 
@@ -140,21 +164,7 @@ class SubOrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["order"] = {
-            "id": instance.order.id,
-            "display_id": instance.order.display_id,
-            "client": ClientSerializer(instance.order.client).data,
-            "branch": ClientBranchesSerializer(instance.order.branch).data,
-            "whouse": {
-                "id": instance.order.whouse.id,
-                "name": instance.order.whouse.name,
-            },
-            "order_items": OrderItemSerializer(
-                instance.order.order_items.all(), many=True
-            ).data,
-            "status": instance.order.status,
-            "created_at": instance.order.created_at,
-        }
+        rep["order"] = OrderSummarySerializer(instance.order).data
         rep["driver"] = DriverSerializer(instance.driver).data
         rep["transport"] = TransportSerializer(instance.transport).data
         rep["sign"] = FileSerializer(instance.sign).data if instance.sign else None
@@ -178,21 +188,7 @@ class SubOrderListSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep["order"] = {
-            "id": instance.order.id,
-            "display_id": instance.order.display_id,
-            "client": ClientSerializer(instance.order.client).data,
-            "branch": ClientBranchesSerializer(instance.order.branch).data,
-            "whouse": {
-                "id": instance.order.whouse.id,
-                "name": instance.order.whouse.name,
-            },
-            "order_items": OrderItemSerializer(
-                instance.order.order_items.all(), many=True
-            ).data,
-            "status": instance.order.status,
-            "created_at": instance.order.created_at,
-        }
+        rep["order"] = OrderSummarySerializer(instance.order).data
         rep["sign"] = FileSerializer(instance.sign).data if instance.sign else None
         rep["files"] = FileSerializer(instance.files.all(), many=True).data
         return rep
@@ -202,8 +198,10 @@ class SubOrderListSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    display_id = serializers.ReadOnlyField(source="get_display_id")
     sub_orders = SubOrderInlineSerializer(many=True, read_only=True)
     order_items = OrderItemSerializer(many=True, read_only=True)
+    completion_percentage = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -212,15 +210,32 @@ class OrderSerializer(serializers.ModelSerializer):
             "display_id",
             "client",
             "branch",
+            "payment_status",
+            "order_type",
             "whouse",
             "status",
             "rejector_role",
             "rejector_id",
-            "order_items",
-            "sub_orders",
+            "completion_percentage",
             "created_at",
         ]
         read_only_fields = ["id", "display_id", "created_at"]
+
+    def get_completion_percentage(self, instance):
+        order_items = list(instance.order_items.all())
+        total_quantity = sum(float(item.quantity) for item in order_items)
+        if total_quantity <= 0:
+            return 0
+
+        completed_quantity = 0
+        for sub_order in instance.sub_orders.all():
+            if sub_order.status != SubOrder.Status.COMPLETED:
+                continue
+            for sub_item in sub_order.sub_order_items.all():
+                completed_quantity += float(sub_item.quantity)
+
+        percentage = (completed_quantity / total_quantity) * 100
+        return round(min(percentage, 100), 2)
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -256,6 +271,8 @@ class OrderWriteSerializer(serializers.ModelSerializer):
             "display_id",
             "client",
             "branch",
+            "payment_status",
+            "order_type",
             "whouse",
             "status",
             "order_items",

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from data.users.models import FactoryUser
 
 
+
 # Create your models here.
 class Order(BaseModel):
     """
@@ -39,6 +40,14 @@ class Order(BaseModel):
         COMPLETED = "COMPLETED", "Completed"
         REJECTED = "REJECTED", "Rejected"
 
+    class PaymentStatus(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        PAID = "PAID", "Paid"
+        
+    class OrderType(models.TextChoices):
+        CASH = "CASH", "Cash"
+        ENTERPRISE = "ENTERPRISE", "Enterprise"
+
     class Rejector(models.TextChoices):
         CLIENT = "CLIENT", "Client"
         OPERATOR = "OPERATOR", "Operator"
@@ -51,10 +60,12 @@ class Order(BaseModel):
     branch: "ClientBranches" = models.ForeignKey(
         "clients.ClientBranches", on_delete=models.PROTECT, related_name="orders"
     )
+    payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
     whouse: "Whouse" = models.ForeignKey(
         "factory_whouse.Whouse", on_delete=models.PROTECT, related_name="orders"
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
+    order_type = models.CharField(max_length=20, choices=OrderType.choices, default=OrderType.ENTERPRISE)
 
     rejector_role = models.CharField(
         max_length=20, choices=Rejector.choices, null=True, blank=True
@@ -70,9 +81,12 @@ class Order(BaseModel):
                 else 1
             )
         super().save(*args, **kwargs)
+    
+    def get_display_id(self):
+        return f"ORD-{self.display_id:04}" if self.order_type == self.OrderType.ENTERPRISE else f"QZ-{self.display_id:04}"
 
     def __str__(self):
-        return f"Ord-{self.display_id:03}" if self.display_id else f"Ord-{self.id}"
+        return self.get_display_id()
 
 class SubOrder(BaseModel):
     class Status(models.TextChoices):

@@ -7,7 +7,7 @@ from app.settings import BASE_URL
 class ClientBranchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientBranches
-        fields = ["id", "client", "name", "address", "longitude", "latitude"]
+        fields = ["id", "client", "name", "address", "longitude", "latitude", "company", "bank_name", "account_number", "mfo", "oked", "inn", "director"]
         extra_kwargs = {
             "id": {"read_only": False, "required": False},
             "client": {"read_only": False, "required": False},
@@ -19,6 +19,13 @@ class ClientBranchesBulkSerializer(serializers.Serializer):
     address = serializers.CharField(required=True)
     longitude = serializers.FloatField(required=True)
     latitude = serializers.FloatField(required=True)
+    company = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    bank_name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    account_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    mfo = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    oked = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    inn = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    director = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 class ClientPhoneBulkSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True)
@@ -45,6 +52,13 @@ class ClientSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "inn_number",
+            "address",
+            "bank_name",
+            "account_number",
+            "mfo",
+            "oked",
+            "inn",
+            "director",
             "branches",
             "photo",
             "phone_numbers",
@@ -100,6 +114,13 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "inn_number",
+            "address",
+            "bank_name",
+            "account_number",
+            "mfo",
+            "oked",
+            "inn",
+            "director",
             "phone_numbers",
             "photo",
             "whouse",

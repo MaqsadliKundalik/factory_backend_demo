@@ -19,7 +19,6 @@ class Driver(BaseModel):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=25, unique=True)
     password = models.CharField(max_length=128, null=True, blank=True)
-    # fcm_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging token")
 
     type = models.CharField(max_length=20, choices=Type.choices, default=Type.INTERNAL)
     photo: "File" = models.ForeignKey(

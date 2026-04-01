@@ -15,6 +15,17 @@ sayqal = SayqalSms()
 class Client(BaseModel):
     name = models.CharField(max_length=255)
     inn_number = models.CharField(max_length=9)
+
+    address = models.CharField(max_length=512, null=True, blank=True)
+    bank_name = models.CharField(max_length=255, null=True, blank=True)
+    account_number = models.CharField(max_length=50, null=True, blank=True)
+    mfo = models.CharField(max_length=20, null=True, blank=True)
+    oked = models.CharField(max_length=20, null=True, blank=True)
+    inn = models.CharField(max_length=20, null=True, blank=True)
+    director = models.CharField(max_length=255, null=True, blank=True)
+
+    contract = models.CharField(max_length=255, null=True, blank=True)
+
     photo: "File | None" = models.ForeignKey(
         "files.File", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -48,6 +59,13 @@ class ClientBranches(BaseModel):
     address = models.CharField(max_length=255)
     longitude = models.FloatField()
     latitude = models.FloatField()
+
+    bank_name = models.CharField(max_length=255, null=True, blank=True)
+    account_number = models.CharField(max_length=50, null=True, blank=True)
+    mfo = models.CharField(max_length=20, null=True, blank=True)
+    oked = models.CharField(max_length=20, null=True, blank=True)
+    inn = models.CharField(max_length=20, null=True, blank=True)
+    director = models.CharField(max_length=255, null=True, blank=True)
 
     list_display = ["client", "name", "address", "longitude", "latitude"]
 

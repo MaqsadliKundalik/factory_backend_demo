@@ -161,30 +161,29 @@ def make_excel_response(wb, filename):
 
 # ─── Sheet 1: Yuk xati ───────────────────────────────────────────────────────
 
-def fill_yuk_xati(ws, order):
-    ws.title = 'Накладная'
-
-    for i, w in enumerate([20, 72, 46, 90, 72, 85], 1):
-        ws.column_dimensions[get_column_letter(i)].width = px(w)
-
+def _fill_yuk_xati_block(ws, order, start_row):
     sub_orders = list(order.sub_orders.all())
+    order_items = list(order.order_items.all())
 
-    merge_val(ws, 'A1:G1', 'НАКЛАДНАЯ', bold=True, bottom=False)
-    merge_val(ws, 'A2:G2', f'От кого:  {COMPANY}', top=False, bottom=False)
-    merge_val(ws, 'A3:G3', f'Кому: {order.client.name}  ИНН: {order.client.inn_number}',
-              top=False)
+    merge_val(ws, f'A{start_row}:G{start_row}', 'НАКЛАДНАЯ', bold=True, bottom=False)
+    merge_val(ws, f'A{start_row + 1}:G{start_row + 1}', f'От кого:  {COMPANY}', top=False, bottom=False)
+    merge_val(
+        ws,
+        f'A{start_row + 2}:G{start_row + 2}',
+        f'Кому: {order.client.name}  ИНН: {order.client.inn_number}',
+        top=False,
+    )
 
-    # Row 4 headers
-    ws.merge_cells('B4:C4')
+    head_row = start_row + 3
+    ws.merge_cells(f'B{head_row}:C{head_row}')
     for col, val in [(1, '№'), (2, 'Наименование товара'), (4, 'Единица измерения'),
                      (5, 'Количество'), (6, 'Цена'), (7, 'Сумма')]:
-        ws.cell(row=4, column=col, value=val)
-    style_range(ws, 4, 1, 4, 7, border=True)
+        ws.cell(row=head_row, column=col, value=val)
+    style_range(ws, head_row, 1, head_row, 7, border=True)
 
-    # Rows 5+: order_items data
-    order_items = list(order.order_items.all())
+    items_start = start_row + 4
     for idx, oi in enumerate(order_items):
-        row = 5 + idx
+        row = items_start + idx
         ws.merge_cells(f'B{row}:C{row}')
         ws.cell(row=row, column=1, value=idx + 1)
         ws.cell(row=row, column=2, value=f"{oi.product.name} {oi.type.name}")
@@ -196,13 +195,10 @@ def fill_yuk_xati(ws, order):
         total_cell.number_format = '#,##0'
         style_range(ws, row, 1, row, 7, border=True)
 
-    items_end = 5 + max(len(order_items), 1) - 1
-
-    # Yetkazib beruvchilar title
+    items_end = items_start + max(len(order_items), 1) - 1
     yb_title_row = items_end + 1
     merge_val(ws, f'A{yb_title_row}:G{yb_title_row}', 'Поставщики', bold=True, top=False, bottom=False)
 
-    # sub_orders table headers
     yb_head_row = yb_title_row + 1
     ws.row_dimensions[yb_head_row].height = 36
     yb_headers = [
@@ -215,7 +211,6 @@ def fill_yuk_xati(ws, order):
         c.alignment = _align(wrap=True)
         c.border = ALL_BORDER
 
-    # sub_order data rows
     yb_data_start = yb_head_row + 1
     for i, so in enumerate(sub_orders):
         row = yb_data_start + i
@@ -230,13 +225,10 @@ def fill_yuk_xati(ws, order):
         ws.cell(row=row, column=7, value=get_history_time(history, 'COMPLETED'))
         style_range(ws, row, 1, row, 7, border=True)
 
-    # Qabul qiluvchilar section
     qb_title_row = yb_data_start + len(sub_orders)
     qb_head_row = qb_title_row + 1
     qb_data_start = qb_head_row + 1
-
-    merge_val(ws, f'A{qb_title_row}:F{qb_title_row}', 'Получатели',
-              bold=True, top=False, bottom=False)
+    merge_val(ws, f'A{qb_title_row}:F{qb_title_row}', 'Получатели', bold=True, top=False, bottom=False)
 
     qb_headers = [
         '№', 'автомобиль', 'водитель',
@@ -258,7 +250,6 @@ def fill_yuk_xati(ws, order):
         ws.cell(row=row, column=6, value='Принял' if so.status == 'COMPLETED' else status_uz(so.status))
         style_range(ws, row, 1, row, 6, border=True)
 
-    # Bottom
     bottom_row = qb_data_start + len(sub_orders)
     branch_addr = order.branch.address if order.branch else ''
     ws.merge_cells(f'B{bottom_row}:G{bottom_row}')
@@ -273,7 +264,18 @@ def fill_yuk_xati(ws, order):
     imzo_cell.font = _font()
     imzo_cell.alignment = _align()
 
-    apply_outer_frame(ws, 1, 1, bottom_row + 2, 7)
+    apply_outer_frame(ws, start_row, 1, bottom_row + 2, 7)
+    return bottom_row + 2
+
+
+def fill_yuk_xati(ws, order):
+    ws.title = 'Накладная'
+
+    for i, w in enumerate([20, 72, 46, 90, 72, 85], 1):
+        ws.column_dimensions[get_column_letter(i)].width = px(w)
+
+    first_bottom_row = _fill_yuk_xati_block(ws, order, 1)
+    _fill_yuk_xati_block(ws, order, first_bottom_row + 2)
 
 
 # ─── Sheet 2: Ishonch qog'ozi ────────────────────────────────────────────────

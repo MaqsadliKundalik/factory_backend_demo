@@ -7,9 +7,45 @@ from data.transports.serializers import TransportSerializer
 from data.transports.models import Transport
 from data.drivers.serializers import DriverSerializer
 from data.drivers.models import Driver
+from datetime import datetime
+from django.utils import timezone
 
+def calculate_total_time(instance):
+    
+    history = instance.status_history or []
+    total_seconds = 0
+    
+    for i, entry in enumerate(history):
+        if not isinstance(entry, dict):
+            continue
+        if i + 1 >= len(history):
+            continue
+        next_entry = history[i + 1]
+        if not isinstance(next_entry, dict):
+            continue
+        try:
+            t1 = datetime.fromisoformat(str(entry.get("changed_at") or entry.get("timestamp")))
+            t2 = datetime.fromisoformat(str(next_entry.get("changed_at") or next_entry.get("timestamp")))
+            
+            if t1.tzinfo is None:
+                t1 = timezone.make_aware(t1)
+            if t2.tzinfo is None:
+                t2 = timezone.make_aware(t2)
+            
+            seconds = (t2 - t1).total_seconds()
+            if seconds >= 0:
+                total_seconds += seconds
+        except (KeyError, ValueError, TypeError):
+            continue
+    
+    if total_seconds > 0:
+        return "%02d:%02d:%02d" % (total_seconds // 3600, (total_seconds % 3600) // 60, total_seconds % 60)
+        
+    return None
 
 class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
+    total_time = serializers.SerializerMethodField()
+    
     class Meta:
         model = ExcavatorSubOrder
         fields = [
@@ -23,6 +59,7 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
             "before_files",
             "after_sign",
             "after_files",
+            "total_time",
             "created_at",
         ]
         read_only_fields = [
@@ -33,6 +70,7 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
             "before_files",
             "after_sign",
             "after_files",
+            "total_time",
         ]
 
     def to_representation(self, instance):
@@ -74,6 +112,8 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
             FileSerializer(instance.after_sign).data if instance.after_sign else None
         )
         rep["after_files"] = FileSerializer(instance.after_files.all(), many=True).data
+        rep["total_time"] = calculate_total_time(instance)
+
         return rep
 
 class ExcavatorSubOrderListSerializer(serializers.ModelSerializer):
