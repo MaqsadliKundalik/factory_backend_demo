@@ -7,6 +7,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.cell import range_boundaries
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
@@ -589,7 +591,16 @@ def fill_excavator_hisoboti(ws, orders):
 
 
 class ExcavatorHisobotiExcelView(APIView):
-
+    @swagger_auto_schema(
+        operation_summary="Download excavator report as Excel",
+        responses={
+            200: openapi.Response(
+                description="Excel file",
+                schema=openapi.Schema(type=openapi.TYPE_FILE),
+            )
+        },
+        produces=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    )
     def get(self, request):
         qs = ExcavatorOrder.objects.prefetch_related(
             'sub_orders__driver', 'sub_orders__transport',
