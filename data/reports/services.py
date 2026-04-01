@@ -45,7 +45,7 @@ def save_yuk_xati_file(order):
     workbook.save(buffer)
     buffer.seek(0)
 
-    file_name = f"files/yuk_xati_{order.id}.xlsx"
+    file_name = f"files/юк_хати_{order.id}.xlsx"
     if default_storage.exists(file_name):
         default_storage.delete(file_name)
     saved_name = default_storage.save(file_name, ContentFile(buffer.getvalue()))
