@@ -25,6 +25,7 @@ class ClientBranchesBulkSerializer(serializers.Serializer):
     oked = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     inn = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     director = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    contract = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 class ClientPhoneBulkSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True)
@@ -58,6 +59,7 @@ class ClientSerializer(serializers.ModelSerializer):
             "oked",
             "inn",
             "director",
+            "contract",
             "branches",
             "photo",
             "phone_numbers",
@@ -120,6 +122,7 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             "oked",
             "inn",
             "director",
+            "contract",
             "phone_numbers",
             "photo",
             "whouse",

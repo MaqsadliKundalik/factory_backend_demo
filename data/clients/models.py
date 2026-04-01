@@ -21,7 +21,6 @@ class Client(BaseModel):
     account_number = models.CharField(max_length=50, null=True, blank=True)
     mfo = models.CharField(max_length=20, null=True, blank=True)
     oked = models.CharField(max_length=20, null=True, blank=True)
-    inn = models.CharField(max_length=20, null=True, blank=True)
     director = models.CharField(max_length=255, null=True, blank=True)
 
     contract = models.CharField(max_length=255, null=True, blank=True)
