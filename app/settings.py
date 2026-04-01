@@ -36,7 +36,7 @@ SAYQAL_USERNAME = os.environ.get("SAYQAL_USERNAME")
 SAYQAL_TOKEN = os.environ.get("SAYQAL_TOKEN")
 SAYQAL_NICKNAME = os.environ.get("SAYQAL_NICKNAME")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 

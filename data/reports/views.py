@@ -1,5 +1,6 @@
 import io
 from datetime import datetime
+from urllib.parse import quote
 
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -151,7 +152,10 @@ def make_excel_response(wb, filename):
         buf.getvalue(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    encoded_filename = quote(filename)
+    response['Content-Disposition'] = (
+        f"attachment; filename=report.xlsx; filename*=UTF-8''{encoded_filename}"
+    )
     return response
 
 
@@ -593,12 +597,7 @@ def fill_excavator_hisoboti(ws, orders):
 class ExcavatorHisobotiExcelView(APIView):
     @swagger_auto_schema(
         operation_summary="Download excavator report as Excel",
-        responses={
-            200: openapi.Response(
-                description="Excel file",
-                schema=openapi.Schema(type=openapi.TYPE_FILE),
-            )
-        },
+        responses={200: "Excel file"},
         produces=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
     )
     def get(self, request):
