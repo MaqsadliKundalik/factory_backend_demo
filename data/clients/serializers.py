@@ -19,7 +19,6 @@ class ClientBranchesBulkSerializer(serializers.Serializer):
     address = serializers.CharField(required=True)
     longitude = serializers.FloatField(required=True)
     latitude = serializers.FloatField(required=True)
-    company = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     bank_name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     account_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     mfo = serializers.CharField(required=False, allow_blank=True, allow_null=True)
