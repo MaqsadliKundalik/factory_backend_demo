@@ -22,20 +22,20 @@ COMPANY = '«Қодир Инвест Сервис» МЧЖ'
 PHONES = '(+998) 94 444 05 38 Сейитжан   (+998) 77 707 71 72 Бегзат'
 
 STATUS_UZ = {
-    'NEW': 'Янги',
-    'IN_PROGRESS': 'Жараёнда',
-    'ON_WAY': "Йўлда",
-    'ARRIVED': 'Етиб келди',
-    'UNLOADING': 'Туширилмоқда',
-    'COMPLETED': 'Етказиб берилган',
-    'REJECTED': 'Бекор қилинган',
-    'PAUSED': "Тўхтатилган",
-    'EXPIRED': 'Муддати тугаган',
+    'NEW': 'Новый',
+    'IN_PROGRESS': 'В процессе',
+    'ON_WAY': 'В пути',
+    'ARRIVED': 'Прибыл',
+    'UNLOADING': 'Разгружается',
+    'COMPLETED': 'Доставлен',
+    'REJECTED': 'Отменен',
+    'PAUSED': 'Приостановлен',
+    'EXPIRED': 'Срок истек',
 }
 
 PAYMENT_STATUS_UZ = {
-    'PENDING': "Тўланмаган",
-    'PAID': "Тўланган",
+    'PENDING': 'Не оплачен',
+    'PAID': 'Оплачен',
 }
 
 
@@ -162,22 +162,22 @@ def make_excel_response(wb, filename):
 # ─── Sheet 1: Yuk xati ───────────────────────────────────────────────────────
 
 def fill_yuk_xati(ws, order):
-    ws.title = 'Юк хати'
+    ws.title = 'Накладная'
 
     for i, w in enumerate([20, 72, 46, 90, 72, 85], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
 
     sub_orders = list(order.sub_orders.all())
 
-    merge_val(ws, 'A1:G1', 'ЮК ХАТИ', bold=True, bottom=False)
-    merge_val(ws, 'A2:G2', f'Кимдан:  {COMPANY}', top=False, bottom=False)
-    merge_val(ws, 'A3:G3', f'Кимга: {order.client.name}  ИНН: {order.client.inn_number}',
+    merge_val(ws, 'A1:G1', 'НАКЛАДНАЯ', bold=True, bottom=False)
+    merge_val(ws, 'A2:G2', f'От кого:  {COMPANY}', top=False, bottom=False)
+    merge_val(ws, 'A3:G3', f'Кому: {order.client.name}  ИНН: {order.client.inn_number}',
               top=False)
 
     # Row 4 headers
     ws.merge_cells('B4:C4')
-    for col, val in [(1, '№'), (2, 'Махсулот номи'), (4, 'Ўлчов бирлиги'),
-                     (5, 'Микдори'), (6, 'Нархи'), (7, 'Суммаси')]:
+    for col, val in [(1, '№'), (2, 'Наименование товара'), (4, 'Единица измерения'),
+                     (5, 'Количество'), (6, 'Цена'), (7, 'Сумма')]:
         ws.cell(row=4, column=col, value=val)
     style_range(ws, 4, 1, 4, 7, border=True)
 
@@ -200,14 +200,14 @@ def fill_yuk_xati(ws, order):
 
     # Yetkazib beruvchilar title
     yb_title_row = items_end + 1
-    merge_val(ws, f'A{yb_title_row}:G{yb_title_row}', 'Етказиб берувчилар', bold=True, top=False, bottom=False)
+    merge_val(ws, f'A{yb_title_row}:G{yb_title_row}', 'Поставщики', bold=True, top=False, bottom=False)
 
     # sub_orders table headers
     yb_head_row = yb_title_row + 1
     ws.row_dimensions[yb_head_row].height = 36
     yb_headers = [
-        '№', 'автомобил рақами', 'шафёр', 'юк миқдори (куб)',
-        'заводдан \nчиқарилган вақти', 'Маҳсулот етказиб \nберилган вақти', 'Юк тушириб \nолинган вақти',
+        '№', 'номер автомобиля', 'водитель', 'объем груза (куб)',
+        'время выезда \nс завода', 'время доставки \nтовара', 'время разгрузки \nтовара',
     ]
     for ci, val in enumerate(yb_headers, 1):
         c = ws.cell(row=yb_head_row, column=ci, value=val)
@@ -235,12 +235,12 @@ def fill_yuk_xati(ws, order):
     qb_head_row = qb_title_row + 1
     qb_data_start = qb_head_row + 1
 
-    merge_val(ws, f'A{qb_title_row}:F{qb_title_row}', 'Қабул қилувчилар',
+    merge_val(ws, f'A{qb_title_row}:F{qb_title_row}', 'Получатели',
               bold=True, top=False, bottom=False)
 
     qb_headers = [
-        '№', 'автомобил', 'шафёр',
-        'Қабул қилувчи (исм)', 'Қабул қилувчи (лавозими)', 'ҳолати',
+        '№', 'автомобиль', 'водитель',
+        'Получатель (имя)', 'Получатель (должность)', 'статус',
     ]
     for ci, val in enumerate(qb_headers, 1):
         c = ws.cell(row=qb_head_row, column=ci, value=val)
@@ -254,22 +254,22 @@ def fill_yuk_xati(ws, order):
         ws.cell(row=row, column=2, value=so.transport.number if so.transport else '')
         ws.cell(row=row, column=3, value=so.driver.name if so.driver else '')
         ws.cell(row=row, column=4, value=order.client.name)
-        ws.cell(row=row, column=5, value='мижоз')
-        ws.cell(row=row, column=6, value='Қабул қилдим' if so.status == 'COMPLETED' else status_uz(so.status))
+        ws.cell(row=row, column=5, value='клиент')
+        ws.cell(row=row, column=6, value='Принял' if so.status == 'COMPLETED' else status_uz(so.status))
         style_range(ws, row, 1, row, 6, border=True)
 
     # Bottom
     bottom_row = qb_data_start + len(sub_orders)
     branch_addr = order.branch.address if order.branch else ''
     ws.merge_cells(f'B{bottom_row}:G{bottom_row}')
-    addr_cell = ws.cell(row=bottom_row, column=2, value=f'Манзил: {branch_addr}')
+    addr_cell = ws.cell(row=bottom_row, column=2, value=f'Адрес: {branch_addr}')
     addr_cell.font = _font()
     addr_cell.alignment = _align('left', wrap=True)
     ws.merge_cells(f'B{bottom_row + 1}:G{bottom_row + 1}')
     phone_cell = ws.cell(row=bottom_row + 1, column=2, value=PHONES)
     phone_cell.font = _font()
     phone_cell.alignment = _align('left')
-    imzo_cell = ws.cell(row=bottom_row + 2, column=5, value='Имзо:')
+    imzo_cell = ws.cell(row=bottom_row + 2, column=5, value='Подпись:')
     imzo_cell.font = _font()
     imzo_cell.alignment = _align()
 
@@ -279,31 +279,31 @@ def fill_yuk_xati(ws, order):
 # ─── Sheet 2: Ishonch qog'ozi ────────────────────────────────────────────────
 
 def fill_ishonch_qogozi(ws, order, sub_order, idx=None):
-    ws.title = "Ишонч қоғози" if idx is None else f"Ишонч қоғози {idx}"
+    ws.title = "Доверенность" if idx is None else f"Доверенность {idx}"
 
     for i, w in enumerate([28, 156, 76, 51, 61, 98], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
 
-    merge_val(ws, 'A1:F1', 'ЮК ХАТИ', bold=True, bottom=False)
-    merge_val(ws, 'A2:F2', f'Кимдан:  {COMPANY}', h='left', top=False, bottom=False)
+    merge_val(ws, 'A1:F1', 'НАКЛАДНАЯ', bold=True, bottom=False)
+    merge_val(ws, 'A2:F2', f'От кого:  {COMPANY}', h='left', top=False, bottom=False)
 
     date_cell = ws.cell(row=3, column=6, value=fmt_date(order.created_at))
     date_cell.font = _font()
     date_cell.alignment = _align()
     outer_border(ws, 3, 6, 3, 6, top=False, left=False, bottom=False, right=True)
 
-    merge_val(ws, 'A4:C4', f'Кимга: {order.client.name}',
+    merge_val(ws, 'A4:C4', f'Кому: {order.client.name}',
               h='left', top=False, bottom=False, right=False)
     merge_val(ws, 'D4:F4', f'ИНН: {order.client.inn_number}',
               h='left', top=False, left=False, bottom=False)
 
     driver_name = sub_order.driver.name if sub_order.driver else ''
     transport_num = sub_order.transport.number if sub_order.transport else ''
-    merge_val(ws, 'A5:F5', f"Ишонч қоғози:  {driver_name} / {transport_num}",
+    merge_val(ws, 'A5:F5', f"Доверенность:  {driver_name} / {transport_num}",
               h='left', top=False, bottom=False)
 
     # Row 6 headers
-    for ci, val in enumerate(['№', 'Маҳсулот номи', "Ўлчов бирлиги", 'Миқдори', 'нархи', 'Суммаси'], 1):
+    for ci, val in enumerate(['№', 'Наименование товара', 'Единица измерения', 'Количество', 'цена', 'Сумма'], 1):
         c = ws.cell(row=6, column=ci, value=val)
         c.font = _font()
         c.alignment = _align()
@@ -341,25 +341,25 @@ def fill_ishonch_qogozi(ws, order, sub_order, idx=None):
     merge_val(ws, f'A{phones_row}:F{phones_row}', PHONES, h='left', top=False, bottom=False)
 
     bottom_row = phones_row + 1
-    merge_val(ws, f'A{bottom_row}:B{bottom_row}', 'Топширди:', h='left', top=False, right=False)
-    merge_val(ws, f'C{bottom_row}:F{bottom_row}', 'Қабул қилди:', h='left', top=False, left=False)
+    merge_val(ws, f'A{bottom_row}:B{bottom_row}', 'Сдал:', h='left', top=False, right=False)
+    merge_val(ws, f'C{bottom_row}:F{bottom_row}', 'Принял:', h='left', top=False, left=False)
 
 
 # ─── Sheet 3: Buyurtmalar hisoboti ───────────────────────────────────────────
 
 def fill_buyurtmalar_hisoboti(ws, orders):
-    ws.title = "Буюртмалар бўйича ҳисобот"
+    ws.title = "Отчет по заказам"
 
     for i, w in enumerate([27, 153, 69, 40, 30, 40, 79, 90, 142], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
 
     ws.merge_cells('A1:I1')
-    ws['A1'].value = f"Буюртмалар бўйича ҳисобот {COMPANY}"
+    ws['A1'].value = f"Отчет по заказам {COMPANY}"
     ws['A1'].font = Font(name='Calibri', size=8)
     ws['A1'].alignment = _align()
 
-    for ci, val in enumerate(['№', 'Мижозлар', 'Маҳсулот номи', 'Миқдори', 'Бирлиги',
-                               'Нархи', 'Суммаси', 'Сана', 'Ҳолати'], 1):
+    for ci, val in enumerate(['№', 'Клиенты', 'Наименование товара', 'Количество', 'Единица',
+                               'Цена', 'Сумма', 'Дата', 'Статус'], 1):
         c = ws.cell(row=2, column=ci, value=val)
         c.font = _font()
         c.alignment = _align()
@@ -388,7 +388,7 @@ def fill_buyurtmalar_hisoboti(ws, orders):
 
     if row_num > 3:
         ws.merge_cells(f'A{row_num}:F{row_num}')
-        jami_cell = ws.cell(row=row_num, column=1, value='ЖАМИ:')
+        jami_cell = ws.cell(row=row_num, column=1, value='ИТОГО:')
         jami_cell.font = _font(bold=True)
         jami_cell.alignment = _align('right')
         gtotal_c = ws.cell(row=row_num, column=7, value=grand_total)
@@ -400,18 +400,18 @@ def fill_buyurtmalar_hisoboti(ws, orders):
 # ─── Sheet 4: Yetkazib beruvchilar hisoboti ──────────────────────────────────
 
 def fill_yetkazib_beruvchilar_hisoboti(ws, items):
-    ws.title = "Етказиб берувчилар бўйича ҳисобот"
+    ws.title = "Отчет по поставщикам"
 
     for i, w in enumerate([27, 161, 99, 119, 74, 81, 77, 94], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
 
     ws.merge_cells('A1:H1')
-    ws['A1'].value = "Етказиб берувчилар бўйича ҳисобот"
+    ws['A1'].value = "Отчет по поставщикам"
     ws['A1'].font = Font(name='Calibri', size=8)
     ws['A1'].alignment = _align()
 
-    for ci, val in enumerate(['№', 'Етказиб берувчи', 'Номери', 'Маҳсулот номи',
-                               'Тури', 'Миқдори', 'Бирлиги', 'Сана'], 1):
+    for ci, val in enumerate(['№', 'Поставщик', 'Номер', 'Наименование товара',
+                               'Тип', 'Количество', 'Единица', 'Дата'], 1):
         c = ws.cell(row=2, column=ci, value=val)
         c.font = _font()
         c.alignment = _align()
@@ -534,20 +534,20 @@ class YetkazibBeruvchilarHisobotiExcelView(APIView):
 # ─── Sheet 5: Ekskavator buyurtmalari hisoboti ──────────────────────────────
 
 def fill_excavator_hisoboti(ws, orders):
-    ws.title = "Экскаватор буюртмалари"
+    ws.title = "Заказы на экскаватор"
 
     for i, w in enumerate([27, 120, 80, 70, 70, 70, 80, 80, 100, 80], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
 
     ws.merge_cells('A1:J1')
-    ws['A1'].value = f"Экскаватор буюртмалари бўйича ҳисобот {COMPANY}"
+    ws['A1'].value = f"Отчет по заказам экскаватора {COMPANY}"
     ws['A1'].font = Font(name='Calibri', size=8)
     ws['A1'].alignment = _align()
 
     headers = [
-        '№', 'Мижоз', 'Телефон', 'Манзил',
-        'Бошланиш', 'Тугаш', 'Ҳолати',
-        "Тўлов", 'Ҳайдовчи', 'Транспорт',
+        '№', 'Клиент', 'Телефон', 'Адрес',
+        'Начало', 'Окончание', 'Статус',
+        'Оплата', 'Водитель', 'Транспорт',
     ]
     for ci, val in enumerate(headers, 1):
         c = ws.cell(row=2, column=ci, value=val)
@@ -588,7 +588,7 @@ def fill_excavator_hisoboti(ws, orders):
 
     if row_num > 3:
         ws.merge_cells(f'A{row_num}:H{row_num}')
-        jami_cell = ws.cell(row=row_num, column=1, value=f'ЖАМИ: {row_num - 3} та')
+        jami_cell = ws.cell(row=row_num, column=1, value=f'ИТОГО: {row_num - 3} шт.')
         jami_cell.font = _font(bold=True)
         jami_cell.alignment = _align('right')
         style_range(ws, row_num, 1, row_num, 10, border=True)
