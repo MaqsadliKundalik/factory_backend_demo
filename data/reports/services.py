@@ -72,5 +72,5 @@ def generate_yuk_xati_short_url(order_id):
     if not order:
         return None
 
-    file_url = save_yuk_xati_file(order)
+    file_url = save_yuk_xati_file(order )
     return shorten_url(file_url)
