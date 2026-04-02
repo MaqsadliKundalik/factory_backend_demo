@@ -414,7 +414,7 @@ class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
 class WhouseProductsStatsView(ProductStatsBaseView):
     serializer_class = WhouseProductsStatsSerializer
 
-    @swagger_auto_schema(manual_parameters=WHOUSE_PARAM + DATE_RANGE_PARAMS)
+    @swagger_auto_schema(manual_parameters=DATE_RANGE_PARAMS)
     def get(self, request):
         whouse_filter = self.get_whouse_filter(request)
         if whouse_filter is None:
