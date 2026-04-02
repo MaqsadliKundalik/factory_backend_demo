@@ -79,15 +79,6 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
             instance.driver.id,
             instance.order_id,
         )
-        for item in instance.sub_order_items.all():
-            WhouseProductsHistory.objects.create(
-                order_item=item,
-                whouse=instance.order.whouse,
-                product=item.product,
-                product_type=item.type,
-                quantity=item.quantity,
-                status="OUT",
-            )
 
         Notification.objects.create(
             from_role="admin",
@@ -116,17 +107,29 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
                 target_type=NotificationTargetObject.SUB_ORDER,
                 order_obj=instance,
             )
-        for item in instance.sub_order_items.all():
-            WhouseProductsHistory.objects.update_or_create(
-                order_item=item,
-                defaults={
-                    "whouse": instance.order.whouse,
-                    "product": item.product,
-                    "product_type": item.type,
-                    "quantity": item.quantity,
-                    "status": "OUT",
-                },
-            )
+        if instance.status == SubOrder.Status.ON_WAY:
+            for item in instance.sub_order_items.all():
+                WhouseProductsHistory.objects.create(
+                    order_item=item,
+                    whouse=instance.order.whouse,
+                    product=item.product,
+                    product_type=item.type,
+                    quantity=item.quantity,
+                    status="OUT",
+                )
+        else:
+            for item in instance.sub_order_items.all():
+                WhouseProductsHistory.objects.update_or_create(
+                    order_item=item,
+                    defaults={
+                        "whouse": instance.order.whouse,
+                        "product": item.product,
+                        "product_type": item.type,
+                        "quantity": item.quantity,
+                        "status": "OUT",
+                    },
+                )
+                
     print(f"Sending sms {instance.status}")
 
     if instance.status == SubOrder.Status.ON_WAY:

@@ -256,6 +256,55 @@ class OrderSerializer(serializers.ModelSerializer):
         rep["whouse"] = {"id": instance.whouse.id, "name": instance.whouse.name}
         return rep
 
+class OrderDetailSerializer(serializers.ModelSerializer):
+    display_id = serializers.ReadOnlyField(source="get_display_id")
+    completion_percentage = serializers.SerializerMethodField()
+    sub_orders = SubOrderSerializer(many=True, read_only=True)
+    order_items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "display_id",
+            "client",
+            "branch",
+            "payment_status",
+            "order_type",
+            "whouse",
+            "status",
+            "rejector_role",
+            "rejector_id",
+            "completion_percentage",
+            "created_at",
+            "sub_orders",
+            "order_items",
+        ]
+        read_only_fields = ["id", "display_id", "created_at"]
+
+    def get_completion_percentage(self, instance):
+        order_items = list(instance.order_items.all())
+        total_quantity = sum(float(item.quantity) for item in order_items)
+        if total_quantity <= 0:
+            return 0
+
+        completed_quantity = 0
+        for sub_order in instance.sub_orders.all():
+            if sub_order.status != SubOrder.Status.COMPLETED:
+                continue
+            for sub_item in sub_order.sub_order_items.all():
+                completed_quantity += float(sub_item.quantity)
+
+        percentage = (completed_quantity / total_quantity) * 100
+        return round(min(percentage, 100), 2)
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep["client"] = ClientSerializer(instance.client).data
+        rep["branch"] = ClientBranchesSerializer(instance.branch).data
+        rep["whouse"] = {"id": instance.whouse.id, "name": instance.whouse.name}
+        return rep
+
 
 class RejectOrderItemSerializer(serializers.Serializer):
     order_item_id = serializers.UUIDField()
