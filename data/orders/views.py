@@ -150,7 +150,7 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
-            return OrderWriteSerialize
+            return OrderWriteSerializer
         if self.action == "retrieve":
             return OrderDetailSerializer
         return OrderSerializer
