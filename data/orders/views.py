@@ -26,6 +26,7 @@ from .serialziers import (
     CompetedStatusSerializer,
     SubOrderListSerializer,
     RejectOrderSerializer,
+    OrderDetailSerializer,
 )
 from data.files.models import File
 
@@ -149,7 +150,9 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
-            return OrderWriteSerializer
+            return OrderWriteSerialize
+        if self.action == "retrieve":
+            return OrderDetailSerializer
         return OrderSerializer
 
     @swagger_auto_schema(manual_parameters=ORDER_FILTER_PARAMS)
