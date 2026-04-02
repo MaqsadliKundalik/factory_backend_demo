@@ -689,12 +689,8 @@ def fill_beton_perecheslenie_hisoboti(ws, rows, product_names, start_date=None, 
     ws.title = "Бетон"
 
     total_col = len(product_names) + 3
-    shipment_col = len(product_names) + 4
-    note_col = len(product_names) + 5
-    price_col = len(product_names) + 6
-    extra_col_1 = len(product_names) + 7
-    extra_col_2 = len(product_names) + 8
-    last_col = extra_col_2
+    price_col = len(product_names) + 4
+    last_col = price_col
 
     ws.sheet_view.showGridLines = False
     ws.freeze_panes = 'C3'
@@ -709,11 +705,7 @@ def fill_beton_perecheslenie_hisoboti(ws, rows, product_names, start_date=None, 
             width = 12.0
         ws.column_dimensions[get_column_letter(idx)].width = width
     ws.column_dimensions[get_column_letter(total_col)].width = 10.0
-    ws.column_dimensions[get_column_letter(shipment_col)].width = 8.6
-    ws.column_dimensions[get_column_letter(note_col)].width = 17.1
     ws.column_dimensions[get_column_letter(price_col)].width = 19.1
-    ws.column_dimensions[get_column_letter(extra_col_1)].width = 15.3
-    ws.column_dimensions[get_column_letter(extra_col_2)].width = 12.9
 
     ws.row_dimensions[1].height = 26.4
     ws.row_dimensions[2].height = 32
@@ -725,7 +717,7 @@ def fill_beton_perecheslenie_hisoboti(ws, rows, product_names, start_date=None, 
     style_range(ws, 1, 1, 1, last_col, bold=True, border=True)
     ws['A1'].alignment = _align(wrap=True)
 
-    headers = ['Дата', 'Клиент', *product_names, 'ОБЩИЙ', 'O', 'P', 'Q', 'R', 'S']
+    headers = ['Дата', 'Клиент', *product_names, 'ОБЩИЙ', 'НАРХ']
     for ci, val in enumerate(headers, 1):
         c = ws.cell(row=2, column=ci, value=val)
         c.font = _font(bold=True)
@@ -753,18 +745,14 @@ def fill_beton_perecheslenie_hisoboti(ws, rows, product_names, start_date=None, 
         else:
             ws.cell(row=index, column=total_col, value=0)
 
-        ws.cell(row=index, column=shipment_col, value='')
-        ws.cell(row=index, column=note_col, value='')
-        ws.cell(row=index, column=price_col, value='')
-        ws.cell(row=index, column=extra_col_1, value='')
-        ws.cell(row=index, column=extra_col_2, value='')
+        ws.cell(row=index, column=price_col, value=float(row['price_total']))
         style_range(ws, index, 1, index, last_col, border=True)
 
     total_row = data_start_row + len(rows)
     if rows:
         ws.row_dimensions[total_row].height = 22
         ws.cell(row=total_row, column=1, value='ИТОГО')
-        for col in range(start_product_col, total_col + 1):
+        for col in range(start_product_col, last_col + 1):
             col_letter = get_column_letter(col)
             ws.cell(row=total_row, column=col, value=f'=SUM({col_letter}{data_start_row}:{col_letter}{total_row - 1})')
         style_range(ws, total_row, 1, total_row, last_col, bold=True, border=True)
@@ -873,9 +861,11 @@ class BetonPerecheslenieHajmExcelView(APIView):
                     'date': row_key[0],
                     'client': row_key[1],
                     'products': {},
+                    'price_total': 0,
                 }
             product_name = item.product.name if item.product else ''
             grouped[row_key]['products'][product_name] = grouped[row_key]['products'].get(product_name, 0) + item.quantity
+            grouped[row_key]['price_total'] += float(item.quantity or 0) * float(item.price or 0)
 
         rows = list(grouped.values())
 
