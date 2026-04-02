@@ -44,6 +44,13 @@ ORDER_FILTER_PARAMS = DATE_FILTER_PARAMS + [
         "product", openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Product ID"
     ),
     openapi.Parameter(
+        "payment_status",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        description="Payment status",
+        enum=Order.PaymentStatus.choices,
+    ),
+    openapi.Parameter(
         "type",
         openapi.IN_QUERY,
         type=openapi.TYPE_STRING,
@@ -94,7 +101,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class OrderFilter(BaseDateFilterSet):
     class Meta:
         model = Order
-        fields = ["client", "branch", "whouse", "status"]
+        fields = ["client", "branch", "whouse", "status", "payment_status"]
 
 
 class SubOrderFilter(BaseDateFilterSet):
