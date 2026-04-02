@@ -52,7 +52,7 @@ def fmt_date(dt):
         except Exception:
             return str(dt)
     try:
-        return dt.strftime('%d.%m.%Y')
+        return dt.strftime('%d.%m.%Y %H:%M')
     except Exception:
         return str(dt)
 

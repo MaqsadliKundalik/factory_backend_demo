@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from utils.sayqal import SayqalSms
 
 
-
 if TYPE_CHECKING:
     from data.whouse.models import Whouse
     from data.drivers.models import Driver
@@ -15,6 +14,7 @@ if TYPE_CHECKING:
     from data.files.models import File
 
 sayqal = SayqalSms()
+
 
 class ExcavatorOrder(BaseModel):
     class Status(models.TextChoices):
@@ -28,7 +28,7 @@ class ExcavatorOrder(BaseModel):
     class PaymentStatus(models.TextChoices):
         PENDING = "PENDING", "Pending"
         PAID = "PAID", "Paid"
-        
+
     class Rejector(models.TextChoices):
         CLIENT = "CLIENT", "Client"
         OPERATOR = "OPERATOR", "Operator"
@@ -43,11 +43,11 @@ class ExcavatorOrder(BaseModel):
     lon = models.FloatField()
     address = models.CharField(max_length=512, null=True, blank=True)
 
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
 
     comment = models.TextField(null=True, blank=True)
-    
+
     rejector_role = models.CharField(max_length=20, null=True, blank=True)
     rejector_id = models.UUIDField(null=True, blank=True)
 
@@ -71,9 +71,10 @@ class ExcavatorOrder(BaseModel):
     def send_sms(self, message: str):
         res = sayqal.send_sms(self.phone_number, message)
         status = sayqal.status_sms(res.transactionid, res.smsid)
-        if status.status == 5: 
+        if status.status == 5:
             print("Unsupported template\n\n{msg}".format(msg=message))
         print("\n\n\n{status}\n\n{msg}\n\n\n".format(status=status.status, msg=message))
+
     def save(self, *args, **kwargs):
         if not self.display_id:
             last_order = ExcavatorOrder.all_objects.all().order_by("display_id").last()
@@ -137,7 +138,10 @@ class ExcavatorSubOrder(BaseModel):
         related_name="excavator_sub_orders_before_sign",
     )
     before_files = models.ManyToManyField(
-        "files.File", blank=True, related_name="excavator_suborder_before_files", null=True
+        "files.File",
+        blank=True,
+        related_name="excavator_suborder_before_files",
+        null=True,
     )
     after_sign: "File" = models.ForeignKey(
         "files.File",
@@ -147,7 +151,10 @@ class ExcavatorSubOrder(BaseModel):
         related_name="excavator_sub_orders_after_sign",
     )
     after_files = models.ManyToManyField(
-        "files.File", blank=True, related_name="excavator_suborder_after_files", null=True
+        "files.File",
+        blank=True,
+        related_name="excavator_suborder_after_files",
+        null=True,
     )
 
     def __str__(self):

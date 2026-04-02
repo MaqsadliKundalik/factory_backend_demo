@@ -10,13 +10,55 @@ import time
 
 logger = logging.getLogger(__name__)
 
+def _format_order_items_for_sms(order: Order):
+    items = order.order_items.select_related("product", "type", "unit")
+    return "\n".join(
+        [
+            "- {name} {type_name} ({quantity} {unit})".format(
+                name=item.product.name,
+                type_name=item.type.name,
+                quantity=item.quantity,
+                unit=item.unit.name,
+            ).strip()
+            for item in items
+        ]
+    )
+
+
+def _format_completed_order_items_for_sms(order: Order):
+    completed_items = {}
+    completed_sub_orders = order.sub_orders.filter(status=SubOrder.Status.COMPLETED).prefetch_related(
+        "sub_order_items__product", "sub_order_items__type", "sub_order_items__unit"
+    )
+    for sub_order in completed_sub_orders:
+        for item in sub_order.sub_order_items.all():
+            key = (item.product.name, item.type.name, item.unit.name)
+            completed_items[key] = completed_items.get(key, 0) + item.quantity
+    return "\n".join(
+        [
+            "- {name} {type_name} ({quantity} {unit})".format(
+                name=name,
+                type_name=type_name,
+                quantity=quantity,
+                unit=unit,
+            ).strip()
+            for (name, type_name, unit), quantity in completed_items.items()
+        ]
+    )
+
 @receiver(post_save, sender=Order)
 def order_signals(sender, instance: Order, created, **kwargs):
     print(f"Sending sms {instance.status}")
 
     if created and instance.status == Order.Status.NEW:
+        items_text = _format_order_items_for_sms(instance)
+        sms_message = "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.".format(
+            id=instance.display_id
+        )
+        if items_text:
+            sms_message += "\n\nСостав заказа:\n{items}".format(items=items_text)
         instance.client.send_sms(
-            "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.".format(id=instance.display_id)
+            sms_message
         )
     
     if instance.status == Order.Status.REJECTED:
@@ -27,6 +69,9 @@ def order_signals(sender, instance: Order, created, **kwargs):
     if instance.status == Order.Status.COMPLETED:
         print("Tayyorlanmoqda")
         sms_message = "Уважаемый клиент, ваш заказ №{instance.display_id} был успешно завершён.".format(instance=instance)
+        completed_items_text = _format_completed_order_items_for_sms(instance)
+        if completed_items_text:
+            sms_message += "\n\nДоставленные товары:\n{items}".format(items=completed_items_text)
         yuk_xati_url = generate_yuk_xati_short_url(instance.id)
         if yuk_xati_url:
             sms_message += "\n\nТоварно-транспортная накладная: {yuk_xati_url}".format(yuk_xati_url=yuk_xati_url)

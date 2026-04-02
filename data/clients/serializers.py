@@ -122,7 +122,7 @@ class ClientAndBranchesBulkSerializer(serializers.ModelSerializer):
             "contract",
             "phone_numbers",
             "photo",
-            "whouse",
+            "whouse",   
             "branches",
         ]
         extra_kwargs = {
