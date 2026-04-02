@@ -160,6 +160,7 @@ class SubOrderInlineSerializer(serializers.ModelSerializer):
 
 class SubOrderSerializer(serializers.ModelSerializer):
     status_history = StatusHistorySerializer(many=True, read_only=True)
+    sub_order_items = SubOrderItemWriteSerializer(many=True, required=False)
 
     class Meta:
         model = SubOrder
@@ -171,7 +172,8 @@ class SubOrderSerializer(serializers.ModelSerializer):
             "status",
             "status_history",
             "sign",
-            "files",
+            "files",           
+            "sub_order_items",
             "created_at",
         ]
         read_only_fields = ["id", "sign", "created_at"]
@@ -265,7 +267,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            "id",
+            "id",       
             "display_id",
             "client",
             "branch",
