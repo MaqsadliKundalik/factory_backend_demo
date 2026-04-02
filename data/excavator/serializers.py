@@ -73,6 +73,9 @@ class ExcavatorSubOrderSerializer(serializers.ModelSerializer):
             "total_time",
         ]
 
+    def get_total_time(self, obj):
+        return calculate_total_time(obj)
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["parent"] = {
