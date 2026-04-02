@@ -54,23 +54,26 @@ def save_yuk_xati_file(order):
 
 
 def shorten_url(url):
-    response = requests.get(
-        'https://is.gd/create.php',
-        params={'format': 'simple', 'url': url},
-        timeout=10,
-    )
-    if response.status_code == 200:
-        short_url = response.text.strip()
-        if short_url.startswith('https://is.gd/'):
-            return short_url
+    try:
+        response = requests.get(
+            'https://is.gd/create.php',
+            params={'format': 'simple', 'url': url},
+            timeout=10,
+        )
+        if response.status_code == 200:
+            short_url = response.text.strip()
+            if short_url.startswith('https://is.gd/'):
+                return short_url
+    except requests.RequestException:
+        logger.exception('Failed to shorten yuk xati url')
 
     return url
 
 
-def generate_yuk_xati_short_url(order_id):
-    order = get_yuk_xati_order(order_id)
+def generate_yuk_xati_short_url(order_or_id):
+    order = order_or_id if isinstance(order_or_id, Order) else get_yuk_xati_order(order_or_id)
     if not order:
         return None
 
-    file_url = save_yuk_xati_file(order )
+    file_url = save_yuk_xati_file(order)
     return shorten_url(file_url)

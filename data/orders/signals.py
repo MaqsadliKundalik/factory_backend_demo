@@ -63,7 +63,7 @@ def order_signals(sender, instance: Order, created, **kwargs):
         completed_items_text = _format_completed_order_items_for_sms(instance)
         if completed_items_text:
             sms_message += "\n\nДоставленные товары:\n{items}".format(items=completed_items_text)
-        yuk_xati_url = generate_yuk_xati_short_url(instance.id)
+        yuk_xati_url = generate_yuk_xati_short_url(instance)
         if yuk_xati_url:
             sms_message += "\n\nТоварно-транспортная накладная: {yuk_xati_url}".format(yuk_xati_url=yuk_xati_url)
         print("Tayor\n\n{msg}".format(msg=sms_message))       
