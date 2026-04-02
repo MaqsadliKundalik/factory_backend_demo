@@ -40,6 +40,44 @@ class ClientPhoneSerializer(serializers.ModelSerializer):
             "client": {"read_only": False, "required": False},
         }
 
+        validators = []
+
+    def validate(self, attrs):
+        current_instance = self.instance
+        client = attrs.get("client")
+        phone_number = attrs.get("phone_number")
+        phone_id = attrs.get("id") or getattr(self, "initial_data", {}).get("id")
+
+        parent_serializer = getattr(getattr(self, "parent", None), "parent", None)
+        if client is None and getattr(parent_serializer, "instance", None) is not None:
+            client = parent_serializer.instance
+
+        if current_instance is None and phone_id and client is not None:
+            current_instance = ClientPhone.objects.filter(
+                pk=phone_id,
+                client=client,
+            ).first()
+
+        if current_instance is not None:
+            client = client or current_instance.client
+            phone_number = phone_number or current_instance.phone_number
+
+        if client and phone_number:
+            queryset = ClientPhone.objects.filter(
+                client=client,
+                phone_number=phone_number,
+            )
+
+            if current_instance is not None:
+                queryset = queryset.exclude(pk=current_instance.pk)
+
+            if queryset.exists():
+                raise serializers.ValidationError(
+                    {"phone_number": "Bu telefon raqam ushbu klient uchun allaqachon mavjud."}
+                )
+
+        return attrs
+
 
 class ClientSerializer(serializers.ModelSerializer):
     branches = ClientBranchesSerializer(many=True, read_only=True)

@@ -610,6 +610,9 @@ def fill_excavator_hisoboti(ws, orders):
 def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
     ws.title = "Калькуляция"
 
+    ws.sheet_view.showGridLines = False
+    ws.freeze_panes = 'A2'
+
     for i, w in enumerate([96] + [92] * max(len(rows), 1) + [104, 91], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
 
@@ -624,13 +627,17 @@ def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
     unit_col = len(type_names) + 3
     last_col_letter = get_column_letter(unit_col)
 
-    merge_val(ws, f'A30:{last_col_letter}30', '1 кубга кетадиган махсулот', bold=True, bottom=False)
-    style_range(ws, 30, 1, 30, unit_col, bold=True, border=True)
+    ws.row_dimensions[1].height = 26.4
+    ws.row_dimensions[2].height = 28
+
+    merge_val(ws, f'A1:{last_col_letter}1', '1 кубга кетадиган махсулот', bold=True, bottom=False)
+    style_range(ws, 1, 1, 1, unit_col, bold=True, border=True)
+    ws['A1'].alignment = _align(wrap=True)
 
     headers = ['Сырье', *type_names, 'ИТОГО', 'Единица']
 
     for ci, val in enumerate(headers, 1):
-        c = ws.cell(row=32, column=ci, value=val)
+        c = ws.cell(row=2, column=ci, value=val)
         c.font = _font(bold=True)
         c.alignment = _align(wrap=True)
         c.border = ALL_BORDER
@@ -647,10 +654,12 @@ def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
         for item in rows
     }
 
-    data_start_row = 33
+    data_start_row = 3
     for idx, (product_name, unit_name) in enumerate(products):
         row_num = data_start_row + idx
+        ws.row_dimensions[row_num].height = 22
         ws.cell(row=row_num, column=1, value=product_name)
+        ws.cell(row=row_num, column=1).alignment = _align('left', wrap=True)
         for offset, type_name in enumerate(type_names, start=2):
             base_quantity = quantity_map.get((product_name, type_name), 0)
             if base_quantity:
@@ -668,6 +677,7 @@ def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
 
     total_row = data_start_row + len(products)
     if products:
+        ws.row_dimensions[total_row].height = 22
         ws.cell(row=total_row, column=1, value='ИТОГО')
         for col in range(2, total_col + 1):
             col_letter = get_column_letter(col)
