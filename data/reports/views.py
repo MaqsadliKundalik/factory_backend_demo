@@ -1,4 +1,5 @@
 import io
+import re
 from datetime import datetime
 from urllib.parse import quote
 
@@ -42,6 +43,15 @@ PAYMENT_STATUS_UZ = {
 
 def status_uz(s):
     return STATUS_UZ.get(s, s)
+
+
+def type_sort_key(type_name):
+    if not type_name:
+        return (1, float('inf'), '')
+    match = re.search(r'(\d+(?:\.\d+)?)', str(type_name))
+    if match:
+        return (0, float(match.group(1)), str(type_name))
+    return (1, float('inf'), str(type_name))
 
 
 def fmt_date(dt):
@@ -611,7 +621,7 @@ def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
         type_name = item['product_type__name'] or ''
         if type_name and type_name not in type_names:
             type_names.append(type_name)
-    type_names = type_names[:8]
+    type_names = sorted(type_names, key=type_sort_key)[:8]
 
     headers = ['Сырье', *type_names]
     while len(headers) < 9:
