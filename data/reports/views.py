@@ -610,23 +610,24 @@ def fill_excavator_hisoboti(ws, orders):
 def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
     ws.title = "Калькуляция"
 
-    for i, w in enumerate([96, 94, 83, 91, 92, 104, 96, 92, 91, 104, 91], 1):
+    for i, w in enumerate([96] + [92] * max(len(rows), 1) + [104, 91], 1):
         ws.column_dimensions[get_column_letter(i)].width = px(w)
-
-    merge_val(ws, 'A30:K30', '1 кубга кетадиган махсулот', bold=True, bottom=False)
-    style_range(ws, 30, 1, 30, 11, bold=True, border=True)
 
     type_names = []
     for item in rows:
         type_name = item['product_type__name'] or ''
         if type_name and type_name not in type_names:
             type_names.append(type_name)
-    type_names = sorted(type_names, key=type_sort_key)[:8]
+    type_names = sorted(type_names, key=type_sort_key)
 
-    headers = ['Сырье', *type_names]
-    while len(headers) < 9:
-        headers.append('')
-    headers.extend(['ИТОГО', 'Единица'])
+    total_col = len(type_names) + 2
+    unit_col = len(type_names) + 3
+    last_col_letter = get_column_letter(unit_col)
+
+    merge_val(ws, f'A30:{last_col_letter}30', '1 кубга кетадиган махсулот', bold=True, bottom=False)
+    style_range(ws, 30, 1, 30, unit_col, bold=True, border=True)
+
+    headers = ['Сырье', *type_names, 'ИТОГО', 'Единица']
 
     for ci, val in enumerate(headers, 1):
         c = ws.cell(row=32, column=ci, value=val)
@@ -659,19 +660,19 @@ def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
         if type_names:
             start_col = get_column_letter(2)
             end_col = get_column_letter(1 + len(type_names))
-            ws.cell(row=row_num, column=10, value=f'=SUM({start_col}{row_num}:{end_col}{row_num})')
+            ws.cell(row=row_num, column=total_col, value=f'=SUM({start_col}{row_num}:{end_col}{row_num})')
         else:
-            ws.cell(row=row_num, column=10, value=0)
-        ws.cell(row=row_num, column=11, value=unit_name)
-        style_range(ws, row_num, 1, row_num, 11, border=True)
+            ws.cell(row=row_num, column=total_col, value=0)
+        ws.cell(row=row_num, column=unit_col, value=unit_name)
+        style_range(ws, row_num, 1, row_num, unit_col, border=True)
 
     total_row = data_start_row + len(products)
     if products:
         ws.cell(row=total_row, column=1, value='ИТОГО')
-        for col in range(2, 11):
+        for col in range(2, total_col + 1):
             col_letter = get_column_letter(col)
             ws.cell(row=total_row, column=col, value=f'=SUM({col_letter}{data_start_row}:{col_letter}{total_row - 1})')
-        style_range(ws, total_row, 1, total_row, 11, bold=True, border=True)
+        style_range(ws, total_row, 1, total_row, unit_col, bold=True, border=True)
 
 
 class ExcavatorHisobotiExcelView(APIView):
