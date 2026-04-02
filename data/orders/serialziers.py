@@ -316,7 +316,8 @@ class OrderWriteSerializer(serializers.ModelSerializer):
         order.client.send_sms(
             sms_message
         )
-    
+        return order
+     
 
     def update(self, instance, validated_data):
         sub_orders_data = validated_data.pop("sub_orders", None)
