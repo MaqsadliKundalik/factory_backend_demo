@@ -259,7 +259,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderDetailSerializer(serializers.ModelSerializer):
     display_id = serializers.ReadOnlyField(source="get_display_id")
     completion_percentage = serializers.SerializerMethodField()
-    sub_orders = SubOrderSerializer(many=True, read_only=True)
+    sub_orders = SubOrderInlineSerializer(many=True, read_only=True)
     order_items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:
