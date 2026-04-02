@@ -15,7 +15,7 @@ from drf_yasg import openapi
 
 from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
-from data.orders.models import Order
+from data.orders.models import Order, OrderItem
 from data.excavator.models import ExcavatorOrder
 from data.products.models import WhouseProducts, WhouseProductsHistory, HistoryStatus
 
@@ -675,6 +675,91 @@ def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
         style_range(ws, total_row, 1, total_row, unit_col, bold=True, border=True)
 
 
+def fill_beton_perecheslenie_hisoboti(ws, rows, product_names, start_date=None, end_date=None):
+    ws.title = "Бетон"
+
+    total_col = len(product_names) + 3
+    shipment_col = len(product_names) + 4
+    note_col = len(product_names) + 5
+    price_col = len(product_names) + 6
+    extra_col_1 = len(product_names) + 7
+    extra_col_2 = len(product_names) + 8
+    last_col = extra_col_2
+
+    ws.sheet_view.showGridLines = False
+    ws.freeze_panes = 'C3'
+
+    ws.column_dimensions['A'].width = 14.1
+    ws.column_dimensions['B'].width = 41.6
+    for idx, product_name in enumerate(product_names, start=3):
+        width = 10.9
+        if len(str(product_name)) > 14:
+            width = 13.5
+        elif len(str(product_name)) > 10:
+            width = 12.0
+        ws.column_dimensions[get_column_letter(idx)].width = width
+    ws.column_dimensions[get_column_letter(total_col)].width = 10.0
+    ws.column_dimensions[get_column_letter(shipment_col)].width = 8.6
+    ws.column_dimensions[get_column_letter(note_col)].width = 17.1
+    ws.column_dimensions[get_column_letter(price_col)].width = 19.1
+    ws.column_dimensions[get_column_letter(extra_col_1)].width = 15.3
+    ws.column_dimensions[get_column_letter(extra_col_2)].width = 12.9
+
+    ws.row_dimensions[1].height = 26.4
+    ws.row_dimensions[2].height = 32
+
+    title = 'БЕТОН ПЕРЕЧЕСЛЕНИЕ ОБЬЕМ'
+    if start_date or end_date:
+        title += f' ({start_date or "..."} - {end_date or "..."})'
+    merge_val(ws, f'A1:{get_column_letter(last_col)}1', title, bold=True)
+    style_range(ws, 1, 1, 1, last_col, bold=True, border=True)
+    ws['A1'].alignment = _align(wrap=True)
+
+    headers = ['Дата', 'Клиент', *product_names, 'ОБЩИЙ', 'O', 'P', 'Q', 'R', 'S']
+    for ci, val in enumerate(headers, 1):
+        c = ws.cell(row=2, column=ci, value=val)
+        c.font = _font(bold=True)
+        c.alignment = _align(wrap=True)
+        c.border = ALL_BORDER
+
+    start_product_col = 3
+    end_product_col = start_product_col + len(product_names) - 1
+    data_start_row = 3
+
+    for index, row in enumerate(rows, start=data_start_row):
+        ws.row_dimensions[index].height = 22
+        ws.cell(row=index, column=1, value=row['date'])
+        ws.cell(row=index, column=2, value=row['client'])
+        ws.cell(row=index, column=1).alignment = _align()
+        ws.cell(row=index, column=2).alignment = _align('left', wrap=True)
+
+        for offset, product_name in enumerate(product_names, start=start_product_col):
+            value = row['products'].get(product_name)
+            if value not in (None, 0, 0.0):
+                ws.cell(row=index, column=offset, value=float(value))
+
+        if product_names:
+            ws.cell(row=index, column=total_col, value=f'=SUM({get_column_letter(start_product_col)}{index}:{get_column_letter(end_product_col)}{index})')
+        else:
+            ws.cell(row=index, column=total_col, value=0)
+
+        ws.cell(row=index, column=shipment_col, value='')
+        ws.cell(row=index, column=note_col, value='')
+        ws.cell(row=index, column=price_col, value='')
+        ws.cell(row=index, column=extra_col_1, value='')
+        ws.cell(row=index, column=extra_col_2, value='')
+        style_range(ws, index, 1, index, last_col, border=True)
+
+    total_row = data_start_row + len(rows)
+    if rows:
+        ws.row_dimensions[total_row].height = 22
+        ws.cell(row=total_row, column=1, value='ИТОГО')
+        for col in range(start_product_col, total_col + 1):
+            col_letter = get_column_letter(col)
+            ws.cell(row=total_row, column=col, value=f'=SUM({col_letter}{data_start_row}:{col_letter}{total_row - 1})')
+        style_range(ws, total_row, 1, total_row, last_col, bold=True, border=True)
+
+
 class ExcavatorHisobotiExcelView(APIView):
     @swagger_auto_schema(
         operation_summary="Download excavator report as Excel",
@@ -739,3 +824,51 @@ class KalkulyatsiyaHisobotiExcelView(APIView):
         wb = Workbook()
         fill_kalkulyatsiya_hisoboti(wb.active, rows, pi)
         return make_excel_response(wb, 'калькуляция_ҳисоботи.xlsx')
+
+
+class BetonPerecheslenieHajmExcelView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(read_perm="ORDERS_PAGE")]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('start_date', openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Start date YYYY-MM-DD'),
+            openapi.Parameter('end_date', openapi.IN_QUERY, type=openapi.TYPE_STRING, description='End date YYYY-MM-DD'),
+        ],
+        responses={200: 'Excel file'},
+        produces=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    )
+    def get(self, request):
+        qs = OrderItem.objects.select_related(
+            'order__client', 'product', 'type'
+        )
+
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        if start_date:
+            qs = qs.filter(order__created_at__date__gte=start_date)
+        if end_date:
+            qs = qs.filter(order__created_at__date__lte=end_date)
+
+        product_names = sorted(list(qs.values_list('product__name', flat=True).distinct()))
+
+        grouped = {}
+        for item in qs.order_by('order__created_at', 'order__client__name', 'product__name', 'type__name'):
+            row_key = (
+                item.order.created_at.date().isoformat() if item.order and item.order.created_at else '',
+                item.order.client.name if item.order and item.order.client else '',
+            )
+            if row_key not in grouped:
+                grouped[row_key] = {
+                    'date': row_key[0],
+                    'client': row_key[1],
+                    'products': {},
+                }
+            product_name = item.product.name if item.product else ''
+            grouped[row_key]['products'][product_name] = grouped[row_key]['products'].get(product_name, 0) + item.quantity
+
+        rows = list(grouped.values())
+
+        wb = Workbook()
+        fill_beton_perecheslenie_hisoboti(wb.active, rows, product_names, start_date, end_date)
+        return make_excel_response(wb, 'бетон_перечисление_объем.xlsx')

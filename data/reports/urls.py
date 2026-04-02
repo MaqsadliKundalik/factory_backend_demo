@@ -6,6 +6,7 @@ from .views import (
     YetkazibBeruvchilarHisobotiExcelView,
     ExcavatorHisobotiExcelView,
     KalkulyatsiyaHisobotiExcelView,
+    BetonPerecheslenieHajmExcelView,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('orders-report/', BuyurtmalarHisobotiExcelView.as_view(), name='orders-report-excel'),
     path('excavator-report/', ExcavatorHisobotiExcelView.as_view(), name='excavator-report-excel'),
     path('kalkulyatsiya-report/', KalkulyatsiyaHisobotiExcelView.as_view(), name='kalkulyatsiya-report-excel'),
+    path('beton-perecheslenie-report/', BetonPerecheslenieHajmExcelView.as_view(), name='beton-perecheslenie-report-excel'),
 ]
