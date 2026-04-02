@@ -5,6 +5,7 @@ from .views import (
     BuyurtmalarHisobotiExcelView,
     YetkazibBeruvchilarHisobotiExcelView,
     ExcavatorHisobotiExcelView,
+    KalkulyatsiyaHisobotiExcelView,
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('proxy/<uuid:pk>/', IshonchQogoziExcelView.as_view(), name='proxy-excel'),
     path('orders-report/', BuyurtmalarHisobotiExcelView.as_view(), name='orders-report-excel'),
     path('excavator-report/', ExcavatorHisobotiExcelView.as_view(), name='excavator-report-excel'),
+    path('kalkulyatsiya-report/', KalkulyatsiyaHisobotiExcelView.as_view(), name='kalkulyatsiya-report-excel'),
 ]

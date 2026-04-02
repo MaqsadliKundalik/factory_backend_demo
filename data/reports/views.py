@@ -3,6 +3,7 @@ from datetime import datetime
 from urllib.parse import quote
 
 from django.http import HttpResponse
+from django.db.models import Sum
 from rest_framework.views import APIView
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
@@ -15,7 +16,7 @@ from apps.common.auth.authentication import UnifiedJWTAuthentication
 from apps.common.permissions import HasDynamicPermission
 from data.orders.models import Order
 from data.excavator.models import ExcavatorOrder
-from data.products.models import WhouseProducts
+from data.products.models import WhouseProducts, WhouseProductsHistory, HistoryStatus
 
 
 COMPANY = '«Қодир Инвест Сервис» МЧЖ'
@@ -596,6 +597,73 @@ def fill_excavator_hisoboti(ws, orders):
         style_range(ws, row_num, 1, row_num, 10, border=True)
 
 
+def fill_kalkulyatsiya_hisoboti(ws, rows, pi):
+    ws.title = "Калькуляция"
+
+    for i, w in enumerate([96, 94, 83, 91, 92, 104, 96, 92, 91, 104, 91], 1):
+        ws.column_dimensions[get_column_letter(i)].width = px(w)
+
+    merge_val(ws, 'A30:K30', '1 кубга кетадиган махсулот', bold=True, bottom=False)
+    style_range(ws, 30, 1, 30, 11, bold=True, border=True)
+
+    type_names = []
+    for item in rows:
+        type_name = item['product_type__name'] or ''
+        if type_name and type_name not in type_names:
+            type_names.append(type_name)
+    type_names = type_names[:8]
+
+    headers = ['Сырье', *type_names]
+    while len(headers) < 9:
+        headers.append('')
+    headers.extend(['ИТОГО', 'Единица'])
+
+    for ci, val in enumerate(headers, 1):
+        c = ws.cell(row=32, column=ci, value=val)
+        c.font = _font(bold=True)
+        c.alignment = _align(wrap=True)
+        c.border = ALL_BORDER
+
+    products = []
+    for item in rows:
+        product_name = item['product__name']
+        unit_name = item['product__unit__name'] or ''
+        if (product_name, unit_name) not in products:
+            products.append((product_name, unit_name))
+
+    quantity_map = {
+        (item['product__name'], item['product_type__name'] or ''): float(item['total_quantity'] or 0)
+        for item in rows
+    }
+
+    data_start_row = 33
+    for idx, (product_name, unit_name) in enumerate(products):
+        row_num = data_start_row + idx
+        ws.cell(row=row_num, column=1, value=product_name)
+        for offset, type_name in enumerate(type_names, start=2):
+            base_quantity = quantity_map.get((product_name, type_name), 0)
+            if base_quantity:
+                ws.cell(row=row_num, column=offset, value=f'={base_quantity}*{pi}')
+            else:
+                ws.cell(row=row_num, column=offset, value=None)
+        if type_names:
+            start_col = get_column_letter(2)
+            end_col = get_column_letter(1 + len(type_names))
+            ws.cell(row=row_num, column=10, value=f'=SUM({start_col}{row_num}:{end_col}{row_num})')
+        else:
+            ws.cell(row=row_num, column=10, value=0)
+        ws.cell(row=row_num, column=11, value=unit_name)
+        style_range(ws, row_num, 1, row_num, 11, border=True)
+
+    total_row = data_start_row + len(products)
+    if products:
+        ws.cell(row=total_row, column=1, value='ИТОГО')
+        for col in range(2, 11):
+            col_letter = get_column_letter(col)
+            ws.cell(row=total_row, column=col, value=f'=SUM({col_letter}{data_start_row}:{col_letter}{total_row - 1})')
+        style_range(ws, total_row, 1, total_row, 11, bold=True, border=True)
+
+
 class ExcavatorHisobotiExcelView(APIView):
     @swagger_auto_schema(
         operation_summary="Download excavator report as Excel",
@@ -615,3 +683,48 @@ class ExcavatorHisobotiExcelView(APIView):
         wb = Workbook()
         fill_excavator_hisoboti(wb.active, list(qs))
         return make_excel_response(wb, 'экскаватор_ҳисоботи.xlsx')
+
+
+class KalkulyatsiyaHisobotiExcelView(APIView):
+    authentication_classes = [UnifiedJWTAuthentication]
+    permission_classes = [HasDynamicPermission(read_perm="ORDERS_PAGE")]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('pi', openapi.IN_QUERY, type=openapi.TYPE_NUMBER, required=True, description='Multiplier value'),
+            openapi.Parameter('start_date', openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Start date YYYY-MM-DD'),
+            openapi.Parameter('end_date', openapi.IN_QUERY, type=openapi.TYPE_STRING, description='End date YYYY-MM-DD'),
+        ],
+        responses={200: 'Excel file'},
+        produces=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    )
+    def get(self, request):
+        pi = request.query_params.get('pi')
+        if pi in (None, ''):
+            return HttpResponse('pi is required', status=400)
+
+        qs = WhouseProductsHistory.objects.filter(
+            status=HistoryStatus.OUT,
+            product__items__isnull=True,
+        ).select_related('product', 'product_type', 'product__unit')
+
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        if start_date:
+            qs = qs.filter(created_at__date__gte=start_date)
+        if end_date:
+            qs = qs.filter(created_at__date__lte=end_date)
+
+        rows = list(
+            qs.values(
+                'product__name',
+                'product_type__name',
+                'product__unit__name',
+            )
+            .annotate(total_quantity=Sum('quantity'))
+            .order_by('product__name', 'product_type__name', 'product__unit__name')
+        )
+
+        wb = Workbook()
+        fill_kalkulyatsiya_hisoboti(wb.active, rows, pi)
+        return make_excel_response(wb, 'калькуляция_ҳисоботи.xlsx')
