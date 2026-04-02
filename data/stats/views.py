@@ -8,6 +8,8 @@ from data.stats.serializers import (
     SimpleCountStatsSerializer,
     IncomeProductStatsSerializer,
     OutcomingProductStatsSerializer,
+    ProductStatsSerializer,
+    WhouseProductsStatsSerializer,
     SupplierIncomeProductStatsSerializer,
     OrderStatusStatsSerializer,
     StatusDurationSerializer,
@@ -180,6 +182,96 @@ def _build_outcoming_product_stats(outcoming_rows):
     return data
 
 
+def _build_whouse_products_stats(income_rows, outcoming_rows):
+    product_map = {}
+
+    for row in income_rows:
+        product_name = row["product__name"] or ""
+        type_name = row["product_type__name"] or ""
+        unit_name = row["product__unit__name"] or ""
+        income_value = _to_float(row["income"])
+
+        product_entry = product_map.setdefault(
+            product_name,
+            {
+                "product": product_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "remaining": 0.0,
+                "breakdown": {},
+            },
+        )
+        breakdown_key = (type_name, unit_name)
+        breakdown_entry = product_entry["breakdown"].setdefault(
+            breakdown_key,
+            {
+                "type": type_name,
+                "unit": unit_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "total": 0.0,
+            },
+        )
+
+        product_entry["income"] += income_value
+        breakdown_entry["income"] += income_value
+        breakdown_entry["total"] += income_value
+
+    for row in outcoming_rows:
+        product_name = row["product__name"] or ""
+        type_name = row["type__name"] or ""
+        unit_name = row["unit__name"] or ""
+        outcoming_value = _to_float(row["outcoming"])
+
+        product_entry = product_map.setdefault(
+            product_name,
+            {
+                "product": product_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "remaining": 0.0,
+                "breakdown": {},
+            },
+        )
+        breakdown_key = (type_name, unit_name)
+        breakdown_entry = product_entry["breakdown"].setdefault(
+            breakdown_key,
+            {
+                "type": type_name,
+                "unit": unit_name,
+                "income": 0.0,
+                "outcoming": 0.0,
+                "total": 0.0,
+            },
+        )
+
+        product_entry["outcoming"] += outcoming_value
+        breakdown_entry["outcoming"] += outcoming_value
+        breakdown_entry["total"] += outcoming_value
+
+    for product_name in product_map:
+        product_entry = product_map[product_name]
+        product_entry["remaining"] = product_entry["income"] - product_entry["outcoming"]
+        for breakdown_key in product_entry["breakdown"]:
+            bd = product_entry["breakdown"][breakdown_key]
+            bd["total"] = bd["income"] - bd["outcoming"]
+
+    data = []
+    for product_name in sorted(product_map.keys(), key=lambda item: item or ""):
+        product_entry = product_map[product_name]
+        breakdown = []
+        for breakdown_key in sorted(
+            product_entry["breakdown"].keys(),
+            key=lambda item: ((item[0] or ""), (item[1] or "")),
+        ):
+            breakdown.append(product_entry["breakdown"][breakdown_key])
+
+        product_entry["breakdown"] = breakdown
+        data.append(product_entry)
+
+    return data
+
+
 def calculate_status_durations(sub_orders):
     duration_totals = {}
     duration_counts = {}
@@ -317,6 +409,22 @@ class ProductStatsBaseView(DateRangeFilterMixin, WhouseViewMixin):
             .annotate(outcoming=Sum("quantity"))
             .order_by("product__name", "type__name", "unit__name")
         )
+
+
+class WhouseProductsStatsView(ProductStatsBaseView):
+    serializer_class = WhouseProductsStatsSerializer
+
+    @swagger_auto_schema(manual_parameters=WHOUSE_FILTER_PARAMS + DATE_RANGE_FILTER_PARAMS)
+    def get(self, request):
+        whouse_filter = self.get_whouse_filter(request)
+        if whouse_filter is None:
+            return self.whouse_not_found()
+
+        income_rows = self.get_income_rows(request, whouse_filter)
+        outcoming_rows = self.get_outcoming_rows(request, whouse_filter)
+        data = _build_whouse_products_stats(income_rows, outcoming_rows)
+        serializer = self.serializer_class(data, many=True)
+        return Response(serializer.data)
 
 class IncomeProductStatsView(ProductStatsBaseView):
     enable_supplier_filter = True

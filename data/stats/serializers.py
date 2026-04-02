@@ -154,6 +154,14 @@ class ExcavatorStatusDurationSerializer(serializers.Serializer):
         return self._format_duration(obj.get('rejected', 0))
 
 
+class WhouseProductsStatsSerializer(serializers.Serializer):
+    product = serializers.CharField()
+    income = serializers.FloatField()
+    outcoming = serializers.FloatField()
+    remaining = serializers.FloatField()
+    breakdown = ProductTypeUnitStatsSerializer(many=True)
+
+
 class ExcavatorOrderStatsSerializer(serializers.Serializer):
     status_counts = ExcavatorOrderStatusStatsSerializer()
     status_durations = ExcavatorStatusDurationSerializer()
