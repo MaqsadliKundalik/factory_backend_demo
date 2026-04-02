@@ -50,23 +50,14 @@ def _format_completed_order_items_for_sms(order: Order):
 def order_signals(sender, instance: Order, created, **kwargs):
     print(f"Sending sms {instance.status}")
 
-    if created and instance.status == Order.Status.NEW:
-        items_text = _format_order_items_for_sms(instance)
-        sms_message = "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.".format(
-            id=instance.display_id
-        )
-        if items_text:
-            sms_message += "\n\nСостав заказа:\n{items}".format(items=items_text)
-        instance.client.send_sms(
-            sms_message
-        )
-    
     if instance.status == Order.Status.REJECTED:
         instance.client.send_sms(
             "Уважаемый клиент, ваш заказ №{instance.display_id} был отменён.".format(instance=instance)
         )
 
-    if instance.status == Order.Status.COMPLETED:
+        return order
+
+    elif instance.status == Order.Status.COMPLETED:
         print("Tayyorlanmoqda")
         sms_message = "Уважаемый клиент, ваш заказ №{instance.display_id} был успешно завершён.".format(instance=instance)
         completed_items_text = _format_completed_order_items_for_sms(instance)

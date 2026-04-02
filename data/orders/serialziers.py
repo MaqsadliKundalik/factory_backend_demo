@@ -10,6 +10,20 @@ from data.drivers.serializers import DriverSerializer
 from data.transports.serializers import TransportSerializer
 from data.files.serializers import FileSerializer
 
+def _format_order_items_for_sms(order: Order):
+    items = order.order_items.select_related("product", "type", "unit")
+    return "\n".join(
+        [
+            "- {name} {type_name} ({quantity} {unit})".format(
+                name=item.product.name,
+                type_name=item.type.name,
+                quantity=item.quantity,
+                unit=item.unit.name,
+            ).strip()
+            for item in items
+        ]
+    )
+
 
 class StatusHistorySerializer(serializers.Serializer):
     status = serializers.CharField(max_length=50)
@@ -292,7 +306,17 @@ class OrderWriteSerializer(serializers.ModelSerializer):
             for sub_item_data in sub_order_items_data:
                 sub_item_data.pop("id", None)
                 SubOrderItem.objects.create(sub_order=sub_order, **sub_item_data)
-        return order
+
+        items_text = _format_order_items_for_sms(order)
+        sms_message = "Уважаемый клиент, ваш заказ №{id} был успешно оформлен.".format(
+            id=order.display_id
+        )
+        if items_text:
+            sms_message += "\n\nСостав заказа:\n{items}".format(items=items_text)
+        order.client.send_sms(
+            sms_message
+        )
+    
 
     def update(self, instance, validated_data):
         sub_orders_data = validated_data.pop("sub_orders", None)
