@@ -59,6 +59,8 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
         responses={200: SupplierSerializer(many=True)},
         manual_parameters=SUPPLIER_FILTER_PARAMS,
     )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
  
     def get_queryset(self):
         user = (
