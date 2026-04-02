@@ -55,6 +55,11 @@ class SupplierViewSet(PermissionMetaMixin, ModelViewSet):
     search_fields = ["name", "inn_number"]
     ordering = ["-created_at"]
 
+    @swagger_auto_schema(
+        responses={200: SupplierSerializer(many=True)},
+        manual_parameters=SUPPLIER_FILTER_PARAMS,
+    )
+ 
     def get_queryset(self):
         user = (
             self.request.driver
