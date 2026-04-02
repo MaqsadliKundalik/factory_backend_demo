@@ -135,6 +135,13 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
 
+    serializer_action_classes = {
+        "create": OrderWriteSerializer,
+        "update": OrderWriteSerializer,
+        "partial_update": OrderWriteSerializer,
+        "retrieve": OrderDetailSerializer,
+    }
+
     def get_queryset(self):
         user = (
             self.request.driver
@@ -149,11 +156,7 @@ class OrderViewSet(PermissionMetaMixin, ModelViewSet):
         return Order.objects.all()
 
     def get_serializer_class(self):
-        if self.action in ("create", "update", "partial_update"):
-            return OrderWriteSerializer
-        if self.action == "retrieve":
-            return OrderDetailSerializer
-        return OrderSerializer
+        return self.serializer_action_classes.get(self.action, OrderSerializer)
 
     @swagger_auto_schema(manual_parameters=ORDER_FILTER_PARAMS)
     def list(self, request, *args, **kwargs):
