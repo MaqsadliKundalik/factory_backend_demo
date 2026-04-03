@@ -23,6 +23,11 @@ from data.products.models import WhouseProducts, WhouseProductsHistory, HistoryS
 COMPANY = '«Қодир Инвест Сервис» МЧЖ'
 PHONES = '(+998) 94 444 05 38 Сейитжан   (+998) 77 707 71 72 Бегзат'
 
+DATE_FILTER_PARAMS = [
+    openapi.Parameter('start_date', openapi.IN_QUERY, description="Start date (YYYY-MM-DD)", type=openapi.TYPE_STRING),
+    openapi.Parameter('end_date', openapi.IN_QUERY, description="End date (YYYY-MM-DD)", type=openapi.TYPE_STRING),
+]
+
 STATUS_UZ = {
     'NEW': 'Новый',
     'IN_PROGRESS': 'В процессе',
@@ -510,6 +515,11 @@ class BuyurtmalarHisobotiExcelView(APIView):
     authentication_classes = [UnifiedJWTAuthentication]
     permission_classes = [HasDynamicPermission(read_perm="ORDERS_PAGE")]
 
+    @swagger_auto_schema(
+        operation_description="Buyurtmalar hisoboti Excel formatida yuklash",
+        responses={200: "Excel file"},
+        manual_parameters=DATE_FILTER_PARAMS
+    )
     def get(self, request):
         qs = Order.objects.select_related('client').prefetch_related(
             'order_items__product', 'order_items__type', 'order_items__unit',
