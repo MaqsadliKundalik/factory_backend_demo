@@ -129,7 +129,7 @@ class SubOrderItemWriteSerializer(serializers.ModelSerializer):
 class SubOrderInlineSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(required=False)
     status_history = StatusHistorySerializer(many=True, read_only=True)
-    sub_order_items = SubOrderItemWriteSerializer(many=True, required=False)
+    sub_order_items = SubOrderItemSerializer(many=True, required=False)
 
     class Meta:
         model = SubOrder
