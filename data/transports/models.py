@@ -1,5 +1,7 @@
 from django.db import models
 from apps.common.models import BaseModel
+from data.orders.models import SubOrder
+from django.utils import timezone
 
 
 class Transport(BaseModel):
@@ -24,6 +26,17 @@ class Transport(BaseModel):
 
     def __str__(self):
         return self.name + " " + self.number
+
+    def delete(self, using=None, keep_parents=False):
+        if not SubOrder.objects.filter(transport=self).exclude(status__in=[SubOrder.Status.REJECTED, SubOrder.Status.COMPLETED]).exists():
+            self.deleted_at = timezone.now()
+            self.save(update_fields=['deleted_at'])
+        else:
+            raise ValueError("Transport is used in suborders")
+
+
+
+
     
     class Meta:
         unique_together = ["number", "whouse"]

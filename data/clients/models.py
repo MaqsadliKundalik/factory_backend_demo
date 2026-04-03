@@ -41,6 +41,16 @@ class Client(BaseModel):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # TODO: inn number branchesda va bu modelda unique bo'lishi kerak
+        existing = Client.objects.filter(inn_number=self.inn_number).exclude(id=self.id)
+        if existing.exists():
+            raise ValueError("Client with this INN number already exists")
+        existing_branch = ClientBranches.objects.filter(inn_number=self.inn_number).exclude(id=self.id)
+        if existing_branch.exists():
+            raise ValueError("Client branch with this INN number already exists")
+
     def send_sms(self, message: str):
         for phone in self.phones.all():
             res = sayqal.send_sms(phone.phone_number, message)

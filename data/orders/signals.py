@@ -90,47 +90,53 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
             target_type=NotificationTargetObject.SUB_ORDER,
             order_obj=instance,
         )
-    else:
-        if instance.status == SubOrder.Status.REJECTED and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
-            logger.info(
-                "Creating REJECTED SubOrder notification for suborder_id=%s driver_id=%s order_id=%s created=%s",
-                instance.id,
-                instance.driver.id,
-                instance.order_id,
-                created,
-            )
-            Notification.objects.create(
-                from_role="admin",
-                to_role="driver",
-                to_user_id=instance.driver.id,
-                title="Заказ отклонён",
-                message=f"Заказ №{instance.order.display_id} был отклонён.",
-                target_type=NotificationTargetObject.SUB_ORDER,
-                order_obj=instance,
-            )
-        if instance.status == SubOrder.Status.ON_WAY:
-            for item in instance.sub_order_items.all():
+    elif instance.status == SubOrder.Status.REJECTED and instance.driver and instance.driver.type == Driver.Type.INTERNAL:
+        logger.info(
+            "Creating REJECTED SubOrder notification for suborder_id=%s driver_id=%s order_id=%s created=%s",
+            instance.id,
+            instance.driver.id,
+            instance.order_id,
+            created,
+        )
+        Notification.objects.create(
+            from_role="admin",
+            to_role="driver",
+            to_user_id=instance.driver.id,
+            title="Заказ отклонён",
+            message=f"Заказ №{instance.order.display_id} был отклонён.",
+            target_type=NotificationTargetObject.SUB_ORDER,
+            order_obj=instance,
+        )
+    elif instance.status == SubOrder.Status.ON_WAY:
+        # ON_WAY statusida mahsulotlarni ombordan chiqarish
+        for item in instance.sub_order_items.all():
+            if item.product.items.exists():
+                for raw_material_item in item.product.items.all():
+                    if not raw_material_item.raw_material:
+                        continue
+                    
+                    if raw_material_item.quantity_per_product == 0:
+                        continue
+                        
+                    needed_raw_material = (item.quantity * raw_material_item.quantity) / raw_material_item.quantity_per_product
+                    
+                    WhouseProductsHistory.objects.create(
+                        product=raw_material_item.raw_material,
+                        whouse=instance.order.whouse,
+                        product_type=raw_material_item.type,
+                        quantity=needed_raw_material,
+                        status=HistoryStatus.OUT,
+                        obj_status=instance.status,
+                    )
+            else:
                 WhouseProductsHistory.objects.create(
                     order_item=item,
                     whouse=instance.order.whouse,
                     product=item.product,
                     product_type=item.type,
                     quantity=item.quantity,
-                    status="OUT",
+                    status=HistoryStatus.OUT,
                     obj_status=instance.status,
-                )
-        else:
-            for item in instance.sub_order_items.all():
-                WhouseProductsHistory.objects.update_or_create(
-                    order_item=item,
-                    defaults={
-                        "whouse": instance.order.whouse,
-                        "product": item.product,
-                        "product_type": item.type,
-                        "quantity": item.quantity,
-                        "status": "OUT",
-                        "obj_status": instance.status,
-                    },
                 )
                 
     print(f"Sending sms {instance.status}")
@@ -150,3 +156,4 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
             "Уважаемый клиент, по вашему заказу №{instance.order.display_id} началась разгрузка следующих товаров.\n\n".format(instance=instance)
             + "\n".join(["- {item.product.name} ({item.quantity})".format(item=item) for item in instance.sub_order_items.all()])
         )
+    

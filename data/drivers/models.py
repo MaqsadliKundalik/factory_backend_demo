@@ -87,5 +87,12 @@ class Driver(BaseModel):
     def __str__(self):
         return self.name
 
+    def delete(self, using=None, keep_parents=False):
+        if not SubOrder.objects.filter(driver=self).exclude(status__in=[SubOrder.Status.REJECTED, SubOrder.Status.COMPLETED]).exists():
+            self.deleted_at = timezone.now()
+            self.save(update_fields=['deleted_at'])
+        else:
+            raise ValueError("Driver is used in suborders")
+
     class Meta:
         unique_together = ["phone_number", "whouse"]
