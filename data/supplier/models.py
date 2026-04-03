@@ -46,7 +46,20 @@ class SupplierPhone(BaseModel):
 
     def __str__(self):
         return f"{self.phone_number} - {self.name} - {self.role}"
+
+    def save(self, *args, **kwargs):
+        # Check if this is an existing record with the same phone number
+        if self.pk:
+            existing = SupplierPhone.objects.filter(
+                pk=self.pk,
+                supplier=self.supplier,
+                phone_number=self.phone_number
+            ).first()
+            if existing:
+                # If the phone number is the same, skip unique validation
+                super().save(*args, **kwargs)
+                return
+        super().save(*args, **kwargs)
     
     class Meta:
         unique_together = ["supplier", "phone_number"]
-    

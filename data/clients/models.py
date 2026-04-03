@@ -65,6 +65,7 @@ class ClientBranches(BaseModel):
     oked = models.CharField(max_length=20, null=True, blank=True)
     inn = models.CharField(max_length=20, null=True, blank=True)
     director = models.CharField(max_length=255, null=True, blank=True)
+    contract = models.CharField(max_length=255, null=True, blank=True)
 
     list_display = ["client", "name", "address", "longitude", "latitude"]
 
@@ -87,6 +88,20 @@ class ClientPhone(BaseModel):
 
     def __str__(self):
         return f"{self.phone_number} - {self.name} - {self.role}"
+
+    def save(self, *args, **kwargs):
+        # Check if this is an existing record with the same phone number
+        if self.pk:
+            existing = ClientPhone.objects.filter(
+                pk=self.pk,
+                client=self.client,
+                phone_number=self.phone_number
+            ).first()
+            if existing:
+                # If the phone number is the same, skip unique validation
+                super().save(*args, **kwargs)
+                return
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ["client", "phone_number"]
