@@ -56,6 +56,16 @@ class SupplierSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def create(self, validated_data):
+        phone_numbers_data = validated_data.pop("phone_numbers", [])
+
+        supplier = Supplier.objects.create(**validated_data)
+
+        for phone_number_item in phone_numbers_data:
+            SupplierPhone.objects.create(supplier=supplier, **phone_number_item)
+
+        return supplier
+
     def update(self, instance, validated_data):
         phone_numbers_data = validated_data.pop("phone_numbers", None)
 
