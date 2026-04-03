@@ -36,7 +36,7 @@ class ProductUnit(BaseModel):
 
 class Product(BaseModel):
     name = models.CharField(max_length=255)
-    types = models.ManyToManyField("products.ProductType", related_name="products")
+    types = models.ManyToManyField("products.ProductType", related_name="products", null=True, blank=True)
     unit: ProductUnit = models.ForeignKey(
         "products.ProductUnit",
         on_delete=models.CASCADE,
