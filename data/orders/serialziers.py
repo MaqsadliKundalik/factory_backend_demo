@@ -178,6 +178,14 @@ class SubOrderSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "sign", "created_at"]
 
+    def create(self, validated_data):
+        sub_order_items_data = validated_data.pop("sub_order_items", [])
+        sub_order = SubOrder.objects.create(**validated_data)
+        for item_data in sub_order_items_data:
+            item_data.pop("id", None)
+            SubOrderItem.objects.create(sub_order=sub_order, **item_data)
+        return sub_order
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["order"] = OrderSummarySerializer(instance.order).data
