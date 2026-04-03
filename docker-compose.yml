@@ -3,16 +3,16 @@ services:
     image: postgres:alpine
     container_name: factory_db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: factory_db
+      POSTGRES_USER: factory_user
+      POSTGRES_PASSWORD: factory_secure_password_2024
     volumes:
       - db_oktell:/var/lib/postgresql/data/
     ports:
       - "5434:5432"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U factory_user -d factory_db"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -68,6 +68,21 @@ services:
         condition: service_healthy
     restart: unless-stopped
     command: celery -A app worker --loglevel=info -c 3
+
+  celery-beat:
+    build: .
+    container_name: factory_celery_beat
+    env_file:
+      - .env
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+    depends_on:
+      factory_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery -A app beat --loglevel=info
 
 volumes:
   db_oktell:
