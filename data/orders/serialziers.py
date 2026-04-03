@@ -186,6 +186,29 @@ class SubOrderSerializer(serializers.ModelSerializer):
             SubOrderItem.objects.create(sub_order=sub_order, **item_data)
         return sub_order
 
+    def update(self, instance, validated_data):
+        sub_order_items_data = validated_data.pop("sub_order_items", None)
+        
+        # Update SubOrder fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Handle sub_order_items if provided
+        if sub_order_items_data is not None:
+            incoming_ids = {item["id"] for item in sub_order_items_data if "id" in item}
+            instance.sub_order_items.exclude(id__in=incoming_ids).delete()
+            for item_data in sub_order_items_data:
+                item_id = item_data.pop("id", None)
+                if item_id:
+                    SubOrderItem.objects.filter(id=item_id, sub_order=instance).update(
+                        **item_data
+                    )
+                else:
+                    SubOrderItem.objects.create(sub_order=instance, **item_data)
+        
+        return instance
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["order"] = OrderSummarySerializer(instance.order).data
