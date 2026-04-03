@@ -47,7 +47,7 @@ class Client(BaseModel):
         existing = Client.objects.filter(inn_number=self.inn_number).exclude(id=self.id)
         if existing.exists():
             raise ValueError("Client with this INN number already exists")
-        existing_branch = ClientBranches.objects.filter(inn_number=self.inn_number).exclude(id=self.id)
+        existing_branch = ClientBranches.objects.filter(inn=self.inn_number).exclude(client_id=self.id)
         if existing_branch.exists():
             raise ValueError("Client branch with this INN number already exists")
 
