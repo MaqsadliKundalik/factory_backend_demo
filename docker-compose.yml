@@ -19,7 +19,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:alpine
+    image: ghcr.io/redis/redis/alpine:latest
     container_name: factory_redis
     restart: unless-stopped
     healthcheck:
