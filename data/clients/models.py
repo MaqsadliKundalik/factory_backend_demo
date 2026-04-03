@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 
 from django.db import models
+from django.utils import timezone
+from data.orders.models import Order
 from apps.common.models import BaseModel
 from utils.sayqal import SayqalSms
 
@@ -50,6 +52,12 @@ class Client(BaseModel):
             if branch.contract:
                 return branch.contract
         return None
+    def delete(self, using=None, keep_parents=False):
+        if not Order.objects.filter(client=self).exclude(status__in=[Order.Status.REJECTED, Order.Status.COMPLETED]).exists():
+            self.deleted_at = timezone.now()
+            self.save(update_fields=['deleted_at'])
+        else:
+            raise ValueError("Client has active orders")
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

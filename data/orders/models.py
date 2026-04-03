@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING
 
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.core.serializers.json import DjangoJSONEncoder
 from apps.common.models import BaseModel
 
@@ -81,7 +79,8 @@ class Order(BaseModel):
                 else 1
             )
         super().save(*args, **kwargs)
-    
+
+
     def get_display_id(self):
         return f"ORD-{self.display_id:04}" if self.order_type == self.OrderType.ENTERPRISE else f"QZ-{self.display_id:04}"
 
