@@ -41,6 +41,16 @@ class Client(BaseModel):
     def __str__(self):
         return self.name
 
+    def get_contract_info(self):
+        """Get contract from client or its branches"""
+        if self.contract:
+            return self.contract
+        # Check in branches
+        for branch in self.branches.all():
+            if branch.contract:
+                return branch.contract
+        return None
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         # TODO: inn number branchesda va bu modelda unique bo'lishi kerak

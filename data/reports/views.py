@@ -186,7 +186,7 @@ def _fill_yuk_xati_block(ws, order, start_row):
     merge_val(
         ws,
         f'A{start_row + 2}:G{start_row + 2}',
-        f'Кому: {order.client.name}  ИНН: {order.client.inn_number}',
+        f'Кому: {order.client.name}  ИНН: {order.client.inn_number}  Договор: {order.client.get_contract_info() or ""}',
         top=False,
     )
 
@@ -310,7 +310,7 @@ def fill_ishonch_qogozi(ws, order, sub_order, idx=None):
     date_cell.alignment = _align()
     outer_border(ws, 3, 6, 3, 6, top=False, left=False, bottom=False, right=True)
 
-    merge_val(ws, 'A4:C4', f'Кому: {order.client.name}',
+    merge_val(ws, 'A4:C4', f'Кому: {order.client.name}  Договор: {order.client.get_contract_info() or ""}',
               h='left', top=False, bottom=False, right=False)
     merge_val(ws, 'D4:F4', f'ИНН: {order.client.inn_number}',
               h='left', top=False, left=False, bottom=False)
@@ -389,7 +389,7 @@ def fill_buyurtmalar_hisoboti(ws, orders):
         for oi in order.order_items.all():
             type_name = oi.type.name if oi.type else ''
             ws.cell(row=row_num, column=1, value=row_num - 2)
-            ws.cell(row=row_num, column=2, value=order.client.name)
+            ws.cell(row=row_num, column=2, value=f"{order.client.name} (ИНН: {order.client.inn_number}) (Договор: {order.client.get_contract_info() or ''})")
             ws.cell(row=row_num, column=3, value=f"{oi.product.name} {type_name}".strip())
             ws.cell(row=row_num, column=4, value=float(oi.quantity))
             ws.cell(row=row_num, column=5, value=oi.unit.name if oi.unit else '')
