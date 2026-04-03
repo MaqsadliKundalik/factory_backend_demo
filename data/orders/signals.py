@@ -54,8 +54,8 @@ def order_signals(sender, instance: Order, created, **kwargs):
         instance.client.send_sms(
             "Уважаемый клиент, ваш заказ №{instance.display_id} был отменён.".format(instance=instance)
         )
-
-        return order
+        WhouseProductsHistory.objects.filter(order=instance).delete()
+        return instance
 
     elif instance.status == Order.Status.COMPLETED:
         print("Tayyorlanmoqda")
@@ -68,7 +68,8 @@ def order_signals(sender, instance: Order, created, **kwargs):
             sms_message += "\n\nТоварно-транспортная накладная: {yuk_xati_url}".format(yuk_xati_url=yuk_xati_url)
         print("Tayor\n\n{msg}".format(msg=sms_message))       
         instance.client.send_sms(sms_message)
-
+        WhouseProductsHistory.objects.filter(order=instance).update(obj_status="COMPLETED")
+        return instance
 
 @receiver(post_save, sender=SubOrder)
 def create_suborder_notification_and_history(sender, instance: SubOrder, created, **kwargs):
@@ -116,6 +117,7 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
                     product_type=item.type,
                     quantity=item.quantity,
                     status="OUT",
+                    obj_status=instance.status,
                 )
         else:
             for item in instance.sub_order_items.all():
@@ -127,6 +129,7 @@ def create_suborder_notification_and_history(sender, instance: SubOrder, created
                         "product_type": item.type,
                         "quantity": item.quantity,
                         "status": "OUT",
+                        "obj_status": instance.status,
                     },
                 )
                 

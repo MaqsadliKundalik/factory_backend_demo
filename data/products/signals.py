@@ -20,6 +20,7 @@ def create_whouse_product_history(sender, instance, created, **kwargs):
         quantity=instance.quantity,
         supplier=instance.supplier,
         status=HistoryStatus.IN,
+        obj_status=instance.status,
     )
     
     # Agar mahsulotning xomashyolari bo'lsa, ularni ayirish
@@ -39,6 +40,7 @@ def create_whouse_product_history(sender, instance, created, **kwargs):
                 product_type=item.type,
                 quantity=needed_raw_material,
                 status=HistoryStatus.OUT,
+                obj_status=instance.status,
             )
 
 
@@ -52,6 +54,7 @@ def update_whouse_product_history_extra(sender, instance, **kwargs):
             quantity=instance.quantity,
             supplier=instance.supplier,
             status=HistoryStatus.IN,
+            obj_status=instance.status,
         )
 
 

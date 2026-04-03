@@ -365,7 +365,7 @@ class CountStatsView(DateRangeFilterMixin, WhouseViewMixin):
         return Response(
             {
                 "drivers": Driver.objects.filter(**whouse_filter, **df).count(),
-                "suppliers": Supplier.objects.filter(**df).count(),  # Suppliers don't have whouse field
+                "suppliers": Supplier.objects.filter(**whouse_filter, **df).count(),
                 "clients": Client.objects.filter(**whouse_filter, **df).count(),
                 "transports": Transport.objects.filter(**whouse_filter, **df).count(),
                 "products": WhouseProducts.objects.filter(

@@ -145,6 +145,9 @@ class WhouseProductsHistory(BaseModel):
     supplier: "Supplier | None" = models.ForeignKey(
         "supplier.Supplier", on_delete=models.CASCADE, null=True, blank=True
     )
+    obj_status = models.CharField(
+        max_length=20, null=True, blank=True
+    )
     status = models.CharField(
         max_length=20, choices=HistoryStatus.choices, default=HistoryStatus.IN
     )
