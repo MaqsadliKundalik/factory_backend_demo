@@ -53,6 +53,18 @@ services:
           --access-logfile -
           --error-logfile -
       "
+  bot:
+    build: .
+    container_name: bot
+    env_file:
+      - .env
+    volumes: *shared_volumes
+    depends_on:
+      - db
+      - django
+
+    restart: unless-stopped
+    command: python manage.py bot
 
   celery:
     build: .

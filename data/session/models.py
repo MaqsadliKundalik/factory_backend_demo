@@ -75,3 +75,11 @@ class FactoryUserSession(models.Model):
         list_filter = ["factory_user"]
         search_fields = ["factory_user__name"]
         date_hierarchy = "created_at"
+
+class TgLocationSessions(models.Model):
+    lat = models.FloatField(null=True, blank=True)
+    lon = models.FloatField(null=True, blank=True)
+
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
