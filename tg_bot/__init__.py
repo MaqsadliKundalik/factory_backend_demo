@@ -16,7 +16,7 @@ class Bot:
     sessions = {}
     def __init__(self):
 
-        self.token = os.getenv("TOKEN")
+        self.token = os.getenv("BOT_TOKEN")
 
         self.app = ApplicationBuilder().token(self.token).build()
 
