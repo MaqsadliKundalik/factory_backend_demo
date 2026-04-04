@@ -58,13 +58,24 @@ services:
     container_name: bot
     env_file:
       - .env
-    volumes: *shared_volumes
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
     depends_on:
-      - db
-      - django
-
+      factory_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
-    command: python manage.py bot
+    command: >
+      python -c "
+      import os
+      os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
+      import django
+      django.setup()
+      from tg_bot import Bot
+      bot = Bot()
+      bot.run()
+      "
 
   celery:
     build: .
